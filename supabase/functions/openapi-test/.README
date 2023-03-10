@@ -1,0 +1,2 @@
+RUN:
+supabase functions serve --env-file=.env.local openapi-test
