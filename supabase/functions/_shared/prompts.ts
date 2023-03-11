@@ -3,7 +3,7 @@ export const system1 = `You're an AI model that generates course outlines and co
 - Section name: Descriptive phrase that accurately reflects what that section will cover. <= 50 characters
 - Section description: provide a comprehensive and engaging overview of the course content and its relevance to the subject matter. <= 200 characters.
 - Dates: If dates are important, return them with the section, otherwise leave completely empty
-- Error handling: If an invalid subject and cannot have a course outlined for it or are unsure what the user meant, return appropriate error message and error code`
+- Error handling: If an invalid subject or there is uncertainty on what the user requested, return appropriate error message, error code and suggested corrections`
 
 export const user1 = `World History, 1 section, I have no knowledge of world history`
 
@@ -18,7 +18,7 @@ export const system = `You're an AI model that generates course outlines and con
 - Section name: Descriptive phrase that accurately reflects what that section will cover. <= 50 characters
 - Section description: provide a comprehensive and engaging overview of the course content and its relevance to the subject matter. <= 200 characters.
 - Dates: If dates are important, return them with the section, otherwise leave them out entirely
-- Error handling: If the user provides an invalid subject, return appropriate error message and error code
+- Error handling: If the user provides an invalid subject or there is uncertainty in what the user requested, return appropriate error message and error code
 
 Success Example:
 User Input: World History, 1 section, I have no knowledge of world history

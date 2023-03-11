@@ -4,6 +4,7 @@
 
 import "xhr_polyfill";
 import { serve } from "std/server";
+import { corsHeaders } from '../_shared/cors.ts'
 import { Configuration, OpenAIApi } from "openai";
 import { system1, user1, assistant1, assistant1error, user1error, system } from "../_shared/prompts.ts";
 import { AssistantResponse } from "../_shared/pocos/course.ts";
@@ -18,8 +19,13 @@ interface req {
   sectionCount: number;
 }
 
-console.log("OpenAI Function Up!");
+console.log("OpenAI Function Up!"); 
 serve(async (req) => {
+  // This is needed if you're planning to invoke your function from a browser.
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     // Parse request parameters
     const { subject, proficiency, sectionCount } = (await req.json()) as req;
@@ -34,8 +40,8 @@ serve(async (req) => {
         { role: "system", content: system1 },
         { role: "user", content: user1 },
         { role: "assistant", content: assistant1 },
-        { role: "assistant", content: assistant1error },
         { role: "user", content: user1error },
+        { role: "assistant", content: assistant1error },
         { role: "user", content: "subject: " + subject + ", proficiency: " + proficiency + ", sectionCount: " + sectionCount }
       ],
       max_tokens: 1000,
@@ -63,13 +69,13 @@ serve(async (req) => {
 
     // Return a response with the parsed course object
     return new Response(JSON.stringify(assistantResponse), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error(error);
 
     return new Response(error.message, {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     });
   }

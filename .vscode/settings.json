@@ -1,4 +1,24 @@
 {
     "deno.enable": true,
-    "deno.importMap": "./import_map.json"
+    "deno.importMap": "./import_map.json",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#1c5564",
+        "activityBar.background": "#1c5564",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#320e2a",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#1c5564",
+        "statusBar.background": "#11333c",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#1c5564",
+        "statusBarItem.remoteBackground": "#11333c",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#11333c",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#11333c99",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#11333c"
 }
