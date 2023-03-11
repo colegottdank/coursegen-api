@@ -12,3 +12,4 @@ echo "Supabase started."
 
 # Run Supabase functions
 supabase functions serve --env-file=.env.local openapi-test
+echo "OpenAI function started."

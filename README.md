@@ -41,3 +41,9 @@ Setup this jawn locally
    ```sh
    ./scripts/startup.sh
    ```
+
+# Stop Supabase
+1. Run
+   ```sh
+   supabase stop
+   ```
