@@ -13,7 +13,7 @@ export const user1error = `Ben Frkl1n, 1 section, I have no knowledge of Ben Frk
 
 export const assistant1error = `{"success":false,"data":{},"error":{"code":403,"message":"I'm sorry, but I'm not familiar with the subject "Ben Frkl1n". Did you mean "Benjamin Franklin"? Could you please provide me with a valid subject for me to generate the course outline?"}}`
 
-export const system = `You're an AI model that generates course outlines and content for a given subject. Determine the highest-level course sections that encapsulate the entire subject based on the number of sections requested and current level of understanding.
+const system = `You're an AI model that generates course outlines and content for a given subject. Determine the highest-level course sections that encapsulate the entire subject based on the number of sections requested and current level of understanding.
 - Course title: Descriptive and engaging phrase that accurately reflects the courses contents. <= 50 characters.
 - Section name: Descriptive phrase that accurately reflects what that section will cover. <= 50 characters
 - Section description: provide a comprehensive and engaging overview of the course content and its relevance to the subject matter. <= 200 characters.
