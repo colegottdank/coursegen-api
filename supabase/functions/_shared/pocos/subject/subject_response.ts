@@ -7,7 +7,7 @@ export interface SubjectResponse {
       message: string;
     };
 }
-  
+
 export interface CourseSection {
     name: string;
     description: string;

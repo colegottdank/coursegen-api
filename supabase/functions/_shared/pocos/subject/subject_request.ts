@@ -26,8 +26,9 @@ export function ValidateCourseRequest(request: SubjectRequest, newUserMessage: s
   }
 
   // Calculate tokens in prompts
+  // TODO: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
   var encoded = encodeString(newUserMessage);
-  var maxTokenCount = (4096 - encoded.text.length-100) // Subtract 100 because I can't figure out how to get the exact number of tokens in the prompts
+  var maxTokenCount = (4096 - encoded.bpe.length) - 150 // 150 is for the subject, proficiency, and section_count. No tokenizer works for cl100k_base yet in JS
   if (request.max_tokens && (request.max_tokens < 1000 || request.max_tokens > maxTokenCount)) {
     throw new Error(`Max tokens must be between 1000 and ${maxTokenCount}`);
   }
@@ -36,8 +37,9 @@ export function ValidateCourseRequest(request: SubjectRequest, newUserMessage: s
   }
 }
 
+// Temporarily just encode the prompts
 function encodeString(newUserMessage: string): { bpe: number[]; text: string[] } {
   const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
-  const allPrompts = `${prompts.system1}${prompts.user1}${prompts.assistant1}${prompts.user1error}${prompts.assistant1error}${newUserMessage}`;
+  const allPrompts = `${prompts.system1} ${prompts.user1} ${prompts.assistant1} ${prompts.user1error} ${prompts.assistant1error}`;
   return tokenizer.encode(allPrompts);
 }

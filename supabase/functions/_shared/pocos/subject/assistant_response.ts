@@ -26,8 +26,8 @@ export function ValidateAssistantResponse(assistantResponse: AssistantResponse, 
     }
 
     const course = assistantResponse.data.course;
-    if (!course.name || course.name.length > 50) {
-      throw new Error("Course name must not be null and less than 50 characters");
+    if (!course.name || course.name.length > 100) {
+      throw new Error("Course name must not be null and less than 100 characters");
     }
     if (course.sections.length !== sectionCount) {
       throw new Error(
@@ -35,14 +35,14 @@ export function ValidateAssistantResponse(assistantResponse: AssistantResponse, 
       );
     }
     course.sections.forEach((section) => {
-      if (!section.name || section.name.length > 50) {
-        throw new Error("Section name must not be null and less than 50 characters");
+      if (!section.name || section.name.length > 100) {
+        throw new Error("Section name must not be null and less than 100 characters");
       }
       if (!section.description) {
         throw new Error("Section description must not be null");
       }
-      if (section.description.length > 200) {
-        throw new Error("Section description must be less than 200 characters");
+      if (section.description.length > 300) {
+        throw new Error("Section description must be less than 300 characters");
       }
       if (section.date && isNaN(Date.parse(section.date))) {
         throw new Error("Section date must be a valid date");
