@@ -1,6 +1,7 @@
 {
     "imports": {
       "openai": "https://esm.sh/openai@3.2.1",
+      "tokenizer": "https://esm.sh/v111/gpt3-tokenizer@1.1.5",
       "std/server": "https://deno.land/std@0.177.0/http/server.ts",
       "xhr_polyfill": "https://deno.land/x/xhr@0.3.0/mod.ts"
     }
