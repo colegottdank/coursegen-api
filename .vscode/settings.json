@@ -1,6 +1,6 @@
 {
     "deno.enable": true,
-    "deno.importMap": "./import_map.json",
+    "deno.importMap": "./supabase/functions/import_map.json",
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#1c5564",
         "activityBar.background": "#1c5564",
@@ -20,5 +20,6 @@
         "titleBar.inactiveBackground": "#11333c99",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "#11333c"
+    "peacock.color": "#11333c",
+    "deno.unstable": true
 }
