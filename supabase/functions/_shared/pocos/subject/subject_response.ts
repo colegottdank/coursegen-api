@@ -20,9 +20,5 @@ export interface Course {
 }
 
 export function MapAssistantResponseToSubjectResponse(response: AssistantResponse): SubjectResponse {
-    if (response.success) {
-      return { course: response.data.course };
-    } else {
-      return { error: { code: response.error.code, message: response.error.message } };
-    }
+    return { course: response.data.course };
 }
