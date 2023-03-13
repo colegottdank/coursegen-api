@@ -25,4 +25,4 @@ jobs:
       - run: |
           supabase link --project-ref $STAGING_PROJECT_ID
           supabase db push
-          supabase functions deploy openapi-test --project-ref pufqwmjkygvrkelrdfuj
+          supabase functions deploy openapi-test --project-ref pufqwmjkygvrkelrdfuj --import-map "./supabase/functions/import_map.json"
