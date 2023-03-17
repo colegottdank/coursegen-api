@@ -7,3 +7,5 @@
 
 .vscode
 jsconfig.json
+tsconfig.json
+.prettierrc.json
