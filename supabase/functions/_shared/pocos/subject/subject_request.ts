@@ -1,4 +1,5 @@
 import * as prompts from "../../consts/prompts.ts";
+import GPT3Tokenizer from "tokenizer";
 import { BadRequestError } from "../../errors/BadRequestError.ts";
 
 export interface SubjectRequest {
@@ -27,10 +28,10 @@ export function ValidateCourseRequest(request: SubjectRequest, newUserMessage: s
 
   // Calculate tokens in prompts
   // TODO: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-  //const encoded = encodeString(newUserMessage);
-  //const maxTokenCount = (4096 - encoded.bpe.length) - 150 // 150 is for the subject, proficiency, and section_count. No tokenizer works for cl100k_base yet in JS
-  if (request.max_tokens && (request.max_tokens < 1000 || request.max_tokens > 3600)) {
-    throw new BadRequestError(`Max tokens must be between 1000 and 3600`);
+  const encoded = encodeString(newUserMessage);
+  const maxTokenCount = (4096 - encoded.bpe.length) - 150 // 150 is for the subject, proficiency, and section_count. No tokenizer works for cl100k_base yet in JS
+  if (request.max_tokens && (request.max_tokens < 1000 || request.max_tokens > maxTokenCount)) {
+    throw new BadRequestError(`Max tokens must be between 1000 and ${maxTokenCount}`);
   }
   if (request.temperature && (request.temperature < 0 || request.temperature > 1)) {
     throw new BadRequestError("Temperature must be between 0 and 1");
@@ -38,8 +39,8 @@ export function ValidateCourseRequest(request: SubjectRequest, newUserMessage: s
 }
 
 // Temporarily just encode the prompts
-// function encodeString(newUserMessage: string): { bpe: number[]; text: string[] } {
-//   const tokenizer = GPT3Tokenizer({ type: 'gpt3' });
-//   const allPrompts = `${prompts.system1} ${prompts.user1} ${prompts.assistant1} ${prompts.user1error} ${prompts.assistant1error}`;
-//   return tokenizer.encode(allPrompts);
-// }
+function encodeString(newUserMessage: string): { bpe: number[]; text: string[] } {
+  const tokenizer = GPT3Tokenizer({ type: 'gpt3' });
+  const allPrompts = `${prompts.system1} ${prompts.user1} ${prompts.assistant1} ${prompts.user1error} ${prompts.assistant1error}`;
+  return tokenizer.encode(allPrompts);
+}
