@@ -11,5 +11,5 @@ done
 echo "Supabase started."
 
 # Run Supabase functions
-supabase functions serve --env-file=.env.local openapi-test
+supabase functions serve --env-file=.env.local new_course
 echo "OpenAI function started."

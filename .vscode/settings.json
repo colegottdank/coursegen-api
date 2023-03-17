@@ -21,5 +21,6 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "peacock.color": "#11333c",
-    "deno.unstable": true
+    "deno.unstable": true,
+    "deno.enablePaths": ["supabase/functions"]
 }

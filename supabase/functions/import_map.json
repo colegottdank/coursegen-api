@@ -3,6 +3,7 @@
       "openai": "https://esm.sh/openai@3.2.1?target=deno&no-check",
       "tokenizer": "https://esm.sh/gpt3-tokenizer@1.1.5?target=deno&no-check",
       "std/server": "https://deno.land/std@0.179.0/http/server.ts",
-      "xhr_polyfill": "https://deno.land/x/xhr@0.3.0/mod.ts"
+      "xhr_polyfill": "https://deno.land/x/xhr@0.3.0/mod.ts",
+      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.10"
     }
 }

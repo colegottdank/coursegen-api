@@ -1,5 +1,20 @@
-import { corsHeaders } from './cors.ts';
+import { corsHeaders } from './consts/cors.ts';
 import { SubjectResponse } from './pocos/subject/subject_response.ts';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from './database.types.ts';
+
+export function getSupabaseClient(req: Request): SupabaseClient<Database> {
+  return createClient<Database>(
+    // Supabase API URL - env var exported by default.
+    Deno.env.get('SUPABASE_URL') ?? '',
+    // Supabase API ANON KEY - env var exported by default.
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    // Create client with Auth context of the user that called the function.
+    // This way your row-level-security (RLS) policies are applied.
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+  )
+}
+
 
 export const HttpService = (handler: (req: Request) => Promise<Response>) => async (req: Request): Promise<Response> => {
     // This is needed if you're planning to invoke your function from a browser.
