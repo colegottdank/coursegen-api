@@ -1,6 +1,3 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
-
 interface Course {
   created_at: string;
   description: string;
@@ -23,19 +20,19 @@ interface CourseSection {
   user_id: string;
 }
 
-export class CourseDao {
-  constructor(private supabase: SupabaseClient) {}
+// export class CourseDao {
+//   constructor(private supabase: SupabaseClient) {}
 
-  async insertCourse(): Promise<PostgrestSingleResponse<Course>> {
-    return await this.supabase
-      .from("course")
-      .insert({
-        description: "This is a course",
-        title: "My Course",
-        user_id: "1",
-      })
-      .select()
-      .limit(1)
-      .single();
-  }
-}
+//   async insertCourse(): Promise<PostgrestSingleResponse<Course>> {
+//     return await this.supabase
+//       .from("course")
+//       .insert({
+//         description: "This is a course",
+//         title: "My Course",
+//         user_id: "1",
+//       })
+//       .select()
+//       .limit(1)
+//       .single();
+//   }
+// }

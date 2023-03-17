@@ -9,8 +9,7 @@ import * as prompts from "../_shared/consts/prompts.ts";
 import * as request from "../_shared/pocos/subject/subject_request.ts";
 import * as response from "../_shared/pocos/subject/subject_response.ts";
 import * as assistant from "../_shared/pocos/subject/assistant_response.ts";
-import { HttpService, getSupabaseClient } from "../_shared/httpservice.ts";
-import { CourseDao } from "../_shared/daos/course.ts";
+import { HttpService } from "../_shared/httpservice.ts";
 
 const config = new Configuration({
   apiKey: Deno.env.get("OPENAI_API_KEY"),
@@ -18,59 +17,60 @@ const config = new Configuration({
 
 console.log("OpenAI Function Up!");
 
-serve(
-  HttpService(async (req: Request): Promise<Response> => {
-    // Parse request parameters
-    const subjectRequest: request.SubjectRequest = await req.json();
-    const newUserMessage = `subject: ${subjectRequest.subject}, proficiency: ${
-      subjectRequest.proficiency ?? request.defaultProficiency
-    }, sectionCount: ${
-      subjectRequest.section_count ?? request.defaultSectionCount
-    }`;
-    request.ValidateCourseRequest(subjectRequest, newUserMessage);
+const httpService = new HttpService(async (req: Request) => {
 
-    console.log("Request: " + JSON.stringify(subjectRequest));
+  // Parse request parameters
+  const subjectRequest: request.SubjectRequest = await req.json();
+  const newUserMessage = `subject: ${subjectRequest.subject}, proficiency: ${
+    subjectRequest.proficiency ?? request.defaultProficiency
+  }, sectionCount: ${
+    subjectRequest.section_count ?? request.defaultSectionCount
+  }`;
+  request.ValidateCourseRequest(subjectRequest, newUserMessage);
 
-    // Initialize new OpenAI API client
-    const openai = new OpenAIApi(config);
+  console.log("Request: " + JSON.stringify(subjectRequest));
 
-    // Create a completion
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: prompts.system1 },
-        { role: "user", content: prompts.user1 },
-        { role: "assistant", content: prompts.assistant1 },
-        { role: "user", content: prompts.user1error },
-        { role: "assistant", content: prompts.assistant1error },
-        { role: "user", content: newUserMessage },
-      ],
-      max_tokens: subjectRequest.max_tokens ?? request.defaultMaxTokens,
-      temperature: subjectRequest.temperature ?? request.defaultTemperature,
-    });
+  // Initialize new OpenAI API client
+  const openai = new OpenAIApi(config);
 
-    // Parse the completion response
-    const message: string = completion.data.choices[0].message!.content;
-    console.log("Response: " + message);
-    const assistantResponse: assistant.AssistantResponse = JSON.parse(message);
-    assistant.ValidateAssistantResponse(
-      assistantResponse,
-      subjectRequest.section_count ?? request.defaultSectionCount
-    );
+  // Create a completion
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      { role: "system", content: prompts.system1 },
+      { role: "user", content: prompts.user1 },
+      { role: "assistant", content: prompts.assistant1 },
+      { role: "user", content: prompts.user1error },
+      { role: "assistant", content: prompts.assistant1error },
+      { role: "user", content: newUserMessage },
+    ],
+    max_tokens: subjectRequest.max_tokens ?? request.defaultMaxTokens,
+    temperature: subjectRequest.temperature ?? request.defaultTemperature,
+  });
 
-    const subjectResponse: response.SubjectResponse =
-      response.MapAssistantResponseToSubjectResponse(assistantResponse);
+  // Parse the completion response
+  const message: string = completion.data.choices[0].message!.content;
+  console.log("Response: " + message);
+  const assistantResponse: assistant.AssistantResponse = JSON.parse(message);
+  assistant.ValidateAssistantResponse(
+    assistantResponse,
+    subjectRequest.section_count ?? request.defaultSectionCount
+  );
 
-    // Initialize Supabase client
-    const supabase = getSupabaseClient(req);
+  const subjectResponse: response.SubjectResponse =
+    response.MapAssistantResponseToSubjectResponse(assistantResponse);
 
-    const courseDao = new CourseDao(supabase);
+  // Initialize Supabase client
+  // const supabase = getSupabaseClient(req);
 
-    // Return a response with the parsed course object
-    //return subjectResponse;
-    return new Response(JSON.stringify(subjectResponse), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-  })
-);
+  // const courseDao = new CourseDao(supabase);
+
+  // Return a response with the parsed course object
+  //return subjectResponse;
+  return new Response(JSON.stringify(subjectResponse), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 200,
+  });
+});
+
+serve((req) => httpService.handle(req));
