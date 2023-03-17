@@ -1,6 +1,5 @@
 import { corsHeaders } from './consts/cors.ts';
 import { SubjectResponse } from './pocos/subject/subject_response.ts';
-import { Database } from './database.types.ts';
 
 export class HttpService {
   constructor(private handler: (req: Request) => Promise<Response>) {}

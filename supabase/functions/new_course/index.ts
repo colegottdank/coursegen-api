@@ -21,11 +21,9 @@ const httpService = new HttpService(async (req: Request) => {
 
   // Parse request parameters
   const subjectRequest: request.SubjectRequest = await req.json();
-  const newUserMessage = `subject: ${subjectRequest.subject}, proficiency: ${
-    subjectRequest.proficiency ?? request.defaultProficiency
-  }, sectionCount: ${
-    subjectRequest.section_count ?? request.defaultSectionCount
-  }`;
+  const newUserMessage = `subject: ${subjectRequest.subject}, 
+  proficiency: ${ subjectRequest.proficiency ?? request.defaultProficiency}, 
+  sectionCount: ${ subjectRequest.section_count ?? request.defaultSectionCount }`;
   request.ValidateCourseRequest(subjectRequest, newUserMessage);
 
   console.log("Request: " + JSON.stringify(subjectRequest));
@@ -52,10 +50,7 @@ const httpService = new HttpService(async (req: Request) => {
   const message: string = completion.data.choices[0].message!.content;
   console.log("Response: " + message);
   const assistantResponse: assistant.AssistantResponse = JSON.parse(message);
-  assistant.ValidateAssistantResponse(
-    assistantResponse,
-    subjectRequest.section_count ?? request.defaultSectionCount
-  );
+  assistant.ValidateAssistantResponse(assistantResponse, subjectRequest.section_count ?? request.defaultSectionCount);
 
   const subjectResponse: response.SubjectResponse =
     response.MapAssistantResponseToSubjectResponse(assistantResponse);
