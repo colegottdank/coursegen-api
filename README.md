@@ -47,3 +47,9 @@ Setup this jawn locally
    ```sh
    supabase stop
    ```
+
+# Extra
+- Generate types
+   ```sh
+   supabase gen types typescript --local > lib/database.types.ts
+   ```
