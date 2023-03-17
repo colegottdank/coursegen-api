@@ -1,4 +1,4 @@
-import * as prompts from "../../prompts.ts";
+import * as prompts from "../../consts/prompts.ts";
 import GPT3Tokenizer from "tokenizer";
 import { BadRequestError } from "../../errors/BadRequestError.ts";
 
@@ -40,7 +40,7 @@ export function ValidateCourseRequest(request: SubjectRequest, newUserMessage: s
 
 // Temporarily just encode the prompts
 function encodeString(newUserMessage: string): { bpe: number[]; text: string[] } {
-  const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
+  const tokenizer = GPT3Tokenizer({ type: 'gpt3' });
   const allPrompts = `${prompts.system1} ${prompts.user1} ${prompts.assistant1} ${prompts.user1error} ${prompts.assistant1error}`;
   return tokenizer.encode(allPrompts);
 }
