@@ -22,5 +22,5 @@
     },
     "peacock.color": "#11333c",
     "deno.unstable": true,
-    "deno.enablePaths": ["supabase/functions"]
+    "deno.enablePaths": ["./supabase/functions"]
 }

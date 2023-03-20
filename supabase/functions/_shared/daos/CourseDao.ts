@@ -1,0 +1,37 @@
+import { PostgrestResponse, PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '../database.types.ts';
+import { ICourse } from "../models/internal/ICourse.ts";
+import { ISection } from "../models/internal/ISection.ts";
+
+export class CourseDao {
+  constructor(private supabase: SupabaseClient) {}
+
+  async insertCourse(course: ICourse): Promise<PostgrestSingleResponse<Database['public']['Tables']['course']['Row']>> {
+    return await this.supabase
+      .from("course")
+      .insert({
+        description: course.description,
+        title: course.title,
+        user_id: course.userId,
+      })
+      .select()
+      .limit(1)
+      .single();
+
+    // course.description = insertedCourse.data?.description;
+    // course.title = insertedCourse.data?.title;
+    // course.userId = 
+    // course.id = insertedCourse.data?.id;
+    // course.createdAt = insertedCourse.data?.created_at;
+    // course.updatedAt = insertedCourse.data?.updated_at;
+
+    // return insertedCourse;
+  }
+
+  async insertSections(sections: ISection[]): Promise<PostgrestResponse<Database['public']['Tables']['section']['Row']>> {
+    return await this.supabase
+      .from("section")
+      .insert(sections)
+      .select();
+  }
+}

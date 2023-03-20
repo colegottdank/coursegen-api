@@ -1,71 +1,61 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { ICourseOutline } from "./../_shared/models/public/ICourseOutline.ts";
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { corsHeaders } from "../_shared/consts/cors.ts";
-import { Configuration, OpenAIApi } from "openai";
-import * as prompts from "../_shared/consts/prompts.ts";
-import * as request from "../_shared/pocos/subject/subject_request.ts";
-import * as response from "../_shared/pocos/subject/subject_response.ts";
-import * as assistant from "../_shared/pocos/subject/assistant_response.ts";
-import { HttpService } from "../_shared/httpservice.ts";
-
-const config = new Configuration({
-  apiKey: Deno.env.get("OPENAI_API_KEY"),
-});
+import { HttpService } from "../_shared/util/httpservice.ts";
+import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
+import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
+import { CourseDao } from "../_shared/daos/CourseDao.ts";
+import { ISection } from "../_shared/models/public/ISection.ts";
 
 console.log("OpenAI Function Up!");
 
 const httpService = new HttpService(async (req: Request) => {
-
   // Parse request parameters
-  const subjectRequest: request.SubjectRequest = await req.json();
-  const newUserMessage = `subject: ${subjectRequest.subject}, 
-  proficiency: ${ subjectRequest.proficiency ?? request.defaultProficiency}, 
-  sectionCount: ${ subjectRequest.section_count ?? request.defaultSectionCount }`;
-  request.ValidateCourseRequest(subjectRequest, newUserMessage);
+  const courseRequest = new CourseRequest(await req.json());
+  courseRequest.Validate();
 
-  console.log("Request: " + JSON.stringify(subjectRequest));
+  console.log("Request: " + JSON.stringify(courseRequest));
 
   // Initialize new OpenAI API client
-  const openai = new OpenAIApi(config);
-
-  // Create a completion
-  const completion = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: prompts.system1 },
-      { role: "user", content: prompts.user1 },
-      { role: "assistant", content: prompts.assistant1 },
-      { role: "user", content: prompts.user1error },
-      { role: "assistant", content: prompts.assistant1error },
-      { role: "user", content: newUserMessage },
-    ],
-    max_tokens: subjectRequest.max_tokens ?? request.defaultMaxTokens,
-    temperature: subjectRequest.temperature ?? request.defaultTemperature,
-  });
-
-  // Parse the completion response
-  const message: string = completion.data.choices[0].message!.content;
-  console.log("Response: " + message);
-  const assistantResponse: assistant.AssistantResponse = JSON.parse(message);
-  assistant.ValidateAssistantResponse(assistantResponse, subjectRequest.section_count ?? request.defaultSectionCount);
-
-  const subjectResponse: response.SubjectResponse =
-    response.MapAssistantResponseToSubjectResponse(assistantResponse);
+  const openAIClient = new OpenAIClient();
+  var courseOutline = await openAIClient.createCourseOutline(courseRequest);
 
   // Initialize Supabase client
-  // const supabase = getSupabaseClient(req);
+  const supabase = httpService.getSupabaseClient(req);
+  // Get logged in user
+  const user = await supabase.auth.getUser();
 
-  // const courseDao = new CourseDao(supabase);
+  // Insert course and sections into db
+  const courseDao = new CourseDao(supabase);
+  courseOutline.Course.userId = user.data.user?.id;
+  const insertedCourse = await courseDao.insertCourse(courseOutline.Course);
 
-  // Return a response with the parsed course object
-  //return subjectResponse;
-  return new Response(JSON.stringify(subjectResponse), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
+  courseOutline.Sections.forEach((section) => {
+    section.userId = user.data.user?.id;
+    section.courseId = insertedCourse.data?.id;
   });
+  const insertedSections = await courseDao.insertSections(courseOutline.Sections);
+
+  // Map internal model to public model
+  const courseOutlineResponse: ICourseOutline = {
+    Course: {
+      title: insertedCourse.data?.title ?? "Title undefined",
+      description: insertedCourse.data?.description ?? "Description undefined",
+    },
+    Sections:
+      insertedSections.data?.map((section) => {
+        const mappedSection: ISection = {
+          id: section.id,
+          name: section.name,
+          description: section.description,
+          sectionOrder: section.section_order,
+          content: section.content,
+        };
+        return mappedSection;
+      }) ?? [],
+  };
+
+  return courseOutlineResponse;
 });
 
 serve((req) => httpService.handle(req));
