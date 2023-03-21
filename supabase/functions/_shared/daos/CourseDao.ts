@@ -31,7 +31,17 @@ export class CourseDao {
   async insertSections(sections: ISection[]): Promise<PostgrestResponse<Database['public']['Tables']['section']['Row']>> {
     return await this.supabase
       .from("section")
-      .insert(sections)
-      .select();
+      .insert(sections.map((section) => {
+        return {
+          name: section.name,
+          description: section.description,
+          section_order: section.sectionOrder,
+          content: section.content,
+          user_id: section.userId,
+          course_id: section.courseId,
+        }
+      }))
+      .select()
+      .returns()
   }
 }

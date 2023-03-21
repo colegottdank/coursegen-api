@@ -36,12 +36,13 @@ export class OpenAIClient {
       temperature: courseRequest.temperature ?? defaultTemperature,
     });
 
-    const courseOutlineResponse = new CourseOutlineResponse(completion.data.choices[0].message!);
+    const courseOutlineResponse = new CourseOutlineResponse(completion.data.choices[0].message!.content);
     courseOutlineResponse.validate(courseRequest.section_count ?? defaultSectionCount);
 
     const courseOutline: ICourseOutline = {
       Course: {
         title: courseOutlineResponse.response.data.course.name,
+        description: "Description undefined"
       },
       Sections: courseOutlineResponse.response.data.course.sections.map((section, index) => {
         const mappedSection: ISection = {
@@ -55,6 +56,4 @@ export class OpenAIClient {
 
     return courseOutline;
   }
-
-  
 }
