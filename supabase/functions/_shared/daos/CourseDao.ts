@@ -17,15 +17,6 @@ export class CourseDao {
       .select()
       .limit(1)
       .single();
-
-    // course.description = insertedCourse.data?.description;
-    // course.title = insertedCourse.data?.title;
-    // course.userId = 
-    // course.id = insertedCourse.data?.id;
-    // course.createdAt = insertedCourse.data?.created_at;
-    // course.updatedAt = insertedCourse.data?.updated_at;
-
-    // return insertedCourse;
   }
 
   async insertSections(sections: ISection[]): Promise<PostgrestResponse<Database['public']['Tables']['section']['Row']>> {

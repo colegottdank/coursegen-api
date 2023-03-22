@@ -7,14 +7,10 @@ import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { ISection } from "../_shared/models/public/ISection.ts";
 
-console.log("OpenAI Function Up!");
-
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
   const courseRequest = new CourseRequest(await req.json());
   courseRequest.Validate();
-
-  console.log("Request: " + JSON.stringify(courseRequest));
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
