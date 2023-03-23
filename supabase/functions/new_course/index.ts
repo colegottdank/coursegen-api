@@ -16,7 +16,7 @@ const httpService = new HttpService(async (req: Request) => {
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutline(courseRequest);
 
-  console.log(courseOutline.Course, courseOutline.Sections.map((section) => section.name));
+  console.log(courseOutline.Course, courseOutline.Sections.map((section) => section.title));
 
   // Initialize Supabase client
   const supabase = httpService.getSupabaseClient(req);
@@ -34,22 +34,25 @@ const httpService = new HttpService(async (req: Request) => {
     section.userId = user.data.user?.id;
     section.courseId = insertedCourse.data?.id;
   });
-  console.log("Pre inserted sections: ", courseOutline.Sections.map((section) => section.name));
+  console.log("Pre inserted sections: ", courseOutline.Sections.map((section) => section.title));
   const insertedSections = await courseDao.insertSections(courseOutline.Sections);
 
   console.log("insertedCourse: ", insertedCourse)
-  console.log("insertedSection: ", insertedSections.data?.map((section) => section.name))
+  console.log("insertedSection: ", insertedSections.data?.map((section) => section.title))
   // Map internal model to public model
   const courseOutlineResponse: ICourseOutline = {
     Course: {
+      courseKey: insertedCourse.data?.key ?? "Key undefined",
       title: insertedCourse.data?.title ?? "Title undefined",
+      dates: insertedCourse.data?.dates ?? "Dates undefined",
       description: insertedCourse.data?.description ?? "Description undefined",
     },
     Sections:
       insertedSections.data?.map((section) => {
         const mappedSection: ISection = {
           id: section.id,
-          name: section.name,
+          title: section.title,
+          dates: section.dates ?? "Dates undefined",
           description: section.description,
           sectionOrder: section.section_order,
           content: section.content,

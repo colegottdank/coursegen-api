@@ -1,10 +1,11 @@
 export interface ISection {
     id?: number;
-    name: string;
+    title: string;
     description: string;
-    content?: string | null;
-    courseId?: number | null;
-    parentId?: number | null;
+    dates?: string;
+    content?: string;
+    courseId?: number;
+    parentId?: number;
     sectionOrder: number;
     userId?: string;
     createdAt?: Date;

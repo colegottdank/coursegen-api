@@ -49,7 +49,12 @@ Setup this jawn locally
    ```
 
 # Extra
-- Generate types
+- Generate types from Supabase directory
    ```sh
-   supabase gen types typescript --local > lib/database.types.ts
+   supabase gen types typescript --local > supabase/functions/_shared/database.types.ts
    ```
+
+- Generate db diff
+  ```sh
+  supabase db diff -f name_of_change_add
+  ```

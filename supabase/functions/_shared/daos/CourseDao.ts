@@ -12,6 +12,7 @@ export class CourseDao {
       .insert({
         description: course.description,
         title: course.title,
+        dates: course.dates,
         user_id: course.userId,
       })
       .select()
@@ -24,8 +25,9 @@ export class CourseDao {
       .from("section")
       .insert(sections.map((section) => {
         return {
-          name: section.name,
+          title: section.title,
           description: section.description,
+          dates: section.dates,
           section_order: section.sectionOrder,
           content: section.content,
           user_id: section.userId,

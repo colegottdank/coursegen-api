@@ -12,14 +12,16 @@ export interface ICourseOutlineResponse {
 }
 
 export interface ICourse {
-  name: string;
+  title: string;
+  description: string;
+  dates?: string;
   sections: ICourseSection[];
 }
 
 export interface ICourseSection {
-  name: string;
+  title: string;
   description: string;
-  date?: string;
+  dates?: string;
 }
 
 export class CourseOutlineResponse {
@@ -35,14 +37,20 @@ export class CourseOutlineResponse {
     }
 
     const course = this.response.data.course;
-    if (!course.name || course.name.length > 100) {
+    if (!course.title || course.title.length > 100) {
       throw new BadRequestError("Course name must not be null and less than 100 characters");
     }
     if (course.sections.length !== sectionCount) {
       throw new BadRequestError(`Number of course sections must match requested section count (${sectionCount})`);
     }
+    if (course.description.length > 300) {
+      throw new BadRequestError("Course description must be less than 300 characters");
+    }
+    if (course.dates != null && course.dates.length > 50) {
+      throw new BadRequestError("Course dates must be less than 50 characters");
+    }
     course.sections.forEach((section) => {
-      if (!section.name || section.name.length > 100) {
+      if (!section.title || section.title.length > 100) {
         throw new BadRequestError("Section name must not be null and less than 100 characters");
       }
       if (!section.description) {
@@ -51,8 +59,8 @@ export class CourseOutlineResponse {
       if (section.description.length > 300) {
         throw new BadRequestError("Section description must be less than 300 characters");
       }
-      if (section.date && isNaN(Date.parse(section.date))) {
-        throw new BadRequestError("Section date must be a valid date");
+      if (section.dates != null && section.dates.length > 50) {
+        throw new BadRequestError("Section dates must be less than 50 characters");
       }
     });
   }

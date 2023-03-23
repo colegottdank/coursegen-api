@@ -41,13 +41,15 @@ export class OpenAIClient {
 
     const courseOutline: ICourseOutline = {
       Course: {
-        title: courseOutlineResponse.response.data.course.name,
-        description: "Description undefined"
+        title: courseOutlineResponse.response.data.course.title,
+        description: courseOutlineResponse.response.data.course.description,
+        dates: courseOutlineResponse.response.data.course.dates
       },
       Sections: courseOutlineResponse.response.data.course.sections.map((section, index) => {
         const mappedSection: ISection = {
-          name: section.name,
+          title: section.title,
           description: section.description,
+          dates: section.dates,
           sectionOrder: index + 1
         }
         return mappedSection;

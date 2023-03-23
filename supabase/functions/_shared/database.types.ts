@@ -37,49 +37,55 @@ export interface Database {
       course: {
         Row: {
           created_at: string
+          dates: string | null
           description: string
           id: number
+          key: string
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          dates?: string | null
           description: string
           id?: number
+          key?: string
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          dates?: string | null
           description?: string
           id?: number
+          key?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
       }
-      profiles: {
+      profile: {
         Row: {
           first_name: string | null
           id: string
           last_name: string | null
-          updated_at: string | null
+          updated_at: string
           username: string | null
         }
         Insert: {
           first_name?: string | null
           id: string
           last_name?: string | null
-          updated_at?: string | null
+          updated_at?: string
           username?: string | null
         }
         Update: {
           first_name?: string | null
           id?: string
           last_name?: string | null
-          updated_at?: string | null
+          updated_at?: string
           username?: string | null
         }
       }
@@ -88,11 +94,12 @@ export interface Database {
           content: string | null
           course_id: number | null
           created_at: string
+          dates: string | null
           description: string
           id: number
-          name: string
           parent_id: number | null
           section_order: number
+          title: string
           updated_at: string
           user_id: string
         }
@@ -100,11 +107,12 @@ export interface Database {
           content?: string | null
           course_id?: number | null
           created_at?: string
+          dates?: string | null
           description: string
           id?: number
-          name: string
           parent_id?: number | null
           section_order: number
+          title: string
           updated_at?: string
           user_id: string
         }
@@ -112,11 +120,12 @@ export interface Database {
           content?: string | null
           course_id?: number | null
           created_at?: string
+          dates?: string | null
           description?: string
           id?: number
-          name?: string
           parent_id?: number | null
           section_order?: number
+          title?: string
           updated_at?: string
           user_id?: string
         }
