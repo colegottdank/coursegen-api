@@ -25,20 +25,15 @@ const httpService = new HttpService(async (req: Request) => {
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
-  console.log("User: ", user);
   courseOutline.Course.userId = user.data.user?.id;
-  console.log("Pre inserted course: ", courseOutline.Course)
   const insertedCourse = await courseDao.insertCourse(courseOutline.Course);
 
   courseOutline.Sections.forEach((section) => {
     section.userId = user.data.user?.id;
-    section.courseId = insertedCourse.data?.id;
+    section.courseKey = insertedCourse.data?.key;
   });
-  console.log("Pre inserted sections: ", courseOutline.Sections.map((section) => section.title));
   const insertedSections = await courseDao.insertSections(courseOutline.Sections);
 
-  console.log("insertedCourse: ", insertedCourse)
-  console.log("insertedSection: ", insertedSections.data?.map((section) => section.title))
   // Map internal model to public model
   const courseOutlineResponse: ICourseOutline = {
     Course: {
@@ -56,6 +51,7 @@ const httpService = new HttpService(async (req: Request) => {
           description: section.description,
           sectionOrder: section.section_order,
           content: section.content,
+          path: section.path
         };
         return mappedSection;
       }) ?? [],

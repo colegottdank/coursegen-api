@@ -50,7 +50,8 @@ export class OpenAIClient {
           title: section.title,
           description: section.description,
           dates: section.dates,
-          sectionOrder: index + 1
+          sectionOrder: index + 1,
+          path: (index + 1).toString()
         }
         return mappedSection;
       })

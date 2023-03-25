@@ -31,7 +31,8 @@ export class CourseDao {
           section_order: section.sectionOrder,
           content: section.content,
           user_id: section.userId,
-          course_id: section.courseId,
+          course_key: section.courseKey,
+          path: section.path
         }
       }))
       .select()

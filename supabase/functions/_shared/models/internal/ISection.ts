@@ -4,9 +4,10 @@ export interface ISection {
     description: string;
     dates?: string;
     content?: string;
-    courseId?: number;
+    courseKey?: string;
     parentId?: number;
     sectionOrder: number;
+    path: string;
     userId?: string;
     createdAt?: Date;
     updatedAt?: Date;

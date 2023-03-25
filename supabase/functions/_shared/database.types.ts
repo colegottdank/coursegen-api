@@ -39,7 +39,6 @@ export interface Database {
           created_at: string
           dates: string | null
           description: string
-          id: number
           key: string
           title: string
           updated_at: string
@@ -49,7 +48,6 @@ export interface Database {
           created_at?: string
           dates?: string | null
           description: string
-          id?: number
           key?: string
           title: string
           updated_at?: string
@@ -59,7 +57,6 @@ export interface Database {
           created_at?: string
           dates?: string | null
           description?: string
-          id?: number
           key?: string
           title?: string
           updated_at?: string
@@ -92,12 +89,13 @@ export interface Database {
       section: {
         Row: {
           content: string | null
-          course_id: number | null
+          course_key: string | null
           created_at: string
           dates: string | null
           description: string
           id: number
           parent_id: number | null
+          path: string
           section_order: number
           title: string
           updated_at: string
@@ -105,12 +103,13 @@ export interface Database {
         }
         Insert: {
           content?: string | null
-          course_id?: number | null
+          course_key?: string | null
           created_at?: string
           dates?: string | null
           description: string
           id?: number
           parent_id?: number | null
+          path: string
           section_order: number
           title: string
           updated_at?: string
@@ -118,12 +117,13 @@ export interface Database {
         }
         Update: {
           content?: string | null
-          course_id?: number | null
+          course_key?: string | null
           created_at?: string
           dates?: string | null
           description?: string
           id?: number
           parent_id?: number | null
+          path?: string
           section_order?: number
           title?: string
           updated_at?: string
