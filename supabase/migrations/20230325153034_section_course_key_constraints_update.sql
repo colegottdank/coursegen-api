@@ -1,8 +1,10 @@
+alter table "public"."section" drop constraint "section_course_key_fkey";
+
+alter table "public"."section" drop column "course_key";
+
 alter table "public"."course" drop constraint "UX_Course_Key";
 
 alter table "public"."course" drop constraint "UX_Course_UserId_Title";
-
-alter table "public"."section" drop constraint "section_course_key_fkey";
 
 alter table "public"."course" drop constraint "course_pkey";
 
@@ -16,7 +18,6 @@ alter table "public"."course" drop column "key";
 
 alter table "public"."course" add column "id" uuid not null default uuid_generate_v4();
 
-alter table "public"."section" drop column "course_key";
 
 alter table "public"."section" drop column "section_order";
 
