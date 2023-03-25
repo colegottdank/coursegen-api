@@ -4,7 +4,6 @@ export interface ISection {
     description: string;
     dates?: string;
     content?: string | null;
-    sectionOrder: number;
     path: string;
     createdAt?: Date;
     updatedAt?: Date;

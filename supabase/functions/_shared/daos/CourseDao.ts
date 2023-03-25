@@ -28,10 +28,9 @@ export class CourseDao {
           title: section.title,
           description: section.description,
           dates: section.dates,
-          section_order: section.sectionOrder,
           content: section.content,
           user_id: section.userId,
-          course_key: section.courseKey,
+          course_id: section.courseId,
           path: section.path
         }
       }))

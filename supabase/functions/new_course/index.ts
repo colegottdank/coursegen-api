@@ -30,14 +30,14 @@ const httpService = new HttpService(async (req: Request) => {
 
   courseOutline.Sections.forEach((section) => {
     section.userId = user.data.user?.id;
-    section.courseKey = insertedCourse.data?.key;
+    section.courseId = insertedCourse.data?.id;
   });
   const insertedSections = await courseDao.insertSections(courseOutline.Sections);
 
   // Map internal model to public model
   const courseOutlineResponse: ICourseOutline = {
     Course: {
-      courseKey: insertedCourse.data?.key ?? "Key undefined",
+      courseId: insertedCourse.data?.id ?? "Id undefined",
       title: insertedCourse.data?.title ?? "Title undefined",
       dates: insertedCourse.data?.dates ?? "Dates undefined",
       description: insertedCourse.data?.description ?? "Description undefined",
@@ -49,7 +49,6 @@ const httpService = new HttpService(async (req: Request) => {
           title: section.title,
           dates: section.dates ?? "Dates undefined",
           description: section.description,
-          sectionOrder: section.section_order,
           content: section.content,
           path: section.path
         };
