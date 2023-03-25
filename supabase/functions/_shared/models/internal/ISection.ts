@@ -4,7 +4,7 @@ export interface ISection {
     description: string;
     dates?: string;
     content?: string;
-    courseKey?: string;
+    courseId?: string;
     parentId?: number;
     sectionOrder: number;
     path: string;

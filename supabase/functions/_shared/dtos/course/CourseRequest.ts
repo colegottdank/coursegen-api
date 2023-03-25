@@ -20,8 +20,8 @@ export class CourseRequest implements ICourseRequest {
   }
 
   Validate(): void {
-    if (!this.subject || this.subject.length > 50) {
-      throw new BadRequestError("Subject must be not null and less than 50 characters");
+    if (!this.subject || this.subject.length > 200) {
+      throw new BadRequestError("Subject must be not null and less than 200 characters");
     }
     if (this.proficiency && this.proficiency.length > 50) {
       throw new BadRequestError("Proficiency must be less than 50 characters");

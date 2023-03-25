@@ -31,6 +31,7 @@ export class OpenAIClient {
 
     const completion = await this.openai.createChatCompletion({
       model: "gpt-3.5-turbo",
+      // model: "gpt-4",
       messages: messages,
       max_tokens: courseRequest.max_tokens ?? defaultMaxTokens,
       temperature: courseRequest.temperature ?? defaultTemperature,
@@ -51,7 +52,7 @@ export class OpenAIClient {
           description: section.description,
           dates: section.dates,
           sectionOrder: index + 1,
-          path: (index + 1).toString()
+          path: (index + 1).toString().padStart(2, "0")
         }
         return mappedSection;
       })
