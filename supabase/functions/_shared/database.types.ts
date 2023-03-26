@@ -134,8 +134,8 @@ export interface Database {
     Functions: {
       insert_course_and_sections: {
         Args: {
-          course_data: Json
-          section_data: Json
+          course_data: string
+          section_data: string
         }
         Returns: string
       }

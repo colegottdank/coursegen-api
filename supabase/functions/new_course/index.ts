@@ -7,6 +7,7 @@ import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { ISection } from "../_shared/models/public/ISection.ts";
 import { SectionDao } from "../_shared/daos/SectionDao.ts";
+import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
@@ -17,16 +18,19 @@ const httpService = new HttpService(async (req: Request) => {
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutline(courseRequest);
 
-  console.log(courseOutline.Course, courseOutline.Sections.map((section) => section.title));
-
   // Initialize Supabase client
   const supabase = httpService.getSupabaseClient(req);
   // Get logged in user
   const user = await supabase.auth.getUser();
 
+  if(!user)
+  {
+    console.log("User not found");
+    throw new SupabaseError("404", "User not found");
+  }
+
   courseOutline.Course.userId = user.data.user?.id;
-  console.log( JSON.stringify(courseOutline.Course));
-  console.log( JSON.stringify(courseOutline.Sections));
+
   const { data, error } = await supabase.rpc("insert_course_and_sections", {
     course_data: JSON.stringify(courseOutline.Course),
     section_data: JSON.stringify(courseOutline.Sections)
@@ -47,8 +51,6 @@ const httpService = new HttpService(async (req: Request) => {
   });
 
   //await supabase.rpc('insert_course_and_sections', {});
-
-  
 
   const sectionDao = new SectionDao(supabase);
   const insertedSections = await sectionDao.insertSections(courseOutline.Sections);

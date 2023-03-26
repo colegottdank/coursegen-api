@@ -1,32 +1,29 @@
 CREATE OR REPLACE FUNCTION insert_course_and_sections(
-  course_data JSONB,
-  section_data JSONB
+  course_data TEXT,
+  section_data TEXT
 ) RETURNS TEXT AS $$
 DECLARE
   inserted_course_id UUID;
   section record;
+  course_json jsonb;
+  section_json jsonb;
 BEGIN
-  RAISE LOG 'TEST';
-  RAISE LOG 'Course data - user_id: %s, title: %s, description: %s, dates: %s. Section data - title: %s, description: %s, dates: %s',
-    (course_data ->> 'userId')::UUID,
-    (course_data ->> 'title')::TEXT,
-    (course_data ->> 'description')::TEXT,
-    (course_data ->> 'dates')::TEXT,
-    (section_data ->> 'title')::TEXT,
-    (section_data ->> 'description')::TEXT,
-    (section_data ->> 'dates')::TEXT;
+  course_json := to_json(course_data);
+  section_json := to_json(section_data);
+
+  RAISE LOG 'title %', course_json ->> 'title';
 
   INSERT INTO course (title, description, dates, user_id)
   VALUES (
-    (course_data ->> 'title')::TEXT,
-    (course_data ->> 'description')::TEXT,
-    (course_data ->> 'dates')::TEXT,
+    course_data ->> 'title',
+    course_data ->> 'description',
+    course_data ->> 'dates',
     (course_data ->> 'userId')::UUID
   )
   RETURNING id INTO inserted_course_id;
 
   FOR section IN
-    SELECT jsonb_array_elements_text(section_data)::jsonb AS section
+    SELECT json_array_elements_text(section_data)::jsonb AS section
   LOOP
     INSERT INTO section (title, description, dates, content, user_id, course_id, path)
     VALUES (
