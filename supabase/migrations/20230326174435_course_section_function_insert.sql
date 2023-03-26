@@ -6,8 +6,15 @@ DECLARE
   inserted_course_id UUID;
   section record;
 BEGIN
-  RAISE LOG 'course_data: %', course_data;
-  RAISE LOG 'section_data: %', section_data;
+  RAISE LOG 'Course data - user_id: %s, title: %s, description: %s, dates: %s. Section data - title: %s, description: %s, dates: %s',
+    (course_data ->> 'userId')::UUID,
+    (course_data ->> 'title')::TEXT,
+    (course_data ->> 'description')::TEXT,
+    (course_data ->> 'dates')::TEXT,
+    (section_data ->> 'title')::TEXT,
+    (section_data ->> 'description')::TEXT,
+    (section_data ->> 'dates')::TEXT;
+
   INSERT INTO course (title, description, dates, user_id)
   VALUES (
     (course_data ->> 'title')::TEXT,
