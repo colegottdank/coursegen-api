@@ -17,7 +17,6 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutline(courseRequest);
-  //
   console.log(courseOutline.Course, courseOutline.Sections.map((section) => section.title));
 
   // Initialize Supabase client
