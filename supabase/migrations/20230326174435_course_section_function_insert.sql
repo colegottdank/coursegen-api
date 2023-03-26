@@ -6,6 +6,7 @@ DECLARE
   inserted_course_id UUID;
   section record;
 BEGIN
+  RAISE LOG 'TEST';
   RAISE LOG 'Course data - user_id: %s, title: %s, description: %s, dates: %s. Section data - title: %s, description: %s, dates: %s',
     (course_data ->> 'userId')::UUID,
     (course_data ->> 'title')::TEXT,
