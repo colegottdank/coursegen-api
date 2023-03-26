@@ -6,8 +6,8 @@ DECLARE
   inserted_course_id UUID;
   section record;
 BEGIN
-  RAISE NOTICE 'course_data: %', course_data;
-    RAISE NOTICE 'section_data: %', section_data;
+  RAISE LOG 'course_data: %', course_data;
+  RAISE LOG 'section_data: %', section_data;
   INSERT INTO course (title, description, dates, user_id)
   VALUES (
     (course_data ->> 'title')::TEXT,
