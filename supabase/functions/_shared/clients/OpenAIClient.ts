@@ -12,6 +12,7 @@ export class OpenAIClient {
 
   constructor() {
     this.config = new Configuration({ apiKey: Deno.env.get("OPENAI_API_KEY") });
+    console.log("OpenAI API Key: ", Deno.env.get("OPENAI_API_KEY"));
     this.openai = new OpenAIApi(this.config);
   }
 
