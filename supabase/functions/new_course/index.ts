@@ -9,10 +9,8 @@ import { ISection } from "../_shared/models/public/ISection.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
-  console.log("Here")
   const courseRequest = new CourseRequest(await req.json());
   courseRequest.Validate();
-  console.log("Validated")
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
