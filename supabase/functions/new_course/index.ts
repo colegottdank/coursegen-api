@@ -6,6 +6,7 @@ import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { ISection } from "../_shared/models/public/ISection.ts";
+import { SectionDao } from "../_shared/daos/SectionDao.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
@@ -30,26 +31,28 @@ const httpService = new HttpService(async (req: Request) => {
 
   courseOutline.Sections.forEach((section) => {
     section.userId = user.data.user?.id;
-    section.courseId = insertedCourse.data?.id;
+    section.courseId = insertedCourse?.id;
   });
-  const insertedSections = await courseDao.insertSections(courseOutline.Sections);
+
+  const sectionDao = new SectionDao(supabase);
+  const insertedSections = await sectionDao.insertSections(courseOutline.Sections);
 
   // Map internal model to public model
   const courseOutlineResponse: ICourseOutline = {
     Course: {
-      courseId: insertedCourse.data?.id ?? "Id undefined",
-      title: insertedCourse.data?.title ?? "Title undefined",
-      dates: insertedCourse.data?.dates ?? "Dates undefined",
-      description: insertedCourse.data?.description ?? "Description undefined",
+      courseId: insertedCourse.id,
+      title: insertedCourse.title,
+      dates: insertedCourse.dates ?? undefined,
+      description: insertedCourse.description,
     },
     Sections:
-      insertedSections.data?.map((section) => {
+      insertedSections.map((section) => {
         const mappedSection: ISection = {
           id: section.id,
           title: section.title,
-          dates: section.dates ?? "Dates undefined",
+          dates: section.dates ?? undefined,
           description: section.description,
-          content: section.content,
+          content: section.content ?? undefined,
           path: section.path
         };
         return mappedSection;

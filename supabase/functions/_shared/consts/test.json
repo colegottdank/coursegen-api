@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "data": {
+    "course": {
+      "title": "The Space Race: A Historic Journey",
+      "dates": "1945-1975",
+      "description": "Explore the history of the Space Race, the fascinating competition between the US and USSR to achieve spaceflight supremacy.",
+      "sections": [
+        {
+          "title": "The Early Years",
+          "dates": "1945-1961",
+          "description": "Learn about the origins of the Space Race, from the development of rocket technology to the first human-made satellites.",
+          "subsections": [
+            {
+              "title": "Rocket Development",
+              "dates": "1945-1957",
+              "description": "Dive into the beginnings of rocket technology, from early experiments to the first successful launches."
+            },
+            {
+              "title": "First Satellites",
+              "dates": "1957-1961",
+              "description": "Explore the launch of the first satellites, including Sputnik, and their impact on the Space Race."
+            }
+          ]
+        },
+        {
+          "title": "Moon Landing and Beyond",
+          "dates": "1961-1975",
+          "description": "Discover the climax of the Space Race, including the groundbreaking Apollo Moon landing and the era of cooperation that followed.",
+          "subsections": [
+            {
+              "title": "The Apollo Program",
+              "dates": "1961-1969",
+              "description": "Learn about the ambitious Apollo program, its successes and failures, and the historic Moon landing."
+            },
+            {
+              "title": "Space Cooperation",
+              "dates": "1969-1975",
+              "description": "Examine the shift toward cooperation in space, including joint missions and the development of international space projects."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

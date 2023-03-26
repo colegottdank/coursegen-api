@@ -1,13 +1,13 @@
-import { PostgrestResponse, PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../database.types.ts';
+import { PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseError } from "../consts/errors/SupabaseError.ts";
+import { Database } from "../database.types.ts";
 import { ICourse } from "../models/internal/ICourse.ts";
-import { ISection } from "../models/internal/ISection.ts";
 
 export class CourseDao {
   constructor(private supabase: SupabaseClient) {}
 
-  async insertCourse(course: ICourse): Promise<PostgrestSingleResponse<Database['public']['Tables']['course']['Row']>> {
-    return await this.supabase
+  async insertCourse(course: ICourse): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+    const {data, error} = await this.supabase
       .from("course")
       .insert({
         description: course.description,
@@ -16,25 +16,17 @@ export class CourseDao {
         user_id: course.userId,
       })
       .select()
-      .limit(1)
+      .returns<Database["public"]["Tables"]["course"]["Row"]>()
       .single();
-  }
 
-  async insertSections(sections: ISection[]): Promise<PostgrestResponse<Database['public']['Tables']['section']['Row']>> {
-    return await this.supabase
-      .from("section")
-      .insert(sections.map((section) => {
-        return {
-          title: section.title,
-          description: section.description,
-          dates: section.dates,
-          content: section.content,
-          user_id: section.userId,
-          course_id: section.courseId,
-          path: section.path
-        }
-      }))
-      .select()
-      .returns()
+    if(error) {
+      throw new SupabaseError(error.code, `Failed to insert course`);
+    } 
+
+    if(!data) {
+      throw new SupabaseError("404", `Course not found`);
+    }
+
+    return data;
   }
 }

@@ -3,7 +3,7 @@ name: Deploy Migrations to Staging
 on:
   push:
     branches:
-      - main
+      - section_content
   workflow_dispatch:
 
 jobs:
@@ -26,3 +26,4 @@ jobs:
           supabase link --project-ref $STAGING_PROJECT_ID
           supabase db push
           supabase functions deploy new_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+          supabase functions deploy section_content --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
