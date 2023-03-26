@@ -93,17 +93,17 @@ export class OpenAIClient {
     let completion: any = undefined;
     try {
       completion = await this.openai.createChatCompletion({
-        // model: "gpt-3.5-turbo",
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
+        // model: "gpt-4",
         messages: messages,
         max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
-        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+        temperature: sectionContentRequest.temperature ?? defaultTemperature
       },
       {
         timeout: 60000
       });
     } catch (error) {
-      if (error.response) {
+      if (error?.response) {
         console.log("OpenAI error", error.response.data.error.message)
         throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
       } else {
