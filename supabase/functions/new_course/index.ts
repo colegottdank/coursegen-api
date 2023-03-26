@@ -12,6 +12,7 @@ const httpService = new HttpService(async (req: Request) => {
   console.log("Here")
   const courseRequest = new CourseRequest(await req.json());
   courseRequest.Validate();
+  console.log("Validated")
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
