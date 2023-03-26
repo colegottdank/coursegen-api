@@ -29,6 +29,7 @@ export class OpenAIClient {
       { role: "user", content: newUserMessage },
     ]
 
+    console.log("Preparing to call OpenAI API");
     const completion = await this.openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       // model: "gpt-4",
@@ -36,6 +37,7 @@ export class OpenAIClient {
       max_tokens: courseRequest.max_tokens ?? defaultMaxTokens,
       temperature: courseRequest.temperature ?? defaultTemperature,
     });
+    console.log("OpenAI API call complete");
 
     const courseOutlineResponse = new CourseOutlineResponse(completion.data.choices[0].message!.content);
     courseOutlineResponse.validate(courseRequest.section_count ?? defaultSectionCount);
