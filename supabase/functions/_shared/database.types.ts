@@ -132,7 +132,13 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_course_and_sections: {
+        Args: {
+          course_data: Json
+          section_data: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

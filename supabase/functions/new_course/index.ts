@@ -24,6 +24,18 @@ const httpService = new HttpService(async (req: Request) => {
   // Get logged in user
   const user = await supabase.auth.getUser();
 
+  courseOutline.Course.userId = user.data.user?.id;
+  console.log( JSON.stringify(courseOutline.Course));
+  console.log( JSON.stringify(courseOutline.Sections));
+  const { data, error } = await supabase.rpc("insert_course_and_sections", {
+    course_data: JSON.stringify(courseOutline.Course),
+    section_data: JSON.stringify(courseOutline.Sections)
+  });
+
+  console.log(data, error);
+
+  return "Hello World!";
+
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
   courseOutline.Course.userId = user.data.user?.id;
@@ -33,6 +45,10 @@ const httpService = new HttpService(async (req: Request) => {
     section.userId = user.data.user?.id;
     section.courseId = insertedCourse?.id;
   });
+
+  //await supabase.rpc('insert_course_and_sections', {});
+
+  
 
   const sectionDao = new SectionDao(supabase);
   const insertedSections = await sectionDao.insertSections(courseOutline.Sections);
