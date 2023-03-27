@@ -34,6 +34,7 @@ const httpService = new HttpService(async (req: Request) => {
   courseOutline.Course.userId = user.data.user?.id;
   const insertedCourse = await courseDao.insertCourse(courseOutline.Course);
 
+  // Set course id and userId on sections
   courseOutline.Sections.forEach((section) => {
     section.userId = user.data.user?.id;
     section.courseId = insertedCourse?.id;
