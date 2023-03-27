@@ -20,6 +20,7 @@ export class CourseDao {
       .single();
 
     if(error) {
+      console.log(error);
       throw new SupabaseError(error.code, `Failed to insert course`);
     } 
 

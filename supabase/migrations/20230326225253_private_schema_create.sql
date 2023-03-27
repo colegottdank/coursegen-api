@@ -1,13 +1,5 @@
-ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
-
-CREATE SCHEMA private;
-
 ALTER FUNCTION insert_course_and_sections
-SET SCHEMA private;
-
-GRANT EXECUTE ON FUNCTION private.insert_course_and_sections TO supabase_auth_admin;
-
-REVOKE ALL ON SCHEMA private FROM public;
+SET SCHEMA public;
 
 drop policy "Individual insert access" on "public"."profile";
 

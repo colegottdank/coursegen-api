@@ -1,6 +1,7 @@
 CREATE OR REPLACE FUNCTION insert_course_and_sections(
   course_data TEXT,
-  section_data TEXT
+  section_data TEXT,
+  user_id UUID
 ) RETURNS TEXT AS $$
 DECLARE
   inserted_course_id UUID;
@@ -16,7 +17,7 @@ BEGIN
     course_json ->> 'title',
     course_json ->> 'description',
     course_json ->> 'dates',
-    (course_json ->> 'userId')::UUID
+    user_id
   )
   RETURNING id INTO inserted_course_id;
 
@@ -29,7 +30,7 @@ BEGIN
       section ->> 'description',
       section ->> 'dates',
       section ->> 'content',
-      (course_json ->> 'userId')::UUID,
+      user_id,
       inserted_course_id,
       section ->> 'path'
     );

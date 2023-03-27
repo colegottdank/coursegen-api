@@ -136,6 +136,7 @@ export interface Database {
         Args: {
           course_data: string
           section_data: string
+          user_id: string
         }
         Returns: string
       }

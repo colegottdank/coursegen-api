@@ -21,24 +21,13 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize Supabase client
   const supabase = httpService.getSupabaseClient(req);
   // Get logged in user
-  const user = await supabase.auth.getUser();
+  const user = await supabase.auth.getUser(req.headers.get('Authorization')!.replace("Bearer ",""));
 
-  if(!user)
+  if(!user?.data?.user?.id)
   {
     console.log("User not found");
     throw new SupabaseError("404", "User not found");
   }
-
-  courseOutline.Course.userId = user.data.user?.id;
-
-  const { data, error } = await supabase.rpc("insert_course_and_sections", {
-    course_data: JSON.stringify(courseOutline.Course),
-    section_data: JSON.stringify(courseOutline.Sections)
-  });
-
-  console.log(data, error);
-
-  return "Hello World!";
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
@@ -49,8 +38,6 @@ const httpService = new HttpService(async (req: Request) => {
     section.userId = user.data.user?.id;
     section.courseId = insertedCourse?.id;
   });
-
-  //await supabase.rpc('insert_course_and_sections', {});
 
   const sectionDao = new SectionDao(supabase);
   const insertedSections = await sectionDao.insertSections(courseOutline.Sections);
