@@ -40,6 +40,7 @@ export interface Database {
           dates: string | null
           description: string
           id: string
+          search_text: string
           title: string
           updated_at: string
           user_id: string
@@ -49,6 +50,7 @@ export interface Database {
           dates?: string | null
           description: string
           id?: string
+          search_text: string
           title: string
           updated_at?: string
           user_id: string
@@ -58,6 +60,7 @@ export interface Database {
           dates?: string | null
           description?: string
           id?: string
+          search_text?: string
           title?: string
           updated_at?: string
           user_id?: string

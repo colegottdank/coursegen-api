@@ -6,7 +6,7 @@ import { ICourse } from "../models/internal/ICourse.ts";
 export class CourseDao {
   constructor(private supabase: SupabaseClient) {}
 
-  async insertCourse(course: ICourse): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+  async insertCourse(course: ICourse, search_text: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
     const {data, error} = await this.supabase
       .from("course")
       .insert({
@@ -14,6 +14,7 @@ export class CourseDao {
         title: course.title,
         dates: course.dates,
         user_id: course.userId,
+        search_text: search_text
       })
       .select()
       .returns<Database["public"]["Tables"]["course"]["Row"]>()
