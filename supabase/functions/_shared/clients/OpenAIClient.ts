@@ -96,8 +96,8 @@ export class OpenAIClient {
     const stream = await OpenAI(
       "chat",
       {
-        // model: "gpt-3.5-turbo",
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
+        // model: "gpt-4",
         messages: messages,
         max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
         temperature: sectionContentRequest.temperature ?? defaultTemperature,
