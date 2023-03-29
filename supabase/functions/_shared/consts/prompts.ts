@@ -18,13 +18,25 @@ export const course_outline_system2 = `As an AI, create course outlines for give
 
 
 
-export const section_content_system1 = `You're an AI model that generates detailed and lengthy content for a given section within the context of an existing course outline. Ensure the content is engaging, relevant, and accurate without repeating information from other sections. Return the content in JSON format. If the section is not recognized, return an appropriate error message and suggested corrections. Content (>= 2000 words & <= 3000 words)`;
+export const section_content_system1 = `You're an AI model that generates detailed and lengthy content for a given section within the context of an existing course outline. Ensure the content is engaging, relevant, and accurate without repeating information from other sections. Return the content in markdown format. If the section is not recognized, return an appropriate error message and suggested corrections. Content (>= 2000 words & <= 3000 words)`;
 
 export const section_content_user1 = `Section: The Early Years, Proficiency: Beginner`;
 
-export const section_content_assistant1 = `{"success": true, "data": {"content": "The Space Race's early years witnessed fierce competition between the Soviet Union and the United States in space exploration. The Soviet Union's launch of Sputnik 1 in 1957 marked the first human-made object to orbit Earth. In response, the United States established NASA and launched its first satellite, Explorer 1, in 1958. The competition intensified with milestones like Yuri Gagarin becoming the first human in space in 1961, followed by Alan Shepard, the first American in space, later that year. The early years laid the foundation for the subsequent milestones in the Space Race, such as the Moon Landing and the Post-Apollo Era." }}`;
-export const section_content_assistant1_2 = `{"success": true, "data": {"content": "The Space Race's early years witnessed fierce competition between the Soviet Union and the United States in space exploration. The Soviet Union's launch of Sputnik 1 in 1957 marked the first human-made object to orbit Earth. In response, the United States established NASA and launched its first satellite, Explorer 1, in 1958. The competition intensified with milestones like Yuri Gagarin becoming the first human in space in 1961, followed by Alan Shepard, the first American in space, later that year. The early years laid the foundation for the subsequent milestones in the Space Race, such as the Moon Landing and the Post-Apollo Era." }}`;
-// export const section_content_assistant1 = `{"success":true,"data":{"course":{"title":"The Space Race: A Historic Journey","dates":"1945-1975","description":"Explore the history of the Space Race, the fascinating competition between the US and USSR to achieve spaceflight supremacy.","sections":[{"title":"The Early Years","dates":"1945-1961","description":"Learn about the origins of the Space Race, from the development of rocket technology to the first human-made satellites.","subsections":[{"title":"Rocket Development","dates":"1945-1957","description":"Dive into the beginnings of rocket technology, from early experiments to the first successful launches."},{"title":"First Satellites","dates":"1957-1961","description":"Explore the launch of the first satellites, including Sputnik, and their impact on the Space Race."}]},{"title":"Moon Landing and Beyond","dates":"1961-1975","description":"Discover the climax of the Space Race, including the groundbreaking Apollo Moon landing and the era of cooperation that followed.","subsections":[{"title":"The Apollo Program","dates":"1961-1969","description":"Learn about the ambitious Apollo program, its successes and failures, and the historic Moon landing."},{"title":"Space Cooperation","dates":"1969-1975","description":"Examine the shift toward cooperation in space, including joint missions and the development of international space projects."}]}]}}}`;
+export const section_content_assistant1 = `# The Early Years of the Space Race
+
+The early years of the Space Race were marked by fierce competition between the Soviet Union and the United States in space exploration. 
+
+## Sputnik 1
+
+In 1957, the Soviet Union launched Sputnik 1, the first human-made object to orbit Earth. This event sent shockwaves around the world and served as a wakeup call for the United States.
+
+## NASA and Explorer 1
+
+In response to Sputnik 1, the United States established the National Aeronautics and Space Administration (NASA) and launched its first satellite, Explorer 1, in 1958.
+
+## First Humans in Space
+
+The competition intensified with milestones like Yuri Gagarin becoming the first human in space in 1961. Shortly after, Alan Shepard became the first American in space later that year.`;
 
 export const section_content_user2error = `Section: Sp4ce R4c3, Proficiency: Beginner`;
 

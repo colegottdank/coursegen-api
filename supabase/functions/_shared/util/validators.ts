@@ -1,4 +1,5 @@
 import { BadRequestError } from "../consts/errors/BadRequestError.ts";
+import { v4 as uuidv4, validate as uuidValidate } from "uuid";
 
 export function validateSubject(subject: string | undefined): void {
   if (!subject || subject.length > 200) {
@@ -40,6 +41,14 @@ export function validateSectionId(sectionId: number | undefined): void {
   }
 }
 
+export function validateSessionKey(sessionKey: string | undefined): void {
+  // validate session is a valid uuid
+  if(!uuidValidate(sessionKey)) {
+    console.log("SessionKey must be a valid UUID");
+    throw new BadRequestError("SessionKey must be a valid UUID");
+  }
+}
+
 // Export all validators in a single object
 export const validators = {
   validateSubject,
@@ -47,5 +56,6 @@ export const validators = {
   validateSectionCount,
   validateMaxTokens,
   validateTemperature,
-  validateSectionId
+  validateSectionId,
+  validateSessionKey
 };

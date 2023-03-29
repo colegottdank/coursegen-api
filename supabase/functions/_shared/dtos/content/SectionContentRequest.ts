@@ -6,6 +6,7 @@ export interface ISectionContentRequest {
     proficiency?: string;
     max_tokens?: number;
     temperature?: number;
+    session_key?: string;
 }
 
 export class SectionContentRequest implements ISectionContentRequest {
@@ -14,6 +15,7 @@ export class SectionContentRequest implements ISectionContentRequest {
     proficiency?: string;
     max_tokens?: number;
     temperature?: number;
+    session_key?: string;
 
     constructor(requestJson: string) {
         Object.assign(this, requestJson);
@@ -24,5 +26,6 @@ export class SectionContentRequest implements ISectionContentRequest {
         validators.validateProficiency(this.proficiency);
         validators.validateMaxTokens(this.max_tokens);
         validators.validateTemperature(this.temperature);
+        validators.validateSessionKey(this.session_key)
     }
 }

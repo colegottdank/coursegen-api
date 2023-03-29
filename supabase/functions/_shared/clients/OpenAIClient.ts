@@ -1,3 +1,4 @@
+import { SupabaseClient } from "@supabase/supabase-js";
 import { ICourseOutline } from "./../models/internal/ICourseOutline.ts";
 import { Configuration, OpenAIApi } from "openai";
 import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
@@ -8,6 +9,7 @@ import { ISection } from "../models/internal/ISection.ts";
 import { ISectionContentRequest } from "../dtos/content/SectionContentRequest.ts";
 import { OpenAIError } from "../consts/errors/OpenAIError.ts";
 import { SectionContentResponse } from "../dtos/content/SectionContentResponse.ts";
+import { OpenAI } from "@openai/streams";
 
 export class OpenAIClient {
   private openai: any;
@@ -76,6 +78,72 @@ export class OpenAIClient {
     return courseOutline;
   }
 
+  async createSectionContentStream(
+    sectionContentRequest: ISectionContentRequest,
+    supabase: SupabaseClient
+  ): Promise<string> {
+    const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
+      sectionContentRequest.proficiency ?? defaultProficiency
+    }`;
+
+    const messages = [
+      { role: "system", content: prompts.section_content_system1 },
+      { role: "user", content: prompts.section_content_user1 },
+      { role: "assistant", content: prompts.section_content_assistant1 },
+      { role: "user", content: newUserMessage },
+    ];
+
+    const stream = await OpenAI(
+      "chat",
+      {
+        // model: "gpt-3.5-turbo",
+        model: "gpt-4",
+        messages: messages,
+        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
+        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+      },
+      {
+        apiKey: Deno.env.get("OPENAI_APIKEY"),
+      }
+    );
+
+    const channel = supabase.channel(`section_content_${sectionContentRequest.session_key}`);
+
+    let subscribed = false;
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        subscribed = true;
+        console.log("Subscribed to channel");
+      } else if (status === "CLOSED") {
+        console.log(status);
+        console.log("Channel closed");
+      } else if (status == "TIMED_OUT") {
+        console.log(status);
+        console.log("Channel timed out");
+      } else if (status == "CHANNEL_ERROR") {
+        console.log(status);
+        console.log("Channel error");
+      }
+    });
+
+    const decoder = new TextDecoder("utf-8");
+    let content = "";
+    for await (const chunk of stream) {
+      const contentStr = decoder.decode(chunk);
+      const parsedData = JSON.parse(contentStr);
+      if (parsedData.content) {
+        const parsedContent = parsedData.content;
+        if (subscribed) {
+          console.log(parsedContent);
+          channel.send({ type: "broadcast", event: "section_content", parsedContent });
+        }
+        content += parsedContent;
+      }
+    }
+
+    return content;
+  }
+
   async createSectionContent(sectionContentRequest: ISectionContentRequest): Promise<string> {
     const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
       sectionContentRequest.proficiency ?? defaultProficiency
@@ -92,19 +160,21 @@ export class OpenAIClient {
 
     let completion: any = undefined;
     try {
-      completion = await this.openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        // model: "gpt-4",
-        messages: messages,
-        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
-        temperature: sectionContentRequest.temperature ?? defaultTemperature
-      },
-      {
-        timeout: 60000
-      });
+      completion = await this.openai.createChatCompletion(
+        {
+          model: "gpt-3.5-turbo",
+          // model: "gpt-4",
+          messages: messages,
+          max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
+          temperature: sectionContentRequest.temperature ?? defaultTemperature,
+        },
+        {
+          timeout: 60000,
+        }
+      );
     } catch (error) {
       if (error?.response) {
-        console.log("OpenAI error", error.response.data.error.message)
+        console.log("OpenAI error", error.response.data.error.message);
         throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
       } else {
         console.log("OpenAI error");
@@ -124,3 +194,7 @@ export class OpenAIClient {
     return sectionContentResponse.response.data.content;
   }
 }
+
+export const config = {
+  runtime: "edge",
+};

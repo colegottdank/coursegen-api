@@ -24,8 +24,7 @@ const httpService = new HttpService(async (req: Request) => {
   sectionContentRequest.title = section.title
 
   const openAIClient = new OpenAIClient();
-  const content = await openAIClient.createSectionContent(sectionContentRequest);
-  console.log("post call", content)
+  const content = await openAIClient.createSectionContentStream(sectionContentRequest, supabase);
 
   await sectionDao.updateSectionContentBySectionId(sectionContentRequest.section_id!, content);
 
