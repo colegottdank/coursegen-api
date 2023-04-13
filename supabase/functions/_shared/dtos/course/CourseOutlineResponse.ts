@@ -1,9 +1,10 @@
-import { BadRequestError } from "../../consts/errors/BadRequestError.ts";
+import { OpenAIInvalidResponseError } from "../../consts/errors/OpenAIInvalidResponseError.ts";
 
 export interface ICourseOutlineResponse {
   success: boolean;
   data: {
     course: ICourse;
+    sections: ICourseSection[];
   };
   error: {
     code: number;
@@ -15,7 +16,6 @@ export interface ICourse {
   title: string;
   description: string;
   dates?: string;
-  sections: ICourseSection[];
 }
 
 export interface ICourseSection {
@@ -31,36 +31,39 @@ export class CourseOutlineResponse {
     this.response = JSON.parse(json);
   }
 
-  validate(sectionCount: number): void {
+  validate(): void {
     if (!this.response.success) {
-      throw new BadRequestError(`${this.response.error?.message}`);
+      throw new OpenAIInvalidResponseError(`${this.response.error?.message}`);
     }
 
     const course = this.response.data.course;
-    if (!course.title || course.title.length > 100) {
-      throw new BadRequestError("Course name must not be null and less than 100 characters");
-    }
-    if (course.sections.length !== sectionCount) {
-      throw new BadRequestError(`Number of course sections must match requested section count (${sectionCount})`);
+    if (!course.title || course.title.length > 200) {
+      throw new OpenAIInvalidResponseError("Assistant course title must not be null and less than 200 characters");
     }
     if (course.description.length > 300) {
-      throw new BadRequestError("Course description must be less than 300 characters");
+      throw new OpenAIInvalidResponseError("Assistant course description must be less than 300 characters");
     }
     if (course.dates != null && course.dates.length > 50) {
-      throw new BadRequestError("Course dates must be less than 50 characters");
+      throw new OpenAIInvalidResponseError("Assistant course dates must be less than 50 characters");
     }
-    course.sections.forEach((section) => {
-      if (!section.title || section.title.length > 100) {
-        throw new BadRequestError("Section name must not be null and less than 100 characters");
+    
+    const sections = this.response.data.sections;
+    if(sections == null || sections.length == 0) {
+      throw new OpenAIInvalidResponseError("Assistant course must have at least one section")
+    }
+
+    sections.forEach((section) => {
+      if (!section.title || section.title.length > 200) {
+        throw new OpenAIInvalidResponseError("Assistant section title must not be null and less than 200 characters");
       }
       if (!section.description) {
-        throw new BadRequestError("Section description must not be null");
+        throw new OpenAIInvalidResponseError("Assistant section description must not be null");
       }
       if (section.description.length > 300) {
-        throw new BadRequestError("Section description must be less than 300 characters");
+        throw new OpenAIInvalidResponseError("Assistant section description must be less than 300 characters");
       }
       if (section.dates != null && section.dates.length > 50) {
-        throw new BadRequestError("Section dates must be less than 50 characters");
+        throw new OpenAIInvalidResponseError("Assistant section dates must be less than 50 characters");
       }
     });
   }

@@ -1,6 +1,7 @@
 import { corsHeaders } from './../consts/cors.ts';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from "../database.types.ts";
+import { SupabaseError } from "../consts/errors/SupabaseError.ts";
 
 interface IErrorResponse {
   error: {
@@ -36,14 +37,25 @@ export class HttpService {
   }
 
   getSupabaseClient(req: Request): SupabaseClient<Database> {
-    return createClient<Database>(
-      // Supabase API URL - env var exported by default.
-      Deno.env.get('SUPABASE_URL') ?? '',
-      // Supabase API ANON KEY - env var exported by default.
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      // Create client with Auth context of the user that called the function.
-      // This way your row-level-security (RLS) policies are applied.
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
+    let client: SupabaseClient<Database> | null = null;
+    try {
+      client = createClient<Database>(
+        // Supabase API URL - env var exported by default.
+        Deno.env.get('SUPABASE_URL') ?? '',
+        // Supabase API ANON KEY - env var exported by default.
+        // Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+        // Create client with Auth context of the user that called the function.
+        // This way your row-level-security (RLS) policies are applied.
+        // { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      )
+    } catch (error) {
+      console.error("Error creating the client:", error);
+    }
+     
+    if(client)
+      return client;
+    else
+      throw new SupabaseError("403", "Error creating the client");
   }
 }

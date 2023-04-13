@@ -3,7 +3,7 @@ export interface ISection {
     title: string;
     description: string;
     dates?: string;
-    content?: string | null;
+    content?: string;
     path: string;
     createdAt?: Date;
     updatedAt?: Date;

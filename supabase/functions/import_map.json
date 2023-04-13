@@ -3,6 +3,8 @@
       "openai": "https://esm.sh/openai@3.2.1?target=deno&no-check",
       "std/server": "https://deno.land/std@0.179.0/http/server.ts",
       "xhr_polyfill": "https://deno.land/x/xhr@0.3.0/mod.ts",
-      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.11.0"
+      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.11.0",
+      "@openai/streams": "https://esm.sh/openai-streams@5.0.0?target=deno&no-check",
+      "uuid": "https://esm.sh/uuid@9.0.0?target=deno&no-check"
     }
 }

@@ -58,3 +58,9 @@ Setup this jawn locally
   ```sh
   supabase db diff -f name_of_change_add
   ```
+
+- Functions
+  ```sh
+  supabase functions serve --env-file=.env.local new_course --debug   
+  supabase functions serve --env-file=.env.local section_content --debug   
+  ```

@@ -40,6 +40,7 @@ export interface Database {
           dates: string | null
           description: string
           id: string
+          search_text: string
           title: string
           updated_at: string
           user_id: string
@@ -49,6 +50,7 @@ export interface Database {
           dates?: string | null
           description: string
           id?: string
+          search_text: string
           title: string
           updated_at?: string
           user_id: string
@@ -58,6 +60,7 @@ export interface Database {
           dates?: string | null
           description?: string
           id?: string
+          search_text?: string
           title?: string
           updated_at?: string
           user_id?: string
@@ -132,7 +135,14 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_course_and_sections: {
+        Args: {
+          course_data: string
+          section_data: string
+          user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

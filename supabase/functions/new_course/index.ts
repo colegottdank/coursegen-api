@@ -6,6 +6,8 @@ import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { ISection } from "../_shared/models/public/ISection.ts";
+import { SectionDao } from "../_shared/daos/SectionDao.ts";
+import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
@@ -15,40 +17,48 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutline(courseRequest);
-  console.log(courseOutline.Course, courseOutline.Sections.map((section) => section.title));
 
   // Initialize Supabase client
   const supabase = httpService.getSupabaseClient(req);
   // Get logged in user
-  const user = await supabase.auth.getUser();
+  const user = await supabase.auth.getUser(req.headers.get('Authorization')!.replace("Bearer ",""));
+
+  if(!user?.data?.user?.id)
+  {
+    console.log("User not found");
+    throw new SupabaseError("404", "User not found");
+  }
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
   courseOutline.Course.userId = user.data.user?.id;
-  const insertedCourse = await courseDao.insertCourse(courseOutline.Course);
+  const insertedCourse = await courseDao.insertCourse(courseOutline.Course, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.section_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
 
+  // Set course id and userId on sections
   courseOutline.Sections.forEach((section) => {
     section.userId = user.data.user?.id;
-    section.courseId = insertedCourse.data?.id;
+    section.courseId = insertedCourse?.id;
   });
-  const insertedSections = await courseDao.insertSections(courseOutline.Sections);
+
+  const sectionDao = new SectionDao(supabase);
+  const insertedSections = await sectionDao.insertSections(courseOutline.Sections);
 
   // Map internal model to public model
   const courseOutlineResponse: ICourseOutline = {
     Course: {
-      courseId: insertedCourse.data?.id ?? "Id undefined",
-      title: insertedCourse.data?.title ?? "Title undefined",
-      dates: insertedCourse.data?.dates ?? "Dates undefined",
-      description: insertedCourse.data?.description ?? "Description undefined",
+      courseId: insertedCourse.id,
+      title: insertedCourse.title,
+      dates: insertedCourse.dates ?? undefined,
+      description: insertedCourse.description
     },
     Sections:
-      insertedSections.data?.map((section) => {
+      insertedSections.map((section) => {
         const mappedSection: ISection = {
           id: section.id,
           title: section.title,
-          dates: section.dates ?? "Dates undefined",
+          dates: section.dates ?? undefined,
           description: section.description,
-          content: section.content,
+          content: section.content ?? undefined,
           path: section.path
         };
         return mappedSection;
