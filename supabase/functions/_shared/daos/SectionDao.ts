@@ -59,6 +59,26 @@ export class SectionDao {
     return data;
   }
 
+  async getSectionsByCourseKey(
+    courseId: string
+  ): Promise<Database["public"]["Tables"]["section"]["Row"][]> {
+    const { data, error } = await this.supabase
+      .from("section")
+      .select("*")
+      .eq("course_id", courseId)
+      .returns<Database["public"]["Tables"]["section"]["Row"][]>();
+
+    if (error) {
+      throw new SupabaseError(error.code, `Failed to get section by course id`);
+    }
+
+    if(!data) {
+        throw new SupabaseError("404", `Section not found`);
+    }
+
+    return data;
+  }
+
   async updateSectionContentBySectionId(
     sectionId: number,
     content: string

@@ -16,6 +16,13 @@ const httpService = new HttpService(async (req: Request) => {
 
   const sectionDao = new SectionDao(supabase);
   const section = await sectionDao.getSectionBySectionId(sectionContentRequest.section_id!);
+  const sections = await sectionDao.getSectionsByCourseKey(section.course_id!);
+
+  // const sectionJson = generateSectionJson(sections.map((section) => new SectionRow {
+  //   content: section.content,
+  //   course_id: section.course_id,
+    
+  // }));
 
   if(section.content) {
     throw new BadRequestError("Section already has content");

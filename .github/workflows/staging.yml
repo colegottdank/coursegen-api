@@ -3,7 +3,7 @@ name: Deploy Migrations to Staging
 on:
   push:
     branches:
-      - section_content
+      - main
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-      STAGING_PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+      PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
 
     steps:
       - uses: actions/checkout@v3

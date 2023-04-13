@@ -2,8 +2,8 @@ import { BadRequestError } from "../consts/errors/BadRequestError.ts";
 import { v4 as uuidv4, validate as uuidValidate } from "uuid";
 
 export function validateSubject(subject: string | undefined): void {
-  if (!subject || subject.length > 200) {
-    throw new BadRequestError("Subject must be not null and less than 200 characters");
+  if (!subject || subject.length > 300) {
+    throw new BadRequestError("Subject must be not null and less than 300 characters");
   }
 }
 
