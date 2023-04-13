@@ -104,7 +104,6 @@ export class OpenAIClient {
     }
     else if (model === "gpt-3.5-turbo") {
       messages = [
-        { role: "system", content: section_content_prompts.section_content_system1 },
         { role: "user", content: section_content_prompts.section_content_system1 + `, New section content request: ${newUserMessage}}` }
       ];
     }
@@ -128,7 +127,6 @@ export class OpenAIClient {
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED") {
         subscribed = true;
-        console.log("Subscribed to channel");
       } else if (status === "CLOSED") {
         console.log(status);
         console.log("Channel closed");
@@ -145,7 +143,6 @@ export class OpenAIClient {
     let content = "";
     for await (const chunk of stream) {
       const chunkStr = decoder.decode(chunk);
-      console.log(chunkStr)
       if (chunkStr) {
         if (subscribed) {
           channel.send({ type: "broadcast", event: "section_content", chunkStr });

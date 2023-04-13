@@ -1,4 +1,4 @@
-import { validators } from "../../util/validators.ts";
+import * as validators from "../../util/validators.ts";
 
 export interface ICourseRequest { 
   search_text?: string;
