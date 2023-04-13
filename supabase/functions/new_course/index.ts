@@ -8,7 +8,6 @@ import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { ISection } from "../_shared/models/public/ISection.ts";
 import { SectionDao } from "../_shared/daos/SectionDao.ts";
 import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
-import { defaultProficiency, defaultSectionCount } from "../_shared/consts/defaults.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
@@ -17,9 +16,6 @@ const httpService = new HttpService(async (req: Request) => {
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
-  const newUserMessage = `Subject: ${courseRequest.subject}, 
-    Proficiency: ${courseRequest.proficiency ?? defaultProficiency}, 
-    Sections: ${courseRequest.section_count ?? defaultSectionCount}`
   var courseOutline = await openAIClient.createCourseOutline(courseRequest);
 
   // Initialize Supabase client
@@ -36,7 +32,7 @@ const httpService = new HttpService(async (req: Request) => {
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
   courseOutline.Course.userId = user.data.user?.id;
-  const insertedCourse = await courseDao.insertCourse(courseOutline.Course, newUserMessage);
+  const insertedCourse = await courseDao.insertCourse(courseOutline.Course, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.section_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
 
   // Set course id and userId on sections
   courseOutline.Sections.forEach((section) => {
