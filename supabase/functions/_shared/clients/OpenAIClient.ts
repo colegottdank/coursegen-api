@@ -22,8 +22,8 @@ export class OpenAIClient {
   }
 
   async createCourseOutline(courseRequest: ICourseRequest): Promise<ICourseOutline> {
-    // let model = "gpt-4";
-    let model = "gpt-3.5-turbo";
+    let model = "gpt-4";
+    // let model = "gpt-3.5-turbo";
     let messages;
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
@@ -93,8 +93,8 @@ export class OpenAIClient {
       sectionContentRequest.proficiency ?? defaultProficiency
     }`;
 
-    // let model = "gpt-4";
-    let model = "gpt-3.5-turbo";
+    let model = "gpt-4";
+    // let model = "gpt-3.5-turbo";
     let messages;
 
     if(model === "gpt-4") {
