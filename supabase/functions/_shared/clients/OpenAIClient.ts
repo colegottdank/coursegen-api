@@ -6,10 +6,11 @@ import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as section_content_prompts from "../consts/prompts/section_content_prompts.ts";
 import { defaultMaxTokens, defaultProficiency, defaultSectionCount, defaultTemperature } from "../consts/defaults.ts";
 import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
-import { ISection } from "../models/internal/ISection.ts";
+import { ISection, ISectionContent } from "../models/internal/ISection.ts";
 import { ISectionContentRequest } from "../dtos/content/SectionContentRequest.ts";
 import { OpenAIError } from "../consts/errors/OpenAIError.ts";
 import { OpenAI } from "@openai/streams";
+import { SectionContentResponse } from "../dtos/content/SectionContentResponse.ts";
 
 export class OpenAIClient {
   private openai: any;
@@ -87,7 +88,7 @@ export class OpenAIClient {
     return courseOutline;
   }
 
-  async createSectionContentStream(sectionContentRequest: ISectionContentRequest, supabase: SupabaseClient): Promise<string> {
+  async createSectionContentStream(sectionContentRequest: ISectionContentRequest, supabase: SupabaseClient): Promise<ISectionContent[]> {
     const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
       sectionContentRequest.proficiency ?? defaultProficiency
     }`;
@@ -151,7 +152,15 @@ export class OpenAIClient {
       }
     }
 
-    return content;
+    const sectionContentResponse = new SectionContentResponse(content);
+    sectionContentResponse.validate();
+
+    const sectionContent: ISectionContent[] = sectionContentResponse.response.data.content.map((sectionContent) => ({
+      header: sectionContent.header,
+      text: sectionContent.text,
+    }));
+    
+    return sectionContent;
   }
 }
 
