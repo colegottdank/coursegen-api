@@ -45,20 +45,22 @@ const httpService = new HttpService(async (req: Request) => {
   }
 
   const courseSectionsStr = JSON.stringify(courseSections);
-  console.log(courseSectionsStr);
 
   sectionContentRequest.title = section.title;
   const openAIClient = new OpenAIClient();
-  const content = await openAIClient.createSectionContentStream(sectionContentRequest, supabase);
+  const sectionContent = await openAIClient.createSectionContentStream(sectionContentRequest, supabase);
 
-  await sectionDao.updateSectionContentBySectionId(sectionContentRequest.section_id!, content);
+  await sectionDao.updateSectionContentBySectionId(sectionContentRequest.section_id!, JSON.stringify(sectionContent));
 
   const publicSection: ISection = {
     id: section.id,
     title: section.title,
     dates: section.dates ?? undefined,
     description: section.description,
-    content: content ?? undefined,
+    content: sectionContent.map((sectionContent) => ({
+      header: sectionContent.header,
+      text: sectionContent.text,
+    })) ?? undefined,
     path: section.path,
   };
 

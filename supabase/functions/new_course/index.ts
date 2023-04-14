@@ -58,7 +58,7 @@ const httpService = new HttpService(async (req: Request) => {
           title: section.title,
           dates: section.dates ?? undefined,
           description: section.description,
-          content: section.content ?? undefined,
+          content: undefined,
           path: section.path
         };
         return mappedSection;

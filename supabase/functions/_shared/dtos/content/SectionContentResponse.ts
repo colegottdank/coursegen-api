@@ -3,12 +3,17 @@ import { OpenAIInvalidResponseError } from "../../consts/errors/OpenAIInvalidRes
 export interface ISectionContentResponse {
   success: boolean;
   data: {
-    content: string;
+    content: ISectionContent[];
   };
   error: {
     code: number;
     message: string;
   };
+}
+
+export interface ISectionContent {
+  header: string;
+  text: string;
 }
 
 export class SectionContentResponse {
@@ -27,5 +32,16 @@ export class SectionContentResponse {
     if (!content) {
       throw new OpenAIInvalidResponseError("Content must not be null");
     }
+
+
+    content.forEach((header) => {
+      if(!header.header) {
+        throw new OpenAIInvalidResponseError("Header must not be null")
+      }
+
+      if(!header.text) {
+        throw new OpenAIInvalidResponseError("Text must not be null")
+      }
+    });
   }
 }

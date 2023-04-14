@@ -3,8 +3,13 @@ export interface ISection {
     title: string;
     description: string;
     dates?: string;
-    content?: string;
+    content?: ISectionContent[];
     path: string;
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export interface ISectionContent {
+    header: string;
+    text: string;
 }
