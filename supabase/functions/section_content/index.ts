@@ -11,7 +11,6 @@ import { NotFoundError } from "../_shared/consts/errors/NotFoundError.ts";
 import * as section_utils from "../_shared/util/section_utils.ts";
 import * as course_utils from "../_shared/util/course_utils.ts";
 
-
 const httpService = new HttpService(async (req: Request) => {
   const sectionContentRequest = new SectionContentRequest(await req.json());
   sectionContentRequest.Validate();
