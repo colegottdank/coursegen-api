@@ -1,16 +1,16 @@
-export interface ISection {
+export interface ISectionPublic {
     id?: number;
     title: string;
     description: string;
     dates?: string;
-    content?: ISectionContent[];
-    subsections?: ISection[];
+    content?: ISectionContentPublic[];
+    subsections?: ISectionPublic[];
     path: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface ISectionContent {
+export interface ISectionContentPublic {
     header: string;
     text: string;
 }

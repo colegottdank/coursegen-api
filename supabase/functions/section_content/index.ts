@@ -12,6 +12,7 @@ import * as course_utils from "../_shared/util/course_utils.ts";
 import { ISectionContent } from "../_shared/models/internal/ISection.ts";
 import { ICourseOutline } from "../_shared/models/internal/ICourseOutline.ts";
 import * as defaults from "../_shared/consts/defaults.ts";
+import { ISectionContentPublic, ISectionPublic } from "../_shared/models/public/ISectionPublic.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   const sectionContentRequest = new SectionContentRequest(await req.json());
@@ -48,27 +49,27 @@ const httpService = new HttpService(async (req: Request) => {
   };
 
   sectionContentRequest.title = section.title;
+  
   const openAIClient = new OpenAIClient();
+
   const headers = await openAIClient.generateHeaders(
     sectionContentRequest,
     JSON.stringify(courseOutline),
     defaults.gpt35
   );
-
+  
+  const content: ISectionContent[] = headers.map((header: string) => ({
+    header,
+    text: undefined,
+  }));
+  
   const currentSection = courseOutline.Sections.find((sec) => sec.id === section.id);
   if (!currentSection) {
     throw new NotFoundError(`Section not found for section id ${sectionContentRequest.section_id}`);
   }
 
-  const content: ISectionContent[] = [];
-
-  for (const header of headers) {
-    const sectionContent: ISectionContent = {
-      header: header,
-      text: undefined,
-    };
-    content.push(sectionContent);
-  }
+  currentSection.content = content;
+  
 
   currentSection.content = content;
 
@@ -79,13 +80,26 @@ const httpService = new HttpService(async (req: Request) => {
     defaults.gpt35
   );
 
-  console.log(contents.length);
   for (let i = 0; i < contents.length; i++) {
-    console.log("-----------------", contents[i]);
     currentSection.content[i].text = contents[i];
   }
 
-  return courseOutline;
+  const sectionPublic: ISectionPublic = {
+    id: section.id,
+    title: section.title,
+    description: section.description,
+    dates: section.dates ?? undefined,
+    content: currentSection.content.map((sectionContent) => {
+      const mappedContent: ISectionContentPublic = {
+        header: sectionContent.header,
+        text: sectionContent.text!,
+      }
+      return mappedContent;
+    }) ?? undefined,
+    path: section.path
+  }
+  
+  return sectionPublic;
   // const sectionContent = await openAIClient.createSectionContentStream(sectionContentRequest, supabase);
 
   // await sectionDao.updateSectionContentBySectionId(sectionContentRequest.section_id!, JSON.stringify(sectionContent));
