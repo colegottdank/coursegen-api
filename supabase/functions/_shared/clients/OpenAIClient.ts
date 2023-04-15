@@ -51,6 +51,8 @@ export class OpenAIClient {
       });
     } catch (error) {
       if (error.response) {
+        console.log(error);
+        console.log(error.response);
         throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
       } else {
         throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
