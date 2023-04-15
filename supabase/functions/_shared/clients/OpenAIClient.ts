@@ -129,9 +129,9 @@ export class OpenAIClient {
       });
     } catch (error) {
       if (error.response) {
-        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+        throw new OpenAIError(error.response.status, `Failed to retrieve headers from OpenAI`);
       } else {
-        throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
+        throw new OpenAIError("500", `Failed to retrieve headers from OpenAI`);
       }
     }
 
@@ -182,9 +182,9 @@ export class OpenAIClient {
       responses = await Promise.all(promises);
     } catch (error) {
       if (error.response) {
-        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+        throw new OpenAIError(error.response.status, `Failed to retrieve section content from OpenAI`);
       } else {
-        throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
+        throw new OpenAIError("500", `Failed to retrieve section content from OpenAI`);
       }
     }
 

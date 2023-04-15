@@ -58,21 +58,16 @@ const httpService = new HttpService(async (req: Request) => {
     defaults.gpt35
   );
   
-  const content: ISectionContent[] = headers.map((header: string) => ({
-    header,
-    text: undefined,
-  }));
-  
   const currentSection = courseOutline.Sections.find((sec) => sec.id === section.id);
   if (!currentSection) {
     throw new NotFoundError(`Section not found for section id ${sectionContentRequest.section_id}`);
   }
 
-  currentSection.content = content;
+  currentSection.content = headers.map((header: string) => ({
+    header,
+    text: undefined,
+  }));
   
-
-  currentSection.content = content;
-
   const contents = await openAIClient.createSectionContent(
     sectionContentRequest,
     JSON.stringify(courseOutline),
@@ -83,6 +78,8 @@ const httpService = new HttpService(async (req: Request) => {
   for (let i = 0; i < contents.length; i++) {
     currentSection.content[i].text = contents[i];
   }
+
+  await sectionDao.updateSectionContentBySectionId(section.id, JSON.stringify(currentSection.content));
 
   const sectionPublic: ISectionPublic = {
     id: section.id,
@@ -100,27 +97,6 @@ const httpService = new HttpService(async (req: Request) => {
   }
   
   return sectionPublic;
-  // const sectionContent = await openAIClient.createSectionContentStream(sectionContentRequest, supabase);
-
-  // await sectionDao.updateSectionContentBySectionId(sectionContentRequest.section_id!, JSON.stringify(sectionContent));
-
-  // const publicSection: ISection = {
-  //   id: section.id,
-  //   title: section.title,
-  //   dates: section.dates ?? undefined,
-  //   description: section.description,
-  //   content: sectionContent.map((sectionContent) => ({
-  //     header: sectionContent.header,
-  //     text: sectionContent.text,
-  //   })) ?? undefined,
-  //   path: section.path,
-  // };
-
-  // return publicSection;
 });
-
-interface IContent {
-  content: string;
-}
 
 serve((req) => httpService.handle(req));
