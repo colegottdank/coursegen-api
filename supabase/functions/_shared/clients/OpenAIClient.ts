@@ -27,21 +27,17 @@ export class OpenAIClient {
     let messages;
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
-    if(courseRequest.section_count != null)
-    {
+    if (courseRequest.section_count != null) {
       user_message = `${user_message}. Section Count: ${courseRequest.section_count}`;
     }
 
-    if(model === "gpt-4") {
+    if (model === "gpt-4") {
       messages = [
         { role: "system", content: new_course_prompts.course_outline_system2 },
         { role: "user", content: user_message },
-      ]
-    }
-    else if (model === "gpt-3.5-turbo") {
-      messages = [
-        { role: "user", content: `${new_course_prompts.course_outline_system2}. Request: ${user_message} ` },
-      ]
+      ];
+    } else if (model === "gpt-3.5-turbo") {
+      messages = [{ role: "user", content: `${new_course_prompts.course_outline_system2}. Request: ${user_message} ` }];
     }
 
     let completion: any = undefined;
@@ -88,7 +84,124 @@ export class OpenAIClient {
     return courseOutline;
   }
 
-  async createSectionContentStream(sectionContentRequest: ISectionContentRequest, supabase: SupabaseClient): Promise<ISectionContent[]> {
+  async generateHeaders(
+    sectionContentRequest: ISectionContentRequest,
+    courseOutline: string,
+    model: string
+  ): Promise<string[]> {
+    let headerMessages;
+
+    if (model === "gpt-4") {
+      headerMessages = [
+        {
+          role: "system",
+          content: section_content_prompts.header_request_1 + ". Existing course outline: " + courseOutline,
+        },
+        {
+          role: "user",
+          content: `Section: ${sectionContentRequest.title}, Proficiency: ${
+            sectionContentRequest.proficiency ?? defaultProficiency
+          }`,
+        },
+      ];
+    } else if (model === "gpt-3.5-turbo") {
+      headerMessages = [
+        {
+          role: "user",
+          content:
+            section_content_prompts.header_request_1 +
+            ". Existing course outline: " +
+            courseOutline +
+            `, New section content request: Section: ${sectionContentRequest.title}, Proficiency: ${
+              sectionContentRequest.proficiency ?? defaultProficiency
+            }, }`,
+        },
+      ];
+    }
+
+    let completion: any = undefined;
+    try {
+      completion = await this.openai.createChatCompletion({
+        model: model,
+        messages: headerMessages,
+        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
+        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+      });
+    } catch (error) {
+      if (error.response) {
+        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+      } else {
+        throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
+      }
+    }
+
+    const headerJson = JSON.parse(completion.data.choices[0].message.content);
+    const headers = headerJson["data"]["headers"];
+    console.log(headers);
+
+    return headers;
+  }
+
+  async createSectionContent(
+    sectionContentRequest: ISectionContentRequest,
+    courseOutline: string,
+    headers: string[],
+    model: string
+  ): Promise<string[]> {
+    // First generate headers
+    const messages = headers.map((header: any) => {
+      return [
+        {
+          role: "user",
+          content:
+            section_content_prompts.section_content_user_message1 +
+            ". Existing course outline: " +
+            courseOutline +
+            `. Header to generate content for: ${header}. Section which the header belongs to: ${
+              sectionContentRequest.title
+            }, Proficiency for which to consider: ${sectionContentRequest.proficiency ?? defaultProficiency}, }`,
+        },
+      ];
+    });
+
+    // messages.forEach((message, index) => {
+    //   console.log("Message " + index + ": ", message[0].content);
+    // });
+
+    const promises = messages.map((message: any) => {
+      return this.openai.createChatCompletion({
+        model: model,
+        messages: message,
+        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
+        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+      });
+    });
+
+    let responses;
+    try {
+      responses = await Promise.all(promises);
+    } catch (error) {
+      if (error.response) {
+        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+      } else {
+        throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
+      }
+    }
+
+    let content: string[] = [];
+    let contentStr = "";
+    responses.forEach((response, index) => {
+      contentStr += response.data.choices[0].message.content;
+      content.push(response.data.choices[0].message.content);
+    });
+
+    return content;
+  }
+
+  async createSectionContentStream(
+    sectionContentRequest: ISectionContentRequest,
+    supabase: SupabaseClient
+  ): Promise<ISectionContent[]> {
     const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
       sectionContentRequest.proficiency ?? defaultProficiency
     }`;
@@ -97,15 +210,18 @@ export class OpenAIClient {
     // let model = "gpt-3.5-turbo";
     let messages;
 
-    if(model === "gpt-4") {
+    if (model === "gpt-4") {
       messages = [
         { role: "system", content: section_content_prompts.section_content_system1 },
         { role: "user", content: newUserMessage },
       ];
-    }
-    else if (model === "gpt-3.5-turbo") {
+    } else if (model === "gpt-3.5-turbo") {
       messages = [
-        { role: "user", content: section_content_prompts.section_content_system1 + `, New section content request: ${newUserMessage}}` }
+        {
+          role: "user",
+          content:
+            section_content_prompts.section_content_system1 + `, New section content request: ${newUserMessage}}`,
+        },
       ];
     }
 
@@ -159,7 +275,7 @@ export class OpenAIClient {
       header: sectionContent.header,
       text: sectionContent.text,
     }));
-    
+
     return sectionContent;
   }
 }

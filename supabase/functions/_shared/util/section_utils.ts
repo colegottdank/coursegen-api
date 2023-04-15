@@ -1,10 +1,10 @@
 import { Database } from "../database.types.ts";
 import { ISection } from "../models/internal/ISection.ts";
 
-export function buildNestedSections(sections: Database["public"]["Tables"]["section"]["Row"][]): INestedSection[] {
-    const topLevelSections: INestedSection[] = [];
+export function buildNestedSections(sections: Database["public"]["Tables"]["section"]["Row"][]): ISection[] {
+    const topLevelSections: ISection[] = [];
   
-    const sectionMap = new Map<string, INestedSection>();
+    const sectionMap = new Map<string, ISection>();
     sections.forEach((section) => {
       const nestedSection = mapSectionToNestedSection(section);
       sectionMap.set(nestedSection.path, nestedSection);
@@ -14,7 +14,10 @@ export function buildNestedSections(sections: Database["public"]["Tables"]["sect
       const parentPath = section.path.substring(0, section.path.lastIndexOf('.'));
       const parent = sectionMap.get(parentPath);
       if (parent) {
-        parent.children.push(mapSectionToNestedSection(section));
+        if (!parent.subsections) {
+          parent.subsections = [];
+        }
+        parent.subsections.push(mapSectionToNestedSection(section));
       } else {
         topLevelSections.push(mapSectionToNestedSection(section));
       }
@@ -23,18 +26,15 @@ export function buildNestedSections(sections: Database["public"]["Tables"]["sect
     return topLevelSections;
   }
 
-function mapSectionToNestedSection(section: Database["public"]["Tables"]["section"]["Row"]): INestedSection {
-    const nestedSection: INestedSection = {
+function mapSectionToNestedSection(section: Database["public"]["Tables"]["section"]["Row"]): ISection {
+    const nestedSection: ISection = {
+        id: section.id,
         title: section.title,
         description: section.description,
         dates: section.dates ?? undefined,
         path: section.path,
-        children: [],
+        subsections: [],
     };
   
     return nestedSection;
   }
-
-export interface INestedSection extends ISection {
-  children: INestedSection[];
-}

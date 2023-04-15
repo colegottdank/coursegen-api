@@ -4,6 +4,7 @@ export interface ISection {
     description: string;
     dates?: string;
     content?: ISectionContent[];
+    subsections?: ISection[];
     path: string;
     createdAt?: Date;
     updatedAt?: Date;

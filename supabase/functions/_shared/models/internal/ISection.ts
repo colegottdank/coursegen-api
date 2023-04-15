@@ -4,6 +4,7 @@ export interface ISection {
     description: string;
     dates?: string;
     content?: ISectionContent[];
+    subsections?: ISection[];
     courseId?: string;
     parentId?: number;
     path: string;
@@ -14,5 +15,5 @@ export interface ISection {
 
 export interface ISectionContent {
     header: string;
-    text: string;
+    text?: string;
 }
