@@ -53,7 +53,7 @@ export class OpenAIClient {
       if (error.response) {
         console.log(error);
         console.log(error.response);
-        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`, error.response, error);
       } else {
         throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
       }
