@@ -95,7 +95,7 @@ export class OpenAIClient {
       headerMessages = [
         {
           role: "system",
-          content: section_content_prompts.header_request_1 + ". Existing course outline: " + courseOutline,
+          content: section_content_prompts.header_request_2 + ". Existing course outline: " + courseOutline,
         },
         {
           role: "user",
@@ -109,10 +109,10 @@ export class OpenAIClient {
         {
           role: "user",
           content:
-            section_content_prompts.header_request_1 +
+            section_content_prompts.header_request_2 +
             ". Existing course outline: " +
             courseOutline +
-            `, New section content request: Section: ${sectionContentRequest.title}, Proficiency: ${
+            `. Section to generate headers for: ${sectionContentRequest.title}. Proficiency: ${
               sectionContentRequest.proficiency ?? defaultProficiency
             }, }`,
         },
@@ -154,7 +154,7 @@ export class OpenAIClient {
         {
           role: "user",
           content:
-            section_content_prompts.section_content_user_message1 +
+            section_content_prompts.header_content_request2 +
             ". Existing course outline: " +
             courseOutline +
             `. Header to generate content for: ${header}. Section which the header belongs to: ${

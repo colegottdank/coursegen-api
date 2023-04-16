@@ -1,23 +1,57 @@
 {
-  "success": true,
-  "data": {
-    "content": [
-      {
-        "header": "Introduction to Embedded Systems",
-        "text": "Embedded systems are computer systems that are designed to perform specific tasks. They are typically used in devices that require a high degree of reliability, such as medical equipment, automotive systems, and industrial control systems. In this section, we will explore the basics of embedded systems, including their architecture, programming, and design considerations."
-      },
-      {
-        "header": "Embedded Systems Architecture",
-        "text": "The architecture of an embedded system is typically composed of a microcontroller or microprocessor, memory, input/output (I/O) devices, and various other components. The microcontroller or microprocessor is the brain of the system and is responsible for executing the program instructions. Memory is used to store the program instructions and data. I/O devices are used to interact with the external world, such as sensors and actuators."
-      },
-      {
-        "header": "Programming Embedded Systems",
-        "text": "Programming embedded systems requires a different approach than programming traditional computer systems. Embedded systems are typically programmed in low-level languages such as C or assembly language. This is because these languages provide direct access to the hardware, which is necessary for controlling the system. In addition, embedded systems often have limited resources, such as memory and processing power, which must be carefully managed."
-      },
-      {
-        "header": "Design Considerations for Embedded Systems",
-        "text": "Designing embedded systems requires careful consideration of a variety of factors, including power consumption, size, and cost. Power consumption is a critical factor, as many embedded systems are battery-powered and must operate for long periods of time without recharging. Size is also important, as many embedded systems are used in small devices where space is at a premium. Finally, cost is always a consideration, as embedded systems are often used in high-volume applications where even small cost savings can have a significant impact."
-      }
-    ]
-  }
+  "Course": {
+    "title": "Computer Engineering for Software Engineers",
+    "description": "Expand your knowledge in computer engineering as a software engineer with this comprehensive course.",
+    "dates": ""
+  },
+  "Sections": [
+    {
+      "title": "Digital Logic Design",
+      "description": "Learn the fundamentals of digital circuits, Boolean algebra, and logic gates.",
+      "dates": "",
+      "path": "01",
+      "subsections": []
+    },
+    {
+      "title": "Computer Architecture",
+      "description": "Explore processor design, memory hierarchy, and parallelism in computer systems.",
+      "dates": "",
+      "path": "02",
+      "subsections": []
+    },
+    {
+      "title": "Embedded Systems",
+      "description": "Understand the basics of embedded systems, microcontrollers, and real-time operating systems.",
+      "dates": "",
+      "path": "03",
+      "subsections": []
+    },
+    {
+      "title": "Networking Fundamentals",
+      "description": "Gain insights into network protocols, topologies, and the OSI model.",
+      "dates": "",
+      "path": "04",
+      "subsections": []
+    },
+    {
+      "title": "Operating Systems Concepts",
+      "description": "Delve into process management, memory management, and file systems.",
+      "dates": "",
+      "path": "05",
+      "subsections": []
+    },
+    {
+      "title": "Hardware-Software Integration",
+      "description": "Learn about the interaction between hardware and software, and techniques for optimizing performance.",
+      "dates": "",
+      "path": "06",
+      "subsections": [],
+      "content": [
+        { "header": "Introduction to Hardware-Software Integration" },
+        { "header": "Hardware-Software Interaction" },
+        { "header": "Optimizing Performance" },
+        { "header": "Case Studies in Hardware-Software Integration" }
+      ]
+    }
+  ]
 }
