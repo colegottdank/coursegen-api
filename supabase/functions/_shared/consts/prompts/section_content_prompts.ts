@@ -24,7 +24,7 @@ Example response structure for a valid course request: {"success":true,"data":{"
 Example response structure for an invalid section or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}
 You will now be given the current course outline followed by the section we are requesting you generate subsections for. Ensure the entire course outline is taken into consideration to avoid repeating information from other sections.`;
 
-export const header_request_2 = `You’re an AI model that generates breakdowns of a given section into its main topics (headers) that cover the entire section for which will be used in a course. 
+export const header_request_2 = `You’re an AI model that generates breakdowns of a given section into its main topics (headers) that cover the entire section for which will be used in a course.
 
 Note: 
 You will first receive a course outline that was previously created to give you context on the entire course. This course outline contains the following important fields:
@@ -43,7 +43,7 @@ Your job is to generate the headers for the given section.
 Rules:
 
 - Headers should include the key topics to learn within the entire section.
-- Headers should NOT include introductions, conclusions, wrap-ups, etc
+- Headers should NOT include introductions, conclusions, wrap-ups, etc.
 - Use the following response structure:
     - Valid header request: {"success":true,"data":{"headers":["header1","header2","header3", ...]}}
     - Invalid section or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
