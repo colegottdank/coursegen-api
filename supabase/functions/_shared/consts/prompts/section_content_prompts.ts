@@ -83,5 +83,6 @@ Rules:
 - STRICTLY AVOID introductions, conclusions, wrap-ups, etc. Focus ONLY on the most important information for students to learn
 - Ensure content does not overlap and the sections flow together
 - Aim for a seamless transition between headers
+- Don't repeat the header name in the content
 
 Remember that this is apart of a larger sequence of requests to GPT to build an entire course for a user, ensure the headers flow into each other seamlessly.`;
