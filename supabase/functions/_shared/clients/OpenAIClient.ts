@@ -40,8 +40,7 @@ export class OpenAIClient {
     let completion: any = undefined;
     try {
       completion = await this.openai.createChatCompletion({
-        // model: "gpt-3.5-turbo",
-        model: "gpt-4",
+        model: model,
         messages: messages,
         max_tokens: courseRequest.max_tokens ?? defaultMaxTokens,
         temperature: courseRequest.temperature ?? defaultTemperature,
@@ -92,8 +91,7 @@ export class OpenAIClient {
         },
         {
           role: "user",
-          content: `Lesson to generate topics for: ${topicsRequest.title}, Proficiency: ${
-            topicsRequest.proficiency ?? defaultProficiency
+          content: `Lesson to generate topics for: ${topicsRequest.title}
           }`,
         },
       ];
@@ -153,8 +151,7 @@ export class OpenAIClient {
           },
           {
             role: "user",
-            content: `Lesson to generate topics for: ${topicsRequest.title}, Proficiency: ${
-              topicsRequest.proficiency ?? defaultProficiency
+            content: `Lesson to generate topics for: ${topicsRequest.title}
             }`,
           },
         ];
