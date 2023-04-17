@@ -3,14 +3,14 @@ export interface ISectionPublic {
     title: string;
     description: string;
     dates?: string;
-    content?: ISectionContentPublic[];
+    content?: ITopic[];
     subsections?: ISectionPublic[];
     path: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface ISectionContentPublic {
-    header: string;
-    text: string;
+export interface ITopic {
+    title: string;
+    content?: string;
 }

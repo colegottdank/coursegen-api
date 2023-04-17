@@ -1,9 +1,9 @@
 import { OpenAIInvalidResponseError } from "../../consts/errors/OpenAIInvalidResponseError.ts";
 
-export interface ISectionContentResponse {
+export interface ITopicsResponse {
   success: boolean;
   data: {
-    content: ISectionContent[];
+    topics: ITopic[];
   };
   error: {
     code: number;
@@ -11,13 +11,13 @@ export interface ISectionContentResponse {
   };
 }
 
-export interface ISectionContent {
-  header: string;
+export interface ITopic {
+  title: string;
   text: string;
 }
 
-export class SectionContentResponse {
-  response: ISectionContentResponse;
+export class TopicsResponse {
+  response: ITopicsResponse;
 
   constructor(json: string) {
     this.response = JSON.parse(json);
@@ -28,19 +28,19 @@ export class SectionContentResponse {
       throw new OpenAIInvalidResponseError(`${this.response.error?.message}`);
     }
 
-    const content = this.response.data.content;
-    if (!content) {
+    const topics = this.response.data.topics;
+    if (!topics) {
       throw new OpenAIInvalidResponseError("Content must not be null");
     }
 
 
-    content.forEach((header) => {
-      if(!header.header) {
-        throw new OpenAIInvalidResponseError("Header must not be null")
+    topics.forEach((topic) => {
+      if(!topic.title) {
+        throw new OpenAIInvalidResponseError("Topic title must not be null")
       }
 
-      if(!header.text) {
-        throw new OpenAIInvalidResponseError("Text must not be null")
+      if(!topic.text) {
+        throw new OpenAIInvalidResponseError("Topic text must not be null")
       }
     });
   }

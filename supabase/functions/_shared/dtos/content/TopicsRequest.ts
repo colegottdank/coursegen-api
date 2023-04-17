@@ -1,6 +1,6 @@
 import * as validators from "../../util/validators.ts";
 
-export interface ISectionContentRequest {
+export interface ITopicsRequest {
     section_id?: number;
     course_id?: string;
     title?: string;
@@ -10,7 +10,7 @@ export interface ISectionContentRequest {
     session_key?: string;
 }
 
-export class SectionContentRequest implements ISectionContentRequest {
+export class TopicsRequest implements ITopicsRequest {
     section_id?: number;
     course_id?: string;
     title?: string;

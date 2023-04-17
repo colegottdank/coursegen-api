@@ -5,7 +5,7 @@ import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
-import { SectionDao } from "../_shared/daos/SectionDao.ts";
+import { LessonDao } from "../_shared/daos/SectionDao.ts";
 import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
 import { ISectionPublic } from "../_shared/models/public/ISectionPublic.ts";
 
@@ -40,7 +40,7 @@ const httpService = new HttpService(async (req: Request) => {
     section.courseId = insertedCourse?.id;
   });
 
-  const sectionDao = new SectionDao(supabase);
+  const sectionDao = new LessonDao(supabase);
   const insertedSections = await sectionDao.insertSections(courseOutline.Sections);
 
   // Map internal model to public model

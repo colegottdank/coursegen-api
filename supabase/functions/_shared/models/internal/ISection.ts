@@ -3,7 +3,7 @@ export interface ISection {
     title: string;
     description: string;
     dates?: string;
-    content?: ISectionContent[];
+    content?: ITopic[];
     subsections?: ISection[];
     courseId?: string;
     parentId?: number;
@@ -13,7 +13,7 @@ export interface ISection {
     updatedAt?: Date;
 }
 
-export interface ISectionContent {
-    header: string;
-    text?: string;
+export interface ITopic {
+    title: string;
+    content?: string;
 }

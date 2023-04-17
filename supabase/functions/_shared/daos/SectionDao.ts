@@ -1,9 +1,9 @@
-import { PostgrestResponse, PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../database.types.ts";
 import { ISection } from "../models/internal/ISection.ts";
 import { SupabaseError } from "../consts/errors/SupabaseError.ts";
 
-export class SectionDao {
+export class LessonDao {
   constructor(private supabase: SupabaseClient) {}
 
   async insertSections(

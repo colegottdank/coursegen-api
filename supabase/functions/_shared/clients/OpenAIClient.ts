@@ -1,16 +1,13 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import { ICourseOutline } from "./../models/internal/ICourseOutline.ts";
 import { Configuration, OpenAIApi } from "openai";
 import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
-import * as section_content_prompts from "../consts/prompts/section_content_prompts.ts";
-import { defaultMaxTokens, defaultProficiency, defaultSectionCount, defaultTemperature } from "../consts/defaults.ts";
+import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
+import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
 import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
-import { ISection, ISectionContent } from "../models/internal/ISection.ts";
-import { ISectionContentRequest } from "../dtos/content/SectionContentRequest.ts";
+import { ISection } from "../models/internal/ISection.ts";
 import { OpenAIError } from "../consts/errors/OpenAIError.ts";
-import { OpenAI } from "@openai/streams";
-import { SectionContentResponse } from "../dtos/content/SectionContentResponse.ts";
+import { ITopicsRequest } from "../dtos/content/TopicsRequest.ts";
 
 export class OpenAIClient {
   private openai: any;
@@ -84,96 +81,107 @@ export class OpenAIClient {
     return courseOutline;
   }
 
-  async generateHeaders(
-    sectionContentRequest: ISectionContentRequest,
-    courseOutline: string,
-    model: string
-  ): Promise<string[]> {
-    let headerMessages;
+  async generateTopicTitles(topicsRequest: ITopicsRequest, courseOutline: string, model: string): Promise<string[]> {
+    let topicMessages: any[] = [];
 
     if (model === "gpt-4") {
-      headerMessages = [
+      topicMessages = [
         {
           role: "system",
-          content: section_content_prompts.header_request_2 + ". Existing course outline: " + courseOutline,
+          content: lesson_topics_prompts.topic_request_2 + ". Existing course outline: " + courseOutline,
         },
         {
           role: "user",
-          content: `Section: ${sectionContentRequest.title}, Proficiency: ${
-            sectionContentRequest.proficiency ?? defaultProficiency
+          content: `Lesson to generate topics for: ${topicsRequest.title}, Proficiency: ${
+            topicsRequest.proficiency ?? defaultProficiency
           }`,
         },
       ];
     } else if (model === "gpt-3.5-turbo") {
-      headerMessages = [
+      topicMessages = [
         {
           role: "user",
           content:
-            section_content_prompts.header_request_2 +
+            lesson_topics_prompts.topic_request_2 +
             ". Existing course outline: " +
             courseOutline +
-            `. Section to generate headers for: ${sectionContentRequest.title}. Proficiency: ${
-              sectionContentRequest.proficiency ?? defaultProficiency
+            `. Lesson to generate topics for: ${topicsRequest.title}. Proficiency: ${
+              topicsRequest.proficiency ?? defaultProficiency
             }, }`,
         },
       ];
     }
 
+    console.log(topicMessages[0].content);
     let completion: any = undefined;
     try {
       completion = await this.openai.createChatCompletion({
         model: model,
-        messages: headerMessages,
-        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
-        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+        messages: topicMessages,
+        max_tokens: topicsRequest.max_tokens ?? defaultMaxTokens,
+        temperature: topicsRequest.temperature ?? defaultTemperature,
       });
     } catch (error) {
       if (error.response) {
-        throw new OpenAIError(error.response.status, `Failed to retrieve headers from OpenAI`);
+        throw new OpenAIError(error.response.status, `Failed to retrieve topics from OpenAI. ${error.response.data.error.message}`);
       } else {
-        throw new OpenAIError("500", `Failed to retrieve headers from OpenAI`);
+        throw new OpenAIError("500", `Failed to retrieve topics from OpenAI`);
       }
     }
 
-    const headerJson = JSON.parse(completion.data.choices[0].message.content);
-    const headers = headerJson["data"]["headers"];
-    console.log(headers);
+    const topicJson = JSON.parse(completion.data.choices[0].message.content);
+    const topics = topicJson["data"]["topics"];
+    console.log(topics);
 
-    return headers;
+    return topics;
   }
 
-  async createSectionContent(
-    sectionContentRequest: ISectionContentRequest,
+  async generateTopicContent(
+    topicsRequest: ITopicsRequest,
     courseOutline: string,
-    headers: string[],
+    topics: string[],
     model: string
   ): Promise<string[]> {
-    // First generate headers
-    const messages = headers.map((header: any) => {
-      return [
-        {
-          role: "user",
-          content:
-            section_content_prompts.header_content_request2 +
-            ". Existing course outline: " +
-            courseOutline +
-            `. Header to generate content for: ${header}. Section which the header belongs to: ${
-              sectionContentRequest.title
-            }, Proficiency for which to consider: ${sectionContentRequest.proficiency ?? defaultProficiency}, }`,
-        },
-      ];
-    });
-
-    // messages.forEach((message, index) => {
-    //   console.log("Message " + index + ": ", message[0].content);
-    // });
+    // First generate topics
+    let messages: any[] = [];
+    if (model == "gpt-4") {
+      messages = topics.map((topic: any) => {
+        return [
+          {
+            role: "system",
+            content: lesson_topics_prompts.topic_text_request2 + ". Existing course outline: " + courseOutline,
+          },
+          {
+            role: "user",
+            content: `Lesson to generate topics for: ${topicsRequest.title}, Proficiency: ${
+              topicsRequest.proficiency ?? defaultProficiency
+            }`,
+          },
+        ];
+      });
+    } else if (model == "gpt-3.5-turbo") {
+      messages = topics.map((topic: any) => {
+        return [
+          {
+            role: "user",
+            content:
+              lesson_topics_prompts.topic_text_request2 +
+              ". Existing course outline: " +
+              courseOutline +
+              `. Topic to generate content for: ${topic}. Lesson which the topic belongs to: ${
+                topicsRequest.title
+              }, Proficiency for which to consider: ${topicsRequest.proficiency ?? defaultProficiency}, }`,
+          },
+        ];
+      });
+    }
 
     const promises = messages.map((message: any) => {
       return this.openai.createChatCompletion({
         model: model,
         messages: message,
-        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
-        temperature: sectionContentRequest.temperature ?? defaultTemperature,
+        max_tokens: topicsRequest.max_tokens ?? defaultMaxTokens,
+        temperature: topicsRequest.temperature ?? defaultTemperature,
       });
     });
 
@@ -182,104 +190,106 @@ export class OpenAIClient {
       responses = await Promise.all(promises);
     } catch (error) {
       if (error.response) {
-        throw new OpenAIError(error.response.status, `Failed to retrieve section content from OpenAI`);
+        throw new OpenAIError(
+          error.response.status,
+          `Failed to retrieve topic text from OpenAI. ${error.response.data.error.message}`
+        );
       } else {
-        throw new OpenAIError("500", `Failed to retrieve section content from OpenAI`);
+        throw new OpenAIError("500", `Failed to retrieve topic text from OpenAI`);
       }
     }
 
     let content: string[] = [];
-    let contentStr = "";
-    responses.forEach((response, index) => {
-      contentStr += response.data.choices[0].message.content;
+    responses.forEach((response) => {
       content.push(response.data.choices[0].message.content);
     });
 
     return content;
   }
-
-  async createSectionContentStream(
-    sectionContentRequest: ISectionContentRequest,
-    supabase: SupabaseClient
-  ): Promise<ISectionContent[]> {
-    const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
-      sectionContentRequest.proficiency ?? defaultProficiency
-    }`;
-
-    let model = "gpt-4";
-    // let model = "gpt-3.5-turbo";
-    let messages;
-
-    if (model === "gpt-4") {
-      messages = [
-        { role: "system", content: section_content_prompts.section_content_system1 },
-        { role: "user", content: newUserMessage },
-      ];
-    } else if (model === "gpt-3.5-turbo") {
-      messages = [
-        {
-          role: "user",
-          content:
-            section_content_prompts.section_content_system1 + `, New section content request: ${newUserMessage}}`,
-        },
-      ];
-    }
-
-    const stream = await OpenAI(
-      "chat",
-      {
-        model: model,
-        messages: messages,
-        max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
-        temperature: sectionContentRequest.temperature ?? defaultTemperature,
-      },
-      {
-        apiKey: Deno.env.get("OPENAI_APIKEY"),
-      }
-    );
-
-    const channel = supabase.channel(`section_content_${sectionContentRequest.session_key}`);
-
-    let subscribed = false;
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        subscribed = true;
-      } else if (status === "CLOSED") {
-        console.log(status);
-        console.log("Channel closed");
-      } else if (status == "TIMED_OUT") {
-        console.log(status);
-        console.log("Channel timed out");
-      } else if (status == "CHANNEL_ERROR") {
-        console.log(status);
-        console.log("Channel error");
-      }
-    });
-
-    const decoder = new TextDecoder("utf-8");
-    let content = "";
-    for await (const chunk of stream) {
-      const chunkStr = decoder.decode(chunk);
-      if (chunkStr) {
-        if (subscribed) {
-          channel.send({ type: "broadcast", event: "section_content", chunkStr });
-        }
-        content += chunkStr;
-      }
-    }
-
-    const sectionContentResponse = new SectionContentResponse(content);
-    sectionContentResponse.validate();
-
-    const sectionContent: ISectionContent[] = sectionContentResponse.response.data.content.map((sectionContent) => ({
-      header: sectionContent.header,
-      text: sectionContent.text,
-    }));
-
-    return sectionContent;
-  }
 }
 
-export const config = {
-  runtime: "edge",
-};
+//   async createSectionContentStream(
+//     sectionContentRequest: ISectionContentRequest,
+//     supabase: SupabaseClient
+//   ): Promise<ISectionContent[]> {
+//     const newUserMessage = `Section: ${sectionContentRequest.title}, Proficiency: ${
+//       sectionContentRequest.proficiency ?? defaultProficiency
+//     }`;
+
+//     let model = "gpt-4";
+//     // let model = "gpt-3.5-turbo";
+//     let messages;
+
+//     if (model === "gpt-4") {
+//       messages = [
+//         { role: "system", content: lesson_topics_prompts.section_content_system1 },
+//         { role: "user", content: newUserMessage },
+//       ];
+//     } else if (model === "gpt-3.5-turbo") {
+//       messages = [
+//         {
+//           role: "user",
+//           content:
+//             lesson_topics_prompts.section_content_system1 + `, New section content request: ${newUserMessage}}`,
+//         },
+//       ];
+//     }
+
+//     const stream = await OpenAI(
+//       "chat",
+//       {
+//         model: model,
+//         messages: messages,
+//         max_tokens: sectionContentRequest.max_tokens ?? defaultMaxTokens,
+//         temperature: sectionContentRequest.temperature ?? defaultTemperature,
+//       },
+//       {
+//         apiKey: Deno.env.get("OPENAI_APIKEY"),
+//       }
+//     );
+
+//     const channel = supabase.channel(`section_content_${sectionContentRequest.session_key}`);
+
+//     let subscribed = false;
+//     channel.subscribe((status) => {
+//       if (status === "SUBSCRIBED") {
+//         subscribed = true;
+//       } else if (status === "CLOSED") {
+//         console.log(status);
+//         console.log("Channel closed");
+//       } else if (status == "TIMED_OUT") {
+//         console.log(status);
+//         console.log("Channel timed out");
+//       } else if (status == "CHANNEL_ERROR") {
+//         console.log(status);
+//         console.log("Channel error");
+//       }
+//     });
+
+//     const decoder = new TextDecoder("utf-8");
+//     let content = "";
+//     for await (const chunk of stream) {
+//       const chunkStr = decoder.decode(chunk);
+//       if (chunkStr) {
+//         if (subscribed) {
+//           channel.send({ type: "broadcast", event: "section_content", chunkStr });
+//         }
+//         content += chunkStr;
+//       }
+//     }
+
+//     const topicsResponse = new SectionContentResponse(content);
+//     topicsResponse.validate();
+
+//     const topics: ITopic[] = topicsResponse.response.data.topics.map((topic: any) => ({
+//       title: topic.title,
+//       text: topic.text,
+//     }));
+
+//     return topics;
+//   }
+// }
+
+// export const config = {
+//   runtime: "edge",
+// };
