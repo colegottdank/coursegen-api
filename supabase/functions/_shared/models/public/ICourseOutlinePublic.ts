@@ -1,5 +1,5 @@
 import { ICoursePublic } from "./ICoursePublic.ts";
-import { ILessonPublic } from "./ISectionPublic.ts";
+import { ILessonPublic } from "./ILessonPublic.ts";
 
 export interface ICourseOutlinePublic {
    Course: ICoursePublic;
