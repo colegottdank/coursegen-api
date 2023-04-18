@@ -86,7 +86,7 @@ const httpService = new HttpService(async (req: Request) => {
 
   await lessonDao.updateSectionContentBySectionId(lesson.id, JSON.stringify(lessonWithTopics.content));
 
-  const sectionPublic: ILessonPublic = {
+  const lessonPublic: ILessonPublic = {
     id: lesson.id,
     title: lesson.title,
     description: lesson.description,
@@ -101,7 +101,7 @@ const httpService = new HttpService(async (req: Request) => {
     path: lesson.path
   }
   
-  return sectionPublic;
+  return lessonPublic;
 });
 
 serve((req) => httpService.handle(req));

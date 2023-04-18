@@ -23,4 +23,4 @@ jobs:
           supabase link --project-ref $PROJECT_ID
           supabase db push
           supabase functions deploy new_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          supabase functions deploy section_content --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+          supabase functions deploy lesson_content --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
