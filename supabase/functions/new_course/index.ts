@@ -7,7 +7,7 @@ import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { LessonDao } from "../_shared/daos/SectionDao.ts";
 import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
-import { ILessonPublic } from "../_shared/models/public/ISectionPublic.ts";
+import { ILessonPublic } from "../_shared/models/public/ILessonPublic.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
