@@ -1,10 +1,9 @@
-export interface ISectionPublic {
+export interface ILessonPublic {
     id?: number;
     title: string;
     description: string;
     dates?: string;
     content?: ITopic[];
-    subsections?: ISectionPublic[];
     path: string;
     createdAt?: Date;
     updatedAt?: Date;

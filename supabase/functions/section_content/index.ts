@@ -10,9 +10,8 @@ import * as section_utils from "../_shared/util/section_utils.ts";
 import * as course_utils from "../_shared/util/course_utils.ts";
 import { ICourseOutline } from "../_shared/models/internal/ICourseOutline.ts";
 import * as defaults from "../_shared/consts/defaults.ts";
-import { ITopic, ISectionPublic } from "../_shared/models/public/ISectionPublic.ts";
+import { ITopic, ILessonPublic } from "../_shared/models/public/ILessonPublic.ts";
 import { TopicsRequest } from "../_shared/dtos/content/TopicsRequest.ts";
-import { Database } from "../_shared/database.types.ts";
 
 const httpService = new HttpService(async (req: Request) => {
   const topicsRequest = new TopicsRequest(await req.json());
@@ -87,7 +86,7 @@ const httpService = new HttpService(async (req: Request) => {
 
   await lessonDao.updateSectionContentBySectionId(lesson.id, JSON.stringify(lessonWithTopics.content));
 
-  const sectionPublic: ISectionPublic = {
+  const sectionPublic: ILessonPublic = {
     id: lesson.id,
     title: lesson.title,
     description: lesson.description,
