@@ -66,9 +66,95 @@ export interface Database {
           user_id?: string
         }
       }
+      course_item: {
+        Row: {
+          course_id: string
+          created_at: string
+          dates: string | null
+          description: string
+          id: string
+          order_index: number
+          title: string
+          type: Database["public"]["Enums"]["course_item_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          dates?: string | null
+          description: string
+          id?: string
+          order_index: number
+          title: string
+          type: Database["public"]["Enums"]["course_item_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          dates?: string | null
+          description?: string
+          id?: string
+          order_index?: number
+          title?: string
+          type?: Database["public"]["Enums"]["course_item_type"]
+          updated_at?: string
+          user_id?: string
+        }
+      }
+      course_item_closure: {
+        Row: {
+          ancestor_id: string
+          depth: number
+          descendant_id: string
+        }
+        Insert: {
+          ancestor_id: string
+          depth: number
+          descendant_id: string
+        }
+        Update: {
+          ancestor_id?: string
+          depth?: number
+          descendant_id?: string
+        }
+      }
+      lesson_origin_topic: {
+        Row: {
+          lesson_id: string
+          topic_id: string
+        }
+        Insert: {
+          lesson_id: string
+          topic_id: string
+        }
+        Update: {
+          lesson_id?: string
+          topic_id?: string
+        }
+      }
+      module_origin_lesson: {
+        Row: {
+          lesson_id: string
+          module_id: string
+        }
+        Insert: {
+          lesson_id: string
+          module_id: string
+        }
+        Update: {
+          lesson_id?: string
+          module_id?: string
+        }
+      }
       profile: {
         Row: {
           first_name: string | null
+          generating_status:
+            | Database["public"]["Enums"]["generating_status"]
+            | null
           id: string
           last_name: string | null
           updated_at: string
@@ -76,6 +162,9 @@ export interface Database {
         }
         Insert: {
           first_name?: string | null
+          generating_status?:
+            | Database["public"]["Enums"]["generating_status"]
+            | null
           id: string
           last_name?: string | null
           updated_at?: string
@@ -83,6 +172,9 @@ export interface Database {
         }
         Update: {
           first_name?: string | null
+          generating_status?:
+            | Database["public"]["Enums"]["generating_status"]
+            | null
           id?: string
           last_name?: string | null
           updated_at?: string
@@ -130,6 +222,41 @@ export interface Database {
           user_id?: string
         }
       }
+      topic: {
+        Row: {
+          content: string | null
+          course_id: string
+          created_at: string
+          id: string
+          lesson_id: string
+          order_index: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          order_index?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          order_index?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -145,7 +272,8 @@ export interface Database {
       }
     }
     Enums: {
-      [_ in never]: never
+      course_item_type: "module" | "lesson"
+      generating_status: "generating" | "idle"
     }
     CompositeTypes: {
       [_ in never]: never

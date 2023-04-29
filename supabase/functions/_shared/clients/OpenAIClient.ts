@@ -8,6 +8,9 @@ import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
 import { ISection } from "../models/internal/ISection.ts";
 import { OpenAIError } from "../consts/errors/OpenAIError.ts";
 import { ITopicsRequest } from "../dtos/content/TopicsRequest.ts";
+import { CourseOutlineResponseV2 } from "../dtos/course/CourseOutlineResponseV2.ts";
+import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
+import { InternalCourse } from "../InternalModels.ts";
 
 export class OpenAIClient {
   private openai: any;
@@ -19,8 +22,8 @@ export class OpenAIClient {
   }
 
   async createCourseOutline(courseRequest: ICourseRequest): Promise<ICourseOutline> {
-    let model = "gpt-4";
-    // let model = "gpt-3.5-turbo";
+    // let model = "gpt-4";
+    let model = "gpt-3.5-turbo";
     let messages;
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
@@ -78,6 +81,53 @@ export class OpenAIClient {
     };
 
     return courseOutline;
+  }
+
+  async createCourseOutlineV2(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
+    let messages;
+    let user_message = courseRequest.search_text ?? courseRequest.subject;
+
+    if (courseRequest.section_count != null) {
+      user_message = `${user_message}. Section Count: ${courseRequest.section_count}`;
+    }
+
+    if (model === "gpt-4") {
+      messages = [
+        { role: "system", content: new_course_prompts.course_outline_v2 },
+        { role: "user", content: user_message },
+      ];
+    } else if (model === "gpt-3.5-turbo") {
+      messages = [{ role: "user", content: `${new_course_prompts.course_outline_v2}. Course Request Text: ${user_message} ` }];
+    }
+
+    let completion: any = undefined;
+    try {
+      completion = await this.openai.createChatCompletion({
+        model: model,
+        messages: messages,
+        max_tokens: courseRequest.max_tokens ?? defaultMaxTokens,
+        temperature: courseRequest.temperature ?? defaultTemperature,
+      });
+    } catch (error) {
+      if (error.response) {
+        throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
+      } else {
+        throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
+      }
+    }
+
+    console.log(completion.data.choices[0].message.content);
+
+    if (!completion?.data?.choices[0]?.message?.content) {
+      throw new OpenAIError("404", `Course outline not returned from OpenAI`);
+    }
+
+    const courseOutlineResponse = new CourseOutlineResponseV2(completion.data.choices[0].message.content);
+    courseOutlineResponse.validate();
+
+    const course = mapExternalCourseOutlineResponseToInternal(courseOutlineResponse.response);
+
+    return course;
   }
 
   async generateTopicTitles(topicsRequest: ITopicsRequest, courseOutline: string, model: string): Promise<string[]> {
