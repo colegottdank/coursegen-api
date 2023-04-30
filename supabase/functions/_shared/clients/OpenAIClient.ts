@@ -27,8 +27,8 @@ export class OpenAIClient {
     let messages;
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
-    if (courseRequest.section_count != null) {
-      user_message = `${user_message}. Section Count: ${courseRequest.section_count}`;
+    if (courseRequest.module_count != null) {
+      user_message = `${user_message}. Section Count: ${courseRequest.module_count}`;
     }
 
     if (model === "gpt-4") {
@@ -87,8 +87,8 @@ export class OpenAIClient {
     let messages;
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
-    if (courseRequest.section_count != null) {
-      user_message = `${user_message}. Section Count: ${courseRequest.section_count}`;
+    if (courseRequest.module_count != null) {
+      user_message = `${user_message}. Section Count: ${courseRequest.module_count}`;
     }
 
     if (model === "gpt-4") {

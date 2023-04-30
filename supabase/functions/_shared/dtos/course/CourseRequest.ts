@@ -3,7 +3,7 @@ import * as validators from "../../util/validators.ts";
 export interface ICourseRequest { 
   search_text?: string;
   subject?: string;
-  section_count?: number;
+  module_count?: number;
   max_tokens?: number;
   temperature?: number;
 }
@@ -11,7 +11,7 @@ export interface ICourseRequest {
 export class CourseRequest implements ICourseRequest {
   search_text?: string;
   subject?: string;
-  section_count?: number;
+  module_count?: number;
   max_tokens?: number;
   temperature?: number;
 
@@ -27,7 +27,7 @@ export class CourseRequest implements ICourseRequest {
       validators.validateSubject(this.subject);
     }
 
-    validators.validateSectionCount(this.section_count);
+    validators.validateModuleCount(this.module_count);
     validators.validateMaxTokens(this.max_tokens);
     validators.validateTemperature(this.temperature);
   }

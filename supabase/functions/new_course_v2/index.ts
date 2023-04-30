@@ -26,9 +26,7 @@ const httpService = new HttpService(async (req: Request) => {
 
   if(user)
   {
-    const profile = await userDao.getProfileByUserId(user.id);
-    console.log(profile);
-    
+    const profile = await userDao.getProfileByUserId(user.id);    
     if(profile.generating_status !== GeneratingStatus.Idle.toString())
     {
       throw new TooManyRequestsError("You are only allowed one generation at a time. Please wait for your current generation to finish.")
@@ -38,12 +36,11 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, defaults.gpt35);
-  console.log(courseOutline);
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
   courseOutline.userId = user?.id;
-  const insertedCourse = await courseDao.insertCourseV2(courseOutline, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.section_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
+  const insertedCourse = await courseDao.insertCourseV2(courseOutline, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.module_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
   courseOutline.id = insertedCourse.id;
 
   setCourseAndUserIds(courseOutline.items, user?.id, insertedCourse.id);

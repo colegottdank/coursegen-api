@@ -23,9 +23,9 @@ export function validateProficiency(proficiency: string | undefined): void {
   }
 }
 
-export function validateSectionCount(section_count: number | undefined): void {
-  if (section_count && (section_count < 2 || section_count > 15)) {
-    throw new BadRequestError("Section count must be between 2 and 15");
+export function validateModuleCount(module_count: number | undefined): void {
+  if (module_count && (module_count < 2 || module_count > 15)) {
+    throw new BadRequestError("Module count must be between 2 and 15");
   }
 }
 

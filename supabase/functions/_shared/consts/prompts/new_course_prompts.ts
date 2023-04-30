@@ -77,7 +77,7 @@ export const course_outline_v2 = `As an AI model, create course outlines based o
 Guidelines:
 
 Course: Comprises modules, lessons, topics.
-Modules: High-level concepts with a minimum of 3 distinct lessons each.
+Modules: Max 10 modules. High-level concepts with a minimum of 3 distinct lessons each.
 Lessons: Targeted content for user learning.
 
 Requirements:
