@@ -36,18 +36,17 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
   var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, defaults.gpt35);
+  courseOutline.userId = user?.id;
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
-  courseOutline.userId = user?.id;
   const insertedCourse = await courseDao.insertCourseV2(courseOutline, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.module_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
   courseOutline.id = insertedCourse.id;
 
-  setCourseAndUserIds(courseOutline.items, user?.id, insertedCourse.id);
+  setCourseAndUserIdsOnCourseOutline(courseOutline.items, user?.id, insertedCourse.id);
 
   const courseItemDao = new CourseItemDao(supabase);
-  const insertedCourseItems = courseItemDao.insertCourseItemsRecursively(courseOutline.items);
-  console.log(insertedCourseItems);
+  await courseItemDao.insertCourseItemsRecursively(courseOutline.items);
 
   const publicCourse = mapInternalToPublicCourse(courseOutline);
 
@@ -56,7 +55,7 @@ const httpService = new HttpService(async (req: Request) => {
 
 serve((req) => httpService.handle(req));
 
-function setCourseAndUserIds(
+function setCourseAndUserIdsOnCourseOutline(
   items: InternalCourseItem[],
   userId?: string,
   courseId?: string
@@ -68,7 +67,7 @@ function setCourseAndUserIds(
 
     // If the current item has child items, recursively set userId and courseId for them
     if (item.items && item.items.length > 0) {
-      setCourseAndUserIds(item.items, userId, courseId);
+      setCourseAndUserIdsOnCourseOutline(item.items, userId, courseId);
     }
   });
 }

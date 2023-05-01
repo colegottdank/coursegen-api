@@ -116,8 +116,6 @@ export class OpenAIClient {
       }
     }
 
-    console.log(completion.data.choices[0].message.content);
-
     if (!completion?.data?.choices[0]?.message?.content) {
       throw new OpenAIError("404", `Course outline not returned from OpenAI`);
     }

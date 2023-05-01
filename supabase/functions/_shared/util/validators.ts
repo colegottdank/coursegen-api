@@ -24,8 +24,8 @@ export function validateProficiency(proficiency: string | undefined): void {
 }
 
 export function validateModuleCount(module_count: number | undefined): void {
-  if (module_count && (module_count < 2 || module_count > 15)) {
-    throw new BadRequestError("Module count must be between 2 and 15");
+  if (module_count && (module_count < 2 || module_count > 10)) {
+    throw new BadRequestError("Module count must be between 2 and 10");
   }
 }
 
