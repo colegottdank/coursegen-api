@@ -54,7 +54,7 @@ export class CourseOutlineResponseV2 {
       throw new OpenAIInvalidResponseError("Assistant course must have at least one item");
     }
 
-    if(content.length < 3 || content.length > 15) {
+    if(content.length < 2 || content.length > 15) {
       throw new OpenAIInvalidResponseError("Assistant course must have between 2 and 15 items");
     }
 
