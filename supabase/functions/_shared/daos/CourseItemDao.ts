@@ -36,6 +36,86 @@ export class CourseItemDao {
     return data;
   }
 
+  async insertCourseItemsRecursivelyV2(
+    course_items: InternalCourseItem[]
+  ): Promise<void> {
+    // Flatten the items
+    const flattenedItems: InternalCourseItem[] = [];
+  
+    const flatten = (items: InternalCourseItem[]) => {
+      for (const item of items) {
+        flattenedItems.push(item);
+  
+        if (item.items && item.items.length > 0) {
+          flatten(item.items);
+        }
+      }
+    };
+  
+    flatten(course_items);
+  
+    // Bulk insert
+    const { error } = await this.supabase
+      .from("course_item")
+      .insert(flattenedItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        dates: item.dates,
+        order_index: item.order_index,
+        type: item.type,
+        course_id: item.course_id,
+        user_id: item.user_id,
+        parent_id: item.parent_id,
+      })));
+  
+    if (error) {
+      throw error;
+    }
+
+
+  // Insert items into the closure table
+  for (const item of flattenedItems) {
+    // Create an array for the rows to be inserted into the closure table
+    const rowsToInsert = [
+      {
+        ancestor_id: item.id,
+        descendant_id: item.id,
+        depth: 0,
+        course_id: item.course_id
+      },
+    ];
+
+    // Find all the ancestors of the current item and create closure table rows for each ancestor
+    let currentParentId = item.parent_id;
+    let currentDepth = 1;
+    while (currentParentId) {
+      rowsToInsert.push({
+        ancestor_id: currentParentId,
+        descendant_id: item.id,
+        depth: currentDepth,
+        course_id: item.course_id
+      });
+
+      // Move up to the next ancestor
+      const parentItem = flattenedItems.find((i) => i.id === currentParentId);
+      currentParentId = parentItem ? parentItem.parent_id : undefined;
+      currentDepth++;
+    }
+
+    const { error: closureError } = await this.supabase
+      .from("course_item_closure")
+      .insert(rowsToInsert);
+
+    if (closureError) {
+      throw closureError;
+    }
+
+    console.log(rowsToInsert);
+  }
+}
+  
+
   async insertCourseItemsRecursively(
     course_items: InternalCourseItem[],
     parentItemId?: string

@@ -11,6 +11,7 @@ import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
+import { v4 as uuidv4, validate as uuidValidate } from "uuid";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters
@@ -43,10 +44,10 @@ const httpService = new HttpService(async (req: Request) => {
   const insertedCourse = await courseDao.insertCourseV2(courseOutline, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.module_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
   courseOutline.id = insertedCourse.id;
 
-  setCourseAndUserIdsOnCourseOutline(courseOutline.items, user?.id, insertedCourse.id);
+  updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);
 
   const courseItemDao = new CourseItemDao(supabase);
-  await courseItemDao.insertCourseItemsRecursively(courseOutline.items);
+  await courseItemDao.insertCourseItemsRecursivelyV2(courseOutline.items);
 
   const publicCourse = mapInternalToPublicCourse(courseOutline);
 
@@ -55,19 +56,22 @@ const httpService = new HttpService(async (req: Request) => {
 
 serve((req) => httpService.handle(req));
 
-function setCourseAndUserIdsOnCourseOutline(
+function updateCourseItemFields(
   items: InternalCourseItem[],
   userId?: string,
-  courseId?: string
+  courseId?: string,
+  parentId?: string
 ): void {
   items.forEach((item) => {
-    // Set userId and courseId for the current item
+    // Set userId, courseId, and parentId for the current item
     item.user_id = userId;
     item.course_id = courseId;
+    item.id = uuidv4();
+    item.parent_id = parentId;
 
-    // If the current item has child items, recursively set userId and courseId for them
+    // If the current item has child items, recursively set userId, courseId, and parentId for them
     if (item.items && item.items.length > 0) {
-      setCourseAndUserIdsOnCourseOutline(item.items, userId, courseId);
+      updateCourseItemFields(item.items, userId, courseId, item.id);
     }
   });
 }

@@ -56,6 +56,7 @@ export function mapInternalToPublicCourse(internalCourse: InternalCourse): Publi
   function mapInternalToPublicCourseItem(internalItem: InternalCourseItem): PublicCourseItem {
     const publicItem: PublicCourseItem = {
       id: internalItem.id,
+      parent_id: internalItem.parent_id,
       title: internalItem.title,
       description: internalItem.description,
       dates: internalItem.dates,

@@ -61,3 +61,12 @@ ADD CONSTRAINT fk_parent_id
 FOREIGN KEY (parent_id)
 REFERENCES course_item (id)
 ON DELETE CASCADE;
+
+ALTER TABLE course_item_closure
+ADD COLUMN course_id UUID;
+
+ALTER TABLE course_item_closure
+ADD CONSTRAINT fk_course_item_closure_course_id
+FOREIGN KEY (course_id) REFERENCES public.course(id);
+
+ALTER TABLE public.course_item_closure ENABLE ROW LEVEL SECURITY;

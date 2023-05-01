@@ -11,6 +11,7 @@ export interface PublicCourse {
 
 export interface PublicCourseItem {
     id?: string;
+    parent_id?: string;
     title: string;
     description: string;
     dates?: string;
