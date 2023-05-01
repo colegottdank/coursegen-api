@@ -6,9 +6,11 @@ export class UserDao {
     constructor(private supabase: SupabaseClient) {}
 
     async getUserByRequest(req: Request): Promise<User | null>{
-        const user = await this.supabase.auth.getUser(req.headers.get('Authorization')!.replace("Bearer ",""));
+      let header = req.headers.get('Authorization')?.replace("Bearer ","");
+      if(!header) return null;
 
-        return user?.data?.user;
+      const user = await this.supabase.auth.getUser(header);
+      return user?.data?.user;
     }
   
     async getProfileByUserId(
