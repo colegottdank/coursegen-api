@@ -1,5 +1,8 @@
 -- Drop the existing policy
 DROP POLICY "Users can view own course" ON public.course;
+DROP POLICY "Authenticated users can insert new course" ON public.course;
+DROP POLICY "Individual insert access" ON public.profile;
+DROP POLICY "Authenticated users can insert new section" ON public.section;
 
 CREATE POLICY course_select_policy
 ON public.course
@@ -41,3 +44,20 @@ BEFORE UPDATE ON public.course
 FOR EACH ROW
 WHEN (row_security_active('course'))
 EXECUTE FUNCTION public.validate_course_update();
+
+ALTER TABLE public.course
+ALTER COLUMN user_id DROP NOT NULL;
+
+ALTER TABLE public.course_item
+ALTER COLUMN user_id DROP NOT NULL;
+
+-- Add the parent_id column
+ALTER TABLE course_item
+ADD COLUMN parent_id UUID;
+
+-- Define the foreign key constraint
+ALTER TABLE course_item
+ADD CONSTRAINT fk_parent_id
+FOREIGN KEY (parent_id)
+REFERENCES course_item (id)
+ON DELETE CASCADE;

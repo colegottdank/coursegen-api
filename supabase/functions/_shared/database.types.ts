@@ -43,7 +43,7 @@ export interface Database {
           search_text: string
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -53,7 +53,7 @@ export interface Database {
           search_text: string
           title: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -63,7 +63,7 @@ export interface Database {
           search_text?: string
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
       }
       course_item: {
@@ -74,10 +74,11 @@ export interface Database {
           description: string
           id: string
           order_index: number
+          parent_id: string | null
           title: string
           type: Database["public"]["Enums"]["course_item_type"]
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           course_id: string
@@ -86,10 +87,11 @@ export interface Database {
           description: string
           id?: string
           order_index: number
+          parent_id?: string | null
           title: string
           type: Database["public"]["Enums"]["course_item_type"]
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           course_id?: string
@@ -98,10 +100,11 @@ export interface Database {
           description?: string
           id?: string
           order_index?: number
+          parent_id?: string | null
           title?: string
           type?: Database["public"]["Enums"]["course_item_type"]
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
       }
       course_item_closure: {
