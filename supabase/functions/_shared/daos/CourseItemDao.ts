@@ -25,18 +25,6 @@ export class CourseItemDao {
     .select()
     .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
 
-
-    // id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
-    // title text NOT NULL,
-    // description text NOT NULL,
-    // dates text NULL,
-    // order_index integer NOT NULL,
-    // type course_item_type NOT NULL,
-    // course_id uuid NOT NULL REFERENCES public.course(id) ON DELETE CASCADE,
-    // user_id uuid NOT NULL REFERENCES public.profile(id) ON DELETE SET NULL,
-
-    // created_at timestamptz NOT NULL DEFAULT now(),
-    // updated_at timestamptz NOT NULL DEFAULT now()
     if (error) {
         throw new SupabaseError(error.code, `Failed to insert course items`);
     }
@@ -51,79 +39,63 @@ export class CourseItemDao {
   async insertCourseItemsRecursively(
     course_items: InternalCourseItem[],
     parentItemId?: string
-  ): Promise<Database["public"]["Tables"]["course_item"]["Row"][]> {
-    const insertedItems: Database["public"]["Tables"]["course_item"]["Row"][] = [];
+  ): Promise<InternalCourseItem[]> {
+    // Flatten the items and collect their references
+    const itemRefs: { ref: InternalCourseItem; item: any }[] = [];
+    const flattenedItems: any[] = [];
   
-    for (const course_item of course_items) {
-      const { data, error } = await this.supabase
-        .from("course_item")
-        .insert([
-          {
-            title: course_item.title,
-            description: course_item.description,
-            dates: course_item.dates,
-            order_index: course_item.order_index,
-            type: course_item.type,
-            course_id: course_item.course_id,
-            user_id: course_item.user_id,
-          },
-        ])
-        .select()
-        .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
+    let tempIdCounter = 0;
   
-      if (error) {
-        throw error;
-      }
+    const flatten = (items: InternalCourseItem[], parentId?: string) => {
+      for (const item of items) {
+        const newItem = {
+          ...item,
+          tempId: `temp_${tempIdCounter++}`,
+          parentItemId: parentId,
+        };
+        flattenedItems.push(newItem);
+        itemRefs.push({ ref: item, item: newItem });
   
-      if (data && data.length > 0) {
-        const insertedItem = data[0];
-        insertedItems.push(insertedItem);
-  
-        // Insert the course item into the closure table
-        if (parentItemId) {
-          const { error: closureError } = await this.supabase
-            .from("course_item_closure")
-            .insert([
-              {
-                ancestor_id: parentItemId,
-                descendant_id: insertedItem.id,
-                depth: 1,
-              },
-              {
-                ancestor_id: insertedItem.id,
-                descendant_id: insertedItem.id,
-                depth: 0,
-              },
-            ]);
-  
-          if (closureError) {
-            throw closureError;
-          }
-        } else {
-          const { error: closureError } = await this.supabase
-            .from("course_item_closure")
-            .insert([
-              {
-                ancestor_id: insertedItem.id,
-                descendant_id: insertedItem.id,
-                depth: 0,
-              },
-            ]);
-  
-          if (closureError) {
-            throw closureError;
-          }
-        }
-  
-        // If the current item has child items, recursively insert them
-        if (course_item.items && course_item.items.length > 0) {
-          const childItems = await this.insertCourseItemsRecursively(course_item.items, insertedItem.id);
-          insertedItems.push(...childItems);
+        if (item.items && item.items.length > 0) {
+          flatten(item.items, newItem.tempId);
         }
       }
+    };
+  
+    flatten(course_items);
+    console.log(flattenedItems);
+  
+    // Bulk insert
+    const { data, error } = await this.supabase
+      .from("course_item")
+      .insert(flattenedItems.map((item) => ({
+        title: item.title,
+        description: item.description,
+        dates: item.dates,
+        order_index: item.order_index,
+        type: item.type,
+        course_id: item.course_id,
+        user_id: item.user_id
+      })))
+      .select()
+      .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
+  
+    if (error) {
+      throw error;
     }
   
-    return insertedItems;
+    if (data && data.length > 0) {
+      // Map the newly created IDs to the original items
+      data.forEach((insertedItem) => {
+        const refItem = itemRefs.find((ref) => ref.item.tempId === insertedItem.parent_id);
+        if (refItem) {
+          refItem.ref.id = insertedItem.id;
+          insertedItem.parent_id = refItem.item.parentItemId;
+        }
+      });
+    }
+  
+    return course_items;
   }
   
 }
