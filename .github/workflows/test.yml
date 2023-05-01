@@ -22,7 +22,6 @@ jobs:
       - run: |
           supabase link --project-ref $PROJECT_ID
           supabase db push
-          supabase db reset
           supabase functions deploy new_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy new_course_v2 --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json" --no-verify-jwt
           supabase functions deploy lesson_content --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
