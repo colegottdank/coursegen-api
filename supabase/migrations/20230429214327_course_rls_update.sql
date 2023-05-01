@@ -1,8 +1,8 @@
 -- Drop the existing policy
-DROP POLICY "Users can view own course" ON public.course;
-DROP POLICY "Authenticated users can insert new course" ON public.course;
-DROP POLICY "Individual insert access" ON public.profile;
-DROP POLICY "Authenticated users can insert new section" ON public.section;
+DROP POLICY IF EXISTS "Users can view own course" ON public.course;
+DROP POLICY IF EXISTS "Authenticated users can insert new course" ON public.course;
+DROP POLICY IF EXISTS "Individual insert access" ON public.profile;
+DROP POLICY IF EXISTS "Authenticated users can insert new section" ON public.section;
 
 CREATE POLICY course_select_policy
 ON public.course
