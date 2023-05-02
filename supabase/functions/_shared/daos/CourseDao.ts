@@ -54,7 +54,7 @@ export class CourseDao {
         description: course.description,
         title: course.title,
         dates: course.dates,
-        user_id: course.userId,
+        user_id: course.user_id,
         search_text: search_text
       })
       .select()

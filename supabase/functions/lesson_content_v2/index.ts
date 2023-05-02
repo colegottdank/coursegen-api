@@ -10,7 +10,7 @@ import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
-import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
+import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalCourseItemToPublicCourseItem, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
 
@@ -74,7 +74,7 @@ const httpService = new HttpService(async (req: Request) => {
 
     topicDao.insertTopics(internalTopics);
 
-    return currentLesson;
+    return mapInternalCourseItemToPublicCourseItem(currentLesson);
 });
   
 serve((req) => httpService.handle(req));

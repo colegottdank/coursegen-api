@@ -1,7 +1,35 @@
 import { ICourseItem, ICourseOutlineResponseV2 } from "./dtos/course/CourseOutlineResponseV2.ts";
 import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "./InternalModels.ts";
-import { PublicCourse, PublicCourseItem } from "./PublicModels.ts";
+import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
+
+export function mapInternalCourseItemToPublicCourseItem(internalCourseItem: InternalCourseItem): PublicCourseItem {
+  const publicCourseItem: PublicCourseItem = {
+    id: internalCourseItem.id,
+    parent_id: internalCourseItem.parent_id,
+    course_id: internalCourseItem.course_id,
+    title: internalCourseItem.title,
+    description: internalCourseItem.description,
+    dates: internalCourseItem.dates,
+    order_index: internalCourseItem.order_index,
+    type: internalCourseItem.type,
+    user_id: internalCourseItem.user_id,
+  };
+
+  if (internalCourseItem.topics) {
+    publicCourseItem.topics = internalCourseItem.topics.map((topic) => {
+      const publicTopic: PublicTopic = {
+        id: topic.id,
+        title: topic.title,
+        content: topic.content,
+        order_index: topic.order_index
+      };
+      return publicTopic;
+    });
+  }
+
+  return publicCourseItem;
+}
 
 export function mapTopicsToInternalTopics(
   topics: string[],
@@ -80,9 +108,9 @@ export function mapCourseDaoToInternalCourse(courseData: any): InternalCourse {
     title: courseData.title,
     description: courseData.description,
     dates: courseData.dates,
-    userId: courseData.user_id,
-    createdAt: courseData.created_at,
-    updatedAt: courseData.updated_at,
+    user_id: courseData.user_id,
+    created_at: courseData.created_at,
+    updated_at: courseData.updated_at,
     items: [],
   };
 
@@ -201,9 +229,7 @@ export function mapInternalToPublicCourse(internalCourse: InternalCourse): Publi
       title: internalCourse.title,
       description: internalCourse.description,
       dates: internalCourse.dates,
-      userId: internalCourse.userId,
-      createdAt: internalCourse.createdAt,
-      updatedAt: internalCourse.updatedAt,
+      user_id: internalCourse.user_id,
       items: internalCourse.items.map(mapInternalToPublicCourseItem),
     };
   

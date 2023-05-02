@@ -3,9 +3,9 @@ export interface InternalCourse {
   title: string;
   description?: string;
   dates?: string;
-  userId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  user_id?: string;
+  created_at?: Date;
+  updated_at?: Date;
   items: InternalCourseItem[];
 }
 
