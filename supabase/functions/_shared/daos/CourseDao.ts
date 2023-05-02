@@ -27,6 +27,26 @@ export class CourseDao {
     return data;
   }
 
+  async getCourseByIdAndUserId(courseId: string, userId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+    const {data, error} = await this.supabase
+      .from("course")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("id", courseId)
+      .returns<Database["public"]["Tables"]["course"]["Row"]>()
+      .single();
+
+    if(error) {
+      throw new SupabaseError("course_not_found", `Failed to get course by id ${courseId} and user id ${userId}`);
+    }
+
+    if(!data) {
+      throw new SupabaseError("course_not_found", `Course not found by id ${courseId} for user ${userId}`);
+    }
+
+    return data;
+  }
+
   async insertCourseV2(course: InternalCourse, search_text: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
     const {data, error} = await this.supabase
       .from("course")

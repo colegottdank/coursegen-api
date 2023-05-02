@@ -11,7 +11,7 @@ import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
-import { v4 as uuidv4, validate as uuidValidate } from "uuid";
+import { v4 as uuidv4} from "uuid";
 
 const httpService = new HttpService(async (req: Request) => {
   // Parse request parameters

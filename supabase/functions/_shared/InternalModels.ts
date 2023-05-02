@@ -20,6 +20,26 @@ export interface InternalCourseItem {
   course_id?: string;
   user_id?: string;
   items?: InternalCourseItem[];
+  topics?: InternalTopic[];
+}
+
+export interface InternalCourseItemClosure {
+  ancestor_id: string;
+  descendant_id: string;
+  depth: number;
+  course_id: string;
+}
+
+export interface InternalTopic {
+  id: string;
+  title: string;
+  content?: string;
+  order_index?: number;
+  lesson_id: string;
+  user_id: string;
+  course_id: string;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export enum CourseItemType {
