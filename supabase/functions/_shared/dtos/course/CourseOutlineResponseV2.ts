@@ -4,7 +4,6 @@ export interface ICourseOutlineResponseV2 {
   success: boolean;
   data: {
     course: ICourse;
-    items: ICourseItem[];
   };
   error: {
     code: number;
@@ -16,6 +15,7 @@ export interface ICourse {
   title: string;
   description: string;
   dates?: string;
+  items: ICourseItem[];
 }
 
 export interface ICourseItem {
@@ -49,7 +49,7 @@ export class CourseOutlineResponseV2 {
       throw new OpenAIInvalidResponseError("Assistant course dates must be less than 50 characters");
     }
 
-    const content = this.response.data.items;
+    const content = this.response.data.course.items;
     if (content == null || content.length == 0) {
       throw new OpenAIInvalidResponseError("Assistant course must have at least one item");
     }

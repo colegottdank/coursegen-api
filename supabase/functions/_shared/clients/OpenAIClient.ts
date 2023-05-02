@@ -88,7 +88,7 @@ export class OpenAIClient {
     let user_message = courseRequest.search_text ?? courseRequest.subject;
 
     if (courseRequest.module_count != null) {
-      user_message = `${user_message}. Section Count: ${courseRequest.module_count}`;
+      user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
     }
 
     if (model === "gpt-4") {

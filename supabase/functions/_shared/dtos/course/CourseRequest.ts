@@ -10,7 +10,7 @@ export interface ICourseRequest {
 
 export class CourseRequest implements ICourseRequest {
   search_text?: string;
-  subject?: string;
+  subject?: string; // TODO: depreciate
   module_count?: number;
   max_tokens?: number;
   temperature?: number;
@@ -21,10 +21,10 @@ export class CourseRequest implements ICourseRequest {
 
   Validate(): void {
     if(this.subject == null){
-      validators.validateSubject(this.search_text);
+      validators.validateSearchText(this.search_text);
     }
     else{
-      validators.validateSubject(this.subject);
+      validators.validateSearchText(this.subject);
     }
 
     validators.validateModuleCount(this.module_count);

@@ -8,7 +8,7 @@ export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse
         title: externalCourse.title,
         description: externalCourse.description,
         dates: externalCourse.dates,
-        items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.items),
+        items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.course.items),
     };
     return internalCourse;
 }
@@ -23,12 +23,11 @@ function mapExternalCourseItemsToInternal(externalCourseItems: ICourseItem[]): I
             description: externalCourseItem.description,
             dates: externalCourseItem.dates,
             type: externalCourseItem.type === 'module' ? CourseItemType.Module : CourseItemType.Lesson,
-            order_index: orderIndex,
-            items: [],
+            order_index: orderIndex
         };
 
-        if (externalCourseItem.items) {
-            internalCourseItem.items = mapExternalCourseItemsToInternal(externalCourseItem.items);
+        if (externalCourseItem.type === 'module' && externalCourseItem.items) {
+          internalCourseItem.items = mapExternalCourseItemsToInternal(externalCourseItem.items);
         }
 
         internalCourseItems.push(internalCourseItem);
