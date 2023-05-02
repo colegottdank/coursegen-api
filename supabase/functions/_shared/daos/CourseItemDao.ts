@@ -110,8 +110,6 @@ export class CourseItemDao {
     if (closureError) {
       throw closureError;
     }
-
-    console.log(rowsToInsert);
   }
 }
   
