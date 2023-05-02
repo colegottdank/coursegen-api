@@ -1,62 +1,57 @@
 {
-  "success": true,
-  "data": {
-    "course": {
-      "title": "Computer Engineering for Software Engineers",
+  "Course": {
+    "title": "Computer Engineering for Software Engineers",
+    "description": "Expand your knowledge in computer engineering as a software engineer with this comprehensive course.",
+    "dates": ""
+  },
+  "Sections": [
+    {
+      "title": "Digital Logic Design",
+      "description": "Learn the fundamentals of digital circuits, Boolean algebra, and logic gates.",
       "dates": "",
-      "description": "Expand your software engineering skills by diving into the world of computer engineering."
+      "path": "01",
+      "subsections": []
     },
-    "sections": [
-      {
-        "title": "Introduction to Computer Engineering",
-        "dates": "",
-        "description": "Explore the basics of computer engineering, including digital logic, computer organization, and microprocessors."
-      },
-      {
-        "title": "Embedded Systems and Microcontrollers",
-        "dates": "",
-        "description": "Learn about embedded systems, microcontroller programming, and interfacing with peripherals."
-      },
-      {
-        "title": "Computer Networks and Protocols",
-        "dates": "",
-        "description": "Understand the fundamentals of computer networks, protocols, and network programming."
-      },
-      {
-        "title": "Operating Systems Concepts",
-        "dates": "",
-        "description": "Discover the principles of operating systems, including process management, memory management, and file systems."
-      },
-      {
-        "title": "Hardware-Software Co-Design",
-        "dates": "",
-        "description": "Explore the integration of hardware and software components in modern computer systems."
-      },
-      {
-        "title": "FPGAs and Programmable Logic",
-        "dates": "",
-        "description": "Learn about Field-Programmable Gate Arrays (FPGAs) and their applications in computer engineering."
-      },
-      {
-        "title": "Computer Architecture and Performance Optimization",
-        "dates": "",
-        "description": "Study advanced computer architecture concepts and performance optimization techniques."
-      },
-      {
-        "title": "IoT and Edge Computing",
-        "dates": "",
-        "description": "Dive into the world of IoT and edge computing, exploring their applications and challenges."
-      },
-      {
-        "title": "Cybersecurity in Computer Engineering",
-        "dates": "",
-        "description": "Understand the importance of cybersecurity in computer engineering and learn best practices for securing systems."
-      },
-      {
-        "title": "Industry Applications and Trends",
-        "dates": "",
-        "description": "Examine real-world applications of computer engineering and stay updated on the latest industry trends."
-      }
-    ]
-  }
+    {
+      "title": "Computer Architecture",
+      "description": "Explore processor design, memory hierarchy, and parallelism in computer systems.",
+      "dates": "",
+      "path": "02",
+      "subsections": []
+    },
+    {
+      "title": "Embedded Systems",
+      "description": "Understand the basics of embedded systems, microcontrollers, and real-time operating systems.",
+      "dates": "",
+      "path": "03",
+      "subsections": []
+    },
+    {
+      "title": "Networking Fundamentals",
+      "description": "Gain insights into network protocols, topologies, and the OSI model.",
+      "dates": "",
+      "path": "04",
+      "subsections": []
+    },
+    {
+      "title": "Operating Systems Concepts",
+      "description": "Delve into process management, memory management, and file systems.",
+      "dates": "",
+      "path": "05",
+      "subsections": []
+    },
+    {
+      "title": "Hardware-Software Integration",
+      "description": "Learn about the interaction between hardware and software, and techniques for optimizing performance.",
+      "dates": "",
+      "path": "06",
+      "subsections": [],
+      "content": [
+        { "header": "Introduction to Hardware-Software Integration" },
+        { "header": "Hardware-Software Interaction" },
+        { "header": "Optimizing Performance" },
+        { "header": "Case Studies in Hardware-Software Integration" }
+      ]
+    }
+  ]
 }

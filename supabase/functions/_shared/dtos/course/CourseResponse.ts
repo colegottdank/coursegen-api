@@ -1,4 +1,4 @@
-import { ICourseOutline } from '../../models/public/ICourseOutline.ts';
+import { ICourseOutline } from '../../models/internal/ICourseOutline.ts';
 
 export interface CourseResponse {
     CourseOutline: ICourseOutline;

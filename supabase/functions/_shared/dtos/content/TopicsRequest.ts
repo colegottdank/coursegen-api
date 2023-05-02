@@ -1,7 +1,8 @@
-import { validators } from "../../util/validators.ts";
+import * as validators from "../../util/validators.ts";
 
-export interface ISectionContentRequest {
+export interface ITopicsRequest {
     section_id?: number;
+    course_id?: string;
     title?: string;
     proficiency?: string;
     max_tokens?: number;
@@ -9,8 +10,9 @@ export interface ISectionContentRequest {
     session_key?: string;
 }
 
-export class SectionContentRequest implements ISectionContentRequest {
+export class TopicsRequest implements ITopicsRequest {
     section_id?: number;
+    course_id?: string;
     title?: string;
     proficiency?: string;
     max_tokens?: number;
@@ -23,6 +25,7 @@ export class SectionContentRequest implements ISectionContentRequest {
 
     Validate(): void {
         validators.validateSectionId(this.section_id);
+        validators.notNullAndValidUUID(this.course_id, "course_id");
         validators.validateProficiency(this.proficiency);
         validators.validateMaxTokens(this.max_tokens);
         validators.validateTemperature(this.temperature);

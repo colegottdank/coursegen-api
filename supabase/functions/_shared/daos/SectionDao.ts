@@ -1,9 +1,9 @@
-import { PostgrestResponse, PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../database.types.ts";
 import { ISection } from "../models/internal/ISection.ts";
 import { SupabaseError } from "../consts/errors/SupabaseError.ts";
 
-export class SectionDao {
+export class LessonDao {
   constructor(private supabase: SupabaseClient) {}
 
   async insertSections(
@@ -38,13 +38,15 @@ export class SectionDao {
     return data;
   }
 
-  async getSectionBySectionId(
-    sectionId: number
+  async getSectionBySectionIdAndCourseId(
+    sectionId: number,
+    courseId: string
   ): Promise<Database["public"]["Tables"]["section"]["Row"]> {
     const { data, error } = await this.supabase
       .from("section")
       .select("*")
       .eq("id", sectionId)
+      .eq("course_id", courseId)
       .returns<Database["public"]["Tables"]["section"]["Row"]>()
       .single();
 
@@ -66,6 +68,7 @@ export class SectionDao {
       .from("section")
       .select("*")
       .eq("course_id", courseId)
+      .order("path", { ascending: true })
       .returns<Database["public"]["Tables"]["section"]["Row"][]>();
 
     if (error) {

@@ -1,9 +1,19 @@
 import { BadRequestError } from "../consts/errors/BadRequestError.ts";
 import { v4 as uuidv4, validate as uuidValidate } from "uuid";
 
-export function validateSubject(subject: string | undefined): void {
+export function notNullAndValidUUID(uuid: string | undefined, paramName: string): void {
+  if (!uuid) {
+    throw new BadRequestError(`${paramName} must not be null`);
+  }
+
+  if (!uuidValidate(uuid)) {
+    throw new BadRequestError(`${paramName} must be a valid UUID`);
+  }
+}
+
+export function validateSearchText(subject: string | undefined): void {
   if (!subject || subject.length > 300) {
-    throw new BadRequestError("Subject must be not null and less than 300 characters");
+    throw new BadRequestError("Search text must be not null and less than 300 characters");
   }
 }
 
@@ -13,9 +23,9 @@ export function validateProficiency(proficiency: string | undefined): void {
   }
 }
 
-export function validateSectionCount(section_count: number | undefined): void {
-  if (section_count && (section_count < 2 || section_count > 15)) {
-    throw new BadRequestError("Section count must be between 2 and 15");
+export function validateModuleCount(module_count: number | undefined): void {
+  if (module_count && (module_count < 2 || module_count > 10)) {
+    throw new BadRequestError("Module count must be between 2 and 10");
   }
 }
 
@@ -44,18 +54,6 @@ export function validateSectionId(sectionId: number | undefined): void {
 export function validateSessionKey(sessionKey: string | undefined): void {
   // validate session is a valid uuid
   if(!uuidValidate(sessionKey)) {
-    console.log("SessionKey must be a valid UUID");
     throw new BadRequestError("SessionKey must be a valid UUID");
   }
 }
-
-// Export all validators in a single object
-export const validators = {
-  validateSubject,
-  validateProficiency,
-  validateSectionCount,
-  validateMaxTokens,
-  validateTemperature,
-  validateSectionId,
-  validateSessionKey
-};
