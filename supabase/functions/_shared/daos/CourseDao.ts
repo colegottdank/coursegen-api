@@ -15,14 +15,13 @@ export class CourseDao {
       .returns<Database["public"]["Tables"]["course"]["Row"]>()
       .single();
 
-    if(error) {
-      console.log(error);
-      throw new SupabaseError(error.code, `Failed to get course by id`);
-    } 
-
-    if(!data) {
-      throw new SupabaseError("404", `Course not found`);
-    }
+      if(error) {
+        throw new SupabaseError("course_not_found", `Failed to get course by id ${courseId}`);
+      }
+  
+      if(!data) {
+        throw new SupabaseError("course_not_found", `Course not found by id ${courseId}`);
+      }
 
     return data;
   }

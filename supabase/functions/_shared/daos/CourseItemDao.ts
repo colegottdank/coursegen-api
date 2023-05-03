@@ -34,6 +34,32 @@ export class CourseItemDao {
     return data;
   }
 
+  async getCourseItemsByCourseId(
+    course_id: string
+  ): Promise<Database["public"]["Tables"]["course_item"]["Row"][]> {
+    const { data, error } = await this.supabase
+      .from("course_item")
+      .select()
+      .eq("course_id", course_id)
+      .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
+
+    if (error) {
+      throw new SupabaseError(
+        error.code,
+        `Failed to get course items for course ${course_id}`
+      );
+    }
+
+    if (!data) {
+      throw new SupabaseError(
+        "course_item_not_found",
+        `Course items not found for course ${course_id}`
+      );
+    }
+
+    return data;
+  }
+
   async getCourseItemClosuresByCourseId(
     course_id: string
   ): Promise<Database["public"]["Tables"]["course_item_closure"]["Row"][]> {
