@@ -8,6 +8,7 @@ export interface ILessonContentRequest {
     max_tokens?: number;
     temperature?: number;
     session_key?: string;
+    gpt_model?: string;
 }
 
 export class LessonContentRequest implements ILessonContentRequest {
@@ -18,6 +19,7 @@ export class LessonContentRequest implements ILessonContentRequest {
     max_tokens?: number;
     temperature?: number;
     session_key?: string;
+    gpt_model?: string;
 
     constructor(requestJson: string) {
         Object.assign(this, requestJson);
@@ -30,5 +32,6 @@ export class LessonContentRequest implements ILessonContentRequest {
         validators.validateMaxTokens(this.max_tokens);
         validators.validateTemperature(this.temperature);
         validators.validateSessionKey(this.session_key)
+        validators.validateGPTModel(this.gpt_model);
     }
 }
