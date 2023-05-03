@@ -36,7 +36,7 @@ const httpService = new HttpService(async (req: Request) => {
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
-  var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, defaults.gpt35);
+  var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, defaults.gpt4);
   courseOutline.user_id = user?.id;
 
   // Insert course and sections into db
