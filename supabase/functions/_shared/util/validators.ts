@@ -60,7 +60,7 @@ export function validateSessionKey(sessionKey: string | undefined): void {
 }
 
 export function validateGPTModel(gptModel: string | undefined): void {
-  if (gptModel != defaults.gpt35 && gptModel != defaults.gpt4) {
+  if (gptModel && gptModel != defaults.gpt35 && gptModel != defaults.gpt4) {
     throw new BadRequestError(`GPT Model must be ${defaults.gpt35} or ${defaults.gpt4} but was ${gptModel}`);
   }
 }
