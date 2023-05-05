@@ -5,16 +5,14 @@ import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import * as defaults from "../_shared/consts/defaults.ts";
-import { GeneratingStatus } from "../_shared/Statuses.ts";
 import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
 import { v4 as uuidv4} from "uuid";
-import { TooManyRequestsError } from "../_shared/consts/errors/Errors.ts";
 
 const httpServiceOptions: HttpServiceOptions = {
-  requireLogin: false,
+  requireLogin: true,
   rateLimit: true,
   isIdle: true
 };
