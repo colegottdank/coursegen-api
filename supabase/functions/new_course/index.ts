@@ -1,15 +1,21 @@
-import { ICourseOutlinePublic } from './../_shared/models/public/ICourseOutlinePublic.ts';
+import { ICourseOutlinePublic } from "./../_shared/models/public/ICourseOutlinePublic.ts";
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { HttpService } from "../_shared/util/httpservice.ts";
+import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { LessonDao } from "../_shared/daos/SectionDao.ts";
-import { SupabaseError } from "../_shared/consts/errors/SupabaseError.ts";
 import { ILessonPublic } from "../_shared/models/public/ILessonPublic.ts";
+import { SupabaseError } from "../_shared/consts/errors/Errors.ts";
 
-const httpService = new HttpService(async (req: Request) => {
+const httpServiceOptions: HttpServiceOptions = {
+  requireLogin: false,
+  rateLimit: true,
+  isIdle: true,
+};
+
+const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
   // Parse request parameters
   const courseRequest = new CourseRequest(await req.json());
   courseRequest.Validate();
@@ -21,10 +27,9 @@ const httpService = new HttpService(async (req: Request) => {
   // Initialize Supabase client
   const supabase = httpService.getSupabaseClient(req);
   // Get logged in user
-  const user = await supabase.auth.getUser(req.headers.get('Authorization')!.replace("Bearer ",""));
+  const user = await supabase.auth.getUser(req.headers.get("Authorization")!.replace("Bearer ", ""));
 
-  if(!user?.data?.user?.id)
-  {
+  if (!user?.data?.user?.id) {
     console.log("User not found");
     throw new SupabaseError("404", "User not found");
   }
@@ -32,7 +37,10 @@ const httpService = new HttpService(async (req: Request) => {
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
   courseOutline.Course.userId = user.data.user?.id;
-  const insertedCourse = await courseDao.insertCourse(courseOutline.Course, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.section_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
+  const insertedCourse = await courseDao.insertCourse(
+    courseOutline.Course,
+    `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.module_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`
+  );
 
   // Set course id and userId on sections
   courseOutline.Sections.forEach((section) => {
@@ -49,7 +57,7 @@ const httpService = new HttpService(async (req: Request) => {
       courseId: insertedCourse.id,
       title: insertedCourse.title,
       dates: insertedCourse.dates ?? undefined,
-      description: insertedCourse.description
+      description: insertedCourse.description,
     },
     Sections:
       insertedSections.map((section) => {
@@ -59,7 +67,7 @@ const httpService = new HttpService(async (req: Request) => {
           dates: section.dates ?? undefined,
           description: section.description,
           content: undefined,
-          path: section.path
+          path: section.path,
         };
         return mappedSection;
       }) ?? [],

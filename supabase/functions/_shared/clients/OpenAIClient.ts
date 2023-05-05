@@ -6,12 +6,12 @@ import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.
 import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
 import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
 import { ISection } from "../models/internal/ISection.ts";
-import { OpenAIError } from "../consts/errors/OpenAIError.ts";
 import { ITopicsRequest } from "../dtos/content/TopicsRequest.ts";
 import { CourseOutlineResponseV2 } from "../dtos/course/CourseOutlineResponseV2.ts";
 import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
 import { InternalCourse } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
+import { OpenAIError } from "../consts/errors/Errors.ts";
 
 export class OpenAIClient {
   private openai: any;

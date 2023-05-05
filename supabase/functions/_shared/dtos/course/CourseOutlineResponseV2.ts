@@ -1,4 +1,4 @@
-import { OpenAIInvalidResponseError } from "../../consts/errors/OpenAIInvalidResponseError.ts";
+import { OpenAIInvalidResponseError } from "../../consts/errors/Errors.ts";
 
 export interface ICourseOutlineResponseV2 {
   success: boolean;

@@ -1,6 +1,6 @@
-import { BadRequestError } from "../consts/errors/BadRequestError.ts";
 import { v4 as uuidv4, validate as uuidValidate } from "uuid";
 import * as defaults from "../../_shared/consts/defaults.ts";
+import { BadRequestError } from "../consts/errors/Errors.ts";
 
 export function notNullAndValidUUID(uuid: string | undefined, paramName: string): void {
   if (!uuid) {

@@ -1,11 +1,9 @@
-import { BadRequestError } from './../_shared/consts/errors/BadRequestError.ts';
-import { NotFoundError } from './../_shared/consts/errors/NotFoundError.ts';
+import { User } from '@supabase/supabase-js';
 import * as defaults from "../_shared/consts/defaults.ts";
-import { UnauthorizedError } from './../_shared/consts/errors/UnauthorizedError.ts';
 import { LessonContentRequest } from './../_shared/dtos/content/LessonContentRequest.ts';
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { HttpService } from "../_shared/util/httpservice.ts";
+import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
@@ -13,20 +11,21 @@ import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalCourseItemToPublicCourseItem, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
+import { GeneratingStatus } from "../_shared/Statuses.ts";
+import { BadRequestError, NotFoundError, TooManyRequestsError, UnauthorizedError } from "../_shared/consts/errors/Errors.ts";
 
-const httpService = new HttpService(async (req: Request) => {
+const httpServiceOptions: HttpServiceOptions = {
+    requireLogin: true,
+    rateLimit: true,
+    isIdle: true
+};
+
+const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
     const contentRequest = new LessonContentRequest(await req.json());
 
     // Initialize Supabase client
     const supabase = httpService.getSupabaseClient(req);
-
-    const userDao = new UserDao(supabase);
-    const user = await userDao.getUserByRequest(req)
-
-    if(!user)
-    {
-        throw new UnauthorizedError("You must be logged in to generate lesson content.");
-    }
+    const user = httpService.getUser() as User;
 
     const topicDao = new TopicDao(supabase);
     let existingTopics = await topicDao.getTopicsByLessonIdAndUserId(contentRequest.lesson_id!, user.id);
@@ -34,8 +33,6 @@ const httpService = new HttpService(async (req: Request) => {
     {
         throw new BadRequestError(`Lesson ${contentRequest.lesson_id} already has topics.`)
     }
-
-    // const profile = await userDao.getProfileByUserId(user.id);
 
     const courseDao = new CourseDao(supabase);
     const coursePromise = courseDao.getCourseByIdAndUserId(contentRequest.course_id!, user.id);

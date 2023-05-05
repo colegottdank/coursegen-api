@@ -1,19 +1,24 @@
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { HttpService } from "../_shared/util/httpservice.ts";
+import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { LessonDao } from "../_shared/daos/SectionDao.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
-import { BadRequestError } from "../_shared/consts/errors/BadRequestError.ts";
-import { NotFoundError } from "../_shared/consts/errors/NotFoundError.ts";
 import * as section_utils from "../_shared/util/section_utils.ts";
 import * as course_utils from "../_shared/util/course_utils.ts";
 import { ICourseOutline } from "../_shared/models/internal/ICourseOutline.ts";
 import * as defaults from "../_shared/consts/defaults.ts";
 import { ITopic, ILessonPublic } from "../_shared/models/public/ILessonPublic.ts";
 import { TopicsRequest } from "../_shared/dtos/content/TopicsRequest.ts";
+import { BadRequestError, NotFoundError } from "../_shared/consts/errors/Errors.ts";
 
-const httpService = new HttpService(async (req: Request) => {
+const httpServiceOptions: HttpServiceOptions = {
+  requireLogin: true,
+  rateLimit: true,
+  isIdle: true
+};
+
+const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
   const topicsRequest = new TopicsRequest(await req.json());
   topicsRequest.Validate();
 

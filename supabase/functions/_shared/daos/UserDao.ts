@@ -1,6 +1,6 @@
 import { SupabaseClient, User } from "@supabase/supabase-js";
+import { SupabaseError } from "../consts/errors/Errors.ts";
 import { Database } from "../database.types.ts";
-import { SupabaseError } from "../consts/errors/SupabaseError.ts";
 
 export class UserDao {
     constructor(private supabase: SupabaseClient) {}
@@ -32,6 +32,20 @@ export class UserDao {
       }
   
       return data;
+    }
+
+    async updateProfileGeneratingStatus(
+      user_id: string,
+      generating_status: string
+    ): Promise<void> {
+      const { error } = await this.supabase
+        .from("profile")
+        .update({ generating_status: generating_status })
+        .eq('id', user_id);
+  
+      if (error) {
+        throw new SupabaseError(error.code, `Failed to update profile generating status`);
+      }
     }
 }
   

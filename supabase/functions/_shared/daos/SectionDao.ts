@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseError } from "../consts/errors/Errors.ts";
 import { Database } from "../database.types.ts";
 import { ISection } from "../models/internal/ISection.ts";
-import { SupabaseError } from "../consts/errors/SupabaseError.ts";
 
 export class LessonDao {
   constructor(private supabase: SupabaseClient) {}
