@@ -14,11 +14,6 @@ interface IErrorResponse {
   };
 }
 
-const redis = new Redis({
-  url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
-  token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
-});
-
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(10, "10 s"),
@@ -45,6 +40,14 @@ export class HttpService {
     if (req.method === "OPTIONS") {
       return new Response("ok", { headers: corsHeaders });
     }
+
+    console.log(Deno.env.get("UPSTASH_REDIS_REST_URL"));
+    console.log(Deno.env.get("UPSTASH_REDIS_REST_TOKEN"));
+
+    const redis = new Redis({
+      url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
+      token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
+    });
 
     try {
       if (this.options.requireLogin) await this.requireLogin(req);
