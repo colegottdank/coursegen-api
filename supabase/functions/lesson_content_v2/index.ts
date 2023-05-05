@@ -5,13 +5,11 @@ import "xhr_polyfill";
 import { serve } from "std/server";
 import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
-import { UserDao } from "../_shared/daos/UserDao.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalCourseItemToPublicCourseItem, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
-import { GeneratingStatus } from "../_shared/Statuses.ts";
 import { BadRequestError, NotFoundError, TooManyRequestsError, UnauthorizedError } from "../_shared/consts/errors/Errors.ts";
 
 const httpServiceOptions: HttpServiceOptions = {

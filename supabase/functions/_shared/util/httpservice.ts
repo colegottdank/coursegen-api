@@ -1,11 +1,11 @@
+import { GeneratingStatus } from './../Statuses.ts';
 import { corsHeaders } from "./../consts/cors.ts";
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 import { Database } from "../database.types.ts";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { UserDao } from "../daos/UserDao.ts";
-import { GeneratingStatus } from "../Statuses.ts";
-import { NotFoundError, SupabaseError, TooManyRequestsError, UnauthorizedError } from "../consts/errors/Errors.ts";
+import { AlreadyGeneratingError, SupabaseError, TooManyRequestsError, UnauthorizedError } from "../consts/errors/Errors.ts";
 
 interface IErrorResponse {
   error: {
@@ -13,6 +13,11 @@ interface IErrorResponse {
     message: string;
   };
 }
+
+const redis = new Redis({
+  url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
+  token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
+});
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -33,6 +38,7 @@ export class HttpServiceOptions {
 export class HttpService {
   private supabaseClient: SupabaseClient<Database> | null = null;
   private user: User | null = null;
+  private tooManyRequests: boolean = false;
   constructor(private options: HttpServiceOptions, private handler: (req: Request) => Promise<any>) {}
 
   async handle(req: Request): Promise<Response> {
@@ -41,18 +47,10 @@ export class HttpService {
       return new Response("ok", { headers: corsHeaders });
     }
 
-    console.log(Deno.env.get("UPSTASH_REDIS_REST_URL"));
-    console.log(Deno.env.get("UPSTASH_REDIS_REST_TOKEN"));
-
-    const redis = new Redis({
-      url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
-      token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
-    });
-
     try {
       if (this.options.requireLogin) await this.requireLogin(req);
       if (this.options.rateLimit) await this.rateLimit();
-      if (this.options.isIdle) await this.isIdle(req, this.options.requireLogin);
+      if (this.options.isIdle && this.options.requireLogin) await this.isIdle();
 
       const response = await this.handler(req);
 
@@ -70,7 +68,7 @@ export class HttpService {
       });
     }
     finally {
-      if (this.options.isIdle) await this.setIdle(req, this.options.requireLogin);
+      if (this.options.isIdle && this.options.requireLogin && !this.tooManyRequests) await this.setUserGeneratingStatus(GeneratingStatus.Idle.toString());
     }
   }
 
@@ -92,32 +90,15 @@ export class HttpService {
     return this.supabaseClient;
   }
 
-  async isIdle(req: Request, requireLogin: boolean): Promise<void> {
-    if (!this.user && requireLogin) throw new UnauthorizedError("You must be logged in to access this endpoint.");
-    if (!this.user) return;
+  async isIdle(): Promise<void> {
+    let currentStatus = await this.getUserGeneratingStatus();
 
-    const supabase = this.getSupabaseClient(req);
-    const userDao = new UserDao(supabase);
-    const profile = await userDao.getProfileByUserId(this.user.id);
-
-    if (!profile) throw new NotFoundError("Profile not found");
-
-    if (profile.generating_status !== GeneratingStatus.Idle.toString()) {
-      throw new TooManyRequestsError(
-        "You are only allowed one generation at a time. Please wait for your current generation to finish."
-      );
+    if (currentStatus != GeneratingStatus.Idle.toString()) {
+      this.tooManyRequests = true;
+      throw new AlreadyGeneratingError()
     }
 
-    await userDao.updateProfileGeneratingStatus(this.user.id, GeneratingStatus.Generating.toString());
-  }
-
-  async setIdle(req: Request, requireLogin: boolean): Promise<void> {
-    if (!this.user && requireLogin) throw new UnauthorizedError("You must be logged in to access this endpoint.");
-    if (!this.user) return;
-
-    const supabase = this.getSupabaseClient(req);
-    const userDao = new UserDao(supabase);
-    await userDao.updateProfileGeneratingStatus(this.user.id, GeneratingStatus.Idle.toString());
+    await this.setUserGeneratingStatus(GeneratingStatus.Generating.toString());
   }
 
   async rateLimit(): Promise<void> {
@@ -133,6 +114,14 @@ export class HttpService {
     this.user = await userDao.getUserByRequest(req);
     // Validate if the user is logged in
     if (!this.user) throw new UnauthorizedError("You must be logged in to access this endpoint.");
+  }
+
+  async setUserGeneratingStatus(status: string) {
+    await redis.set(`user:${this.user!.id}:status`, status);
+  }
+
+  async getUserGeneratingStatus() {
+    return await redis.get(`user:${this.user!.id}:status`);
   }
 
   getUser(): User | null {

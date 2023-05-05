@@ -57,3 +57,9 @@ export class UnauthorizedError extends BaseError {
     super("401", message);
   }
 }
+
+export class AlreadyGeneratingError extends BaseError {
+  constructor() {
+    super("429", "You are only allowed one generation at a time. Please wait for your current generation to finish.");
+  }
+}
