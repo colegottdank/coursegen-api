@@ -2,10 +2,9 @@ import { GeneratingStatus } from './../Statuses.ts';
 import { corsHeaders } from "./../consts/cors.ts";
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 import { Database } from "../database.types.ts";
-import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { UserDao } from "../daos/UserDao.ts";
-import { AlreadyGeneratingError, SupabaseError, TooManyRequestsError, UnauthorizedError } from "../consts/errors/Errors.ts";
+import { AlreadyGeneratingError, NotFoundError, SupabaseError, UnauthorizedError } from "../consts/errors/Errors.ts";
 
 interface IErrorResponse {
   error: {
@@ -19,17 +18,17 @@ const redis = new Redis({
   token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
 });
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "10 s"),
-  analytics: true,
-  /**
-   * Optional prefix for the keys used in redis. This is useful if you want to share a redis
-   * instance with other applications and want to avoid key collisions. The default prefix is
-   * "@upstash/ratelimit"
-   */
-  prefix: "@upstash/ratelimit",
-});
+// const ratelimit = new Ratelimit({
+//   redis: Redis.fromEnv(),
+//   limiter: Ratelimit.slidingWindow(10, "10 s"),
+//   analytics: true,
+//   /**
+//    * Optional prefix for the keys used in redis. This is useful if you want to share a redis
+//    * instance with other applications and want to avoid key collisions. The default prefix is
+//    * "@upstash/ratelimit"
+//    */
+//   prefix: "@upstash/ratelimit",
+// });
 
 export class HttpServiceOptions {
   constructor(public requireLogin: boolean = false, public rateLimit: boolean = true, public isIdle: boolean = true) {}
@@ -49,8 +48,8 @@ export class HttpService {
 
     try {
       if (this.options.requireLogin) await this.requireLogin(req);
-      if (this.options.rateLimit) await this.rateLimit();
-      if (this.options.isIdle && this.options.requireLogin) await this.isIdle();
+      // if (this.options.rateLimit) await this.rateLimit();
+      if (this.options.isIdle && this.options.requireLogin) await this.isIdle(req);
 
       const response = await this.handler(req);
 
@@ -58,8 +57,12 @@ export class HttpService {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
-    } catch (error) {
-      console.log("Error:", error.code, error.message);
+    }
+    catch (error) {
+      if (error instanceof AlreadyGeneratingError) {
+        this.tooManyRequests = true;
+      }
+
       let errorCode = error.code || 400;
       const errorResponse: IErrorResponse = { error: { code: errorCode, message: error.message } };
       return new Response(JSON.stringify(errorResponse), {
@@ -68,7 +71,11 @@ export class HttpService {
       });
     }
     finally {
-      if (this.options.isIdle && this.options.requireLogin && !this.tooManyRequests) await this.setUserGeneratingStatus(GeneratingStatus.Idle.toString());
+      if (this.options.isIdle && this.options.requireLogin && !this.tooManyRequests) {
+        await this.setIdle(req);
+      }
+
+      this.tooManyRequests = false;
     }
   }
 
@@ -90,23 +97,42 @@ export class HttpService {
     return this.supabaseClient;
   }
 
-  async isIdle(): Promise<void> {
+  async isIdleRedis(): Promise<void> {
     let currentStatus = await this.getUserGeneratingStatus();
 
     if (currentStatus != GeneratingStatus.Idle.toString()) {
-      this.tooManyRequests = true;
       throw new AlreadyGeneratingError()
     }
 
     await this.setUserGeneratingStatus(GeneratingStatus.Generating.toString());
   }
 
-  async rateLimit(): Promise<void> {
-    const identifier = "api";
-    const { success } = await ratelimit.limit(identifier);
+  async isIdle(req: Request): Promise<void> {
+    const supabase = this.getSupabaseClient(req);
+    const userDao = new UserDao(supabase);
+    const profile = await userDao.getProfileByUserId(this.user!.id);
 
-    if (!success) throw new TooManyRequestsError("Too many requests");
+    if (!profile) throw new NotFoundError("Profile not found");
+
+    if (profile.generating_status !== GeneratingStatus.Idle.toString()) {
+      throw new AlreadyGeneratingError();
+    }
+
+    await userDao.updateProfileGeneratingStatus(this.user!.id, GeneratingStatus.Generating.toString());
   }
+
+  async setIdle(req: Request): Promise<void> {
+    const supabase = this.getSupabaseClient(req);
+    const userDao = new UserDao(supabase);
+    await userDao.updateProfileGeneratingStatus(this.user!.id, GeneratingStatus.Idle.toString());
+  }
+
+  // async rateLimit(): Promise<void> {
+  //   const identifier = "api";
+  //   const { success } = await ratelimit.limit(identifier);
+
+  //   if (!success) throw new TooManyRequestsError("Too many requests");
+  // }
 
   async requireLogin(req: Request): Promise<void> {
     const supabase = this.getSupabaseClient(req);
