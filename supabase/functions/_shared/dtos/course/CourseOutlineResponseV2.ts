@@ -30,7 +30,18 @@ export class CourseOutlineResponseV2 {
   response: ICourseOutlineResponseV2;
 
   constructor(json: string) {
-    this.response = JSON.parse(json);
+    try {
+      this.response = JSON.parse(json);
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        // Handle the extra closing bracket issue
+        const fixedJson = json.slice(0, -1);
+        this.response = JSON.parse(fixedJson);
+      } else {
+        // Re-throw the error if it's not a SyntaxError
+        throw error;
+      }
+    }
   }
 
   validate(): void {
