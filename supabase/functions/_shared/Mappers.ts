@@ -31,6 +31,18 @@ export function mapInternalCourseItemToPublicCourseItem(internalCourseItem: Inte
   return publicCourseItem;
 }
 
+export function mapInternalTopicsToPublicTopics(internalTopics: InternalTopic[]): PublicTopic[] {
+  return internalTopics.map((internalTopic) => {
+    const publicTopic: PublicTopic = {
+      id: internalTopic.id,
+      title: internalTopic.title,
+      content: internalTopic.content,
+      order_index: internalTopic.order_index
+    };
+    return publicTopic;
+  });
+}
+
 export function mapTopicsToInternalTopics(
   topics: string[],
   lessonId: string,

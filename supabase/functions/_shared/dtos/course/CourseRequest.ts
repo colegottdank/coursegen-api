@@ -2,7 +2,6 @@ import * as validators from "../../util/validators.ts";
 
 export interface ICourseRequest { 
   search_text?: string;
-  subject?: string;
   module_count?: number;
   max_tokens?: number;
   temperature?: number;
@@ -11,7 +10,6 @@ export interface ICourseRequest {
 
 export class CourseRequest implements ICourseRequest {
   search_text?: string;
-  subject?: string; // TODO: depreciate
   module_count?: number;
   max_tokens?: number;
   temperature?: number;
@@ -22,13 +20,7 @@ export class CourseRequest implements ICourseRequest {
   }
 
   Validate(): void {
-    if(this.subject == null){
-      validators.validateSearchText(this.search_text);
-    }
-    else{
-      validators.validateSearchText(this.subject);
-    }
-
+    validators.validateSearchText(this.search_text);
     validators.validateModuleCount(this.module_count);
     validators.validateMaxTokens(this.max_tokens);
     validators.validateTemperature(this.temperature);

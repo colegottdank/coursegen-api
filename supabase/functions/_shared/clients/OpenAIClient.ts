@@ -26,7 +26,7 @@ export class OpenAIClient {
     // let model = "gpt-4";
     let model = "gpt-3.5-turbo";
     let messages;
-    let user_message = courseRequest.search_text ?? courseRequest.subject;
+    let user_message = courseRequest.search_text;
 
     if (courseRequest.module_count != null) {
       user_message = `${user_message}. Section Count: ${courseRequest.module_count}`;
@@ -88,7 +88,7 @@ export class OpenAIClient {
 
   async createCourseOutlineV2(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
     let messages;
-    let user_message = courseRequest.search_text ?? courseRequest.subject;
+    let user_message = courseRequest.search_text;
 
     if (courseRequest.module_count != null) {
       user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
