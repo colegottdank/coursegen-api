@@ -3,6 +3,68 @@ import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemC
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
 
+export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
+  return {
+    ...course,
+    id: uuidv4(),
+    user_id: newUserId,
+    created_at: new Date(),
+    updated_at: new Date(),
+    original_course_id: course.id
+  };
+}
+
+export function duplicateCourseItems(courseItems: InternalCourseItem[], newUserId: string, newCourseId: string) {
+  const oldToNewCourseItemIdMap = new Map<string, string>();
+
+  // First, create the oldToNewCourseItemId mapping
+  courseItems.forEach((item) => {
+    const newItemId = uuidv4();
+    oldToNewCourseItemIdMap.set(item.id!, newItemId);
+  });
+
+  // Then, create new course items using the oldToNewCourseItemId mapping
+  const duplicatedItems: InternalCourseItem[] = courseItems.map((item) => {
+    return {
+      ...item,
+      id: oldToNewCourseItemIdMap.get(item.id!),
+      parent_id: item.parent_id ? oldToNewCourseItemIdMap.get(item.parent_id) : undefined,
+      user_id: newUserId,
+      course_id: newCourseId,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  });
+
+  return { duplicatedItems, oldToNewCourseItemIdMap };
+}
+
+
+export function duplicateTopics(topics: InternalTopic[], newUserId: string, oldToNewCourseItemId: Map<string, string>, newCourseId: string): InternalTopic[] {
+  return topics.map((topic) => {
+    return {
+      ...topic,
+      id: uuidv4(),
+      lesson_id: oldToNewCourseItemId.get(topic.lesson_id)!,
+      user_id: newUserId,
+      course_id: newCourseId,
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+  });
+}
+
+export function duplicateCourseItemClosures(courseItemClosures: InternalCourseItemClosure[], oldToNewCourseItemId: Map<string, string>, newCourseId: string): InternalCourseItemClosure[] {
+  return courseItemClosures.map((closure) => {
+    return {
+      ancestor_id: oldToNewCourseItemId.get(closure.ancestor_id!)!,
+      descendant_id: oldToNewCourseItemId.get(closure.descendant_id)!,
+      depth: closure.depth,
+      course_id: newCourseId,
+    };
+  });
+}
+
 export function mapInternalCourseItemToPublicCourseItem(internalCourseItem: InternalCourseItem): PublicCourseItem {
   const publicCourseItem: PublicCourseItem = {
     id: internalCourseItem.id,
@@ -145,6 +207,23 @@ export function mapCourseItemDaoToInternalCourseItem(courseItemData: any): Inter
   return internalCourseItem;
 }
 
+export function mapRowToInternalTopic(row: any): InternalTopic {
+  const internalTopic: InternalTopic = {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    order_index: row.order_index,
+    lesson_id: row.lesson_id,
+    user_id: row.user_id,
+    course_id: row.course_id,
+    created_at: new Date(row.created_at),
+    updated_at: new Date(row.updated_at),
+  };
+
+  return internalTopic;
+}
+
+
 export function mapCourseItemClosureDaoToInternalCourseItemClosure(courseItemClosureData: any): InternalCourseItemClosure {
   const internalCourseItemClosure: InternalCourseItemClosure = {
     ancestor_id: courseItemClosureData.ancestor_id,
@@ -171,7 +250,7 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
     if (courseItem.type === CourseItemType.Module) {
       // Use nullish coalescing operator to ensure an empty array is used when courseItem.items is undefined
       courseItem.items = courseItem.items ?? [];
-  
+
       courseItemClosures
         .filter((closure) => closure.ancestor_id === courseItem.id && closure.depth === 1)
         .forEach((closure) => {
@@ -181,7 +260,7 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
             courseItem.items!.push(childItem);
           }
         });
-  
+
       // Sort the nested items by their order_index
       courseItem.items.sort((a, b) => a.order_index - b.order_index);
     }

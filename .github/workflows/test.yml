@@ -31,3 +31,4 @@ jobs:
           supabase functions deploy lesson_content --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy get_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+          supabase functions deploy save_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"

@@ -46,22 +46,24 @@ export class CourseDao {
     return data;
   }
 
-  async insertCourseV2(course: InternalCourse, search_text: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+  async insertCourseV2(course: InternalCourse, search_text: string, origin_course_id: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {    
     const {data, error} = await this.supabase
       .from("course")
       .insert({
+        id: course.id,
         description: course.description,
         title: course.title,
         dates: course.dates,
         user_id: course.user_id,
-        search_text: search_text
+        search_text: search_text,
+        origin_course_id: origin_course_id
       })
       .select()
       .returns<Database["public"]["Tables"]["course"]["Row"]>()
       .single();
 
     if(error) {
-      throw new SupabaseError(error.code, `Failed to insert course`);
+      throw new SupabaseError(error.code, `Failed to insert course, ${error.message}`);
     } 
 
     if(!data) {

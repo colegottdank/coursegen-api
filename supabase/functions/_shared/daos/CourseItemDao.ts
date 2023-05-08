@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseError } from "../consts/errors/Errors.ts";
 import { Database } from "../database.types.ts";
-import { InternalCourseItem } from "../InternalModels.ts";
+import { InternalCourseItem, InternalCourseItemClosure } from "../InternalModels.ts";
 
 export class CourseItemDao {
   constructor(private supabase: SupabaseClient) {}
@@ -94,11 +94,13 @@ export class CourseItemDao {
       .insert(
         course_items.map((course_item) => {
           return {
+            id: course_item.id,
             title: course_item.title,
             description: course_item.description,
             dates: course_item.dates,
             order_index: course_item.order_index,
             type: course_item.type,
+            parent_id: course_item.parent_id,
             course_id: course_item.course_id,
             user_id: course_item.user_id,
           };
@@ -108,11 +110,34 @@ export class CourseItemDao {
       .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to insert course items`);
+      throw new SupabaseError(error.code, `Failed to insert course items, ${error.message}`);
     }
 
     if (!data) {
       throw new SupabaseError("404", `Course items not found`);
+    }
+
+    return data;
+  }
+
+  async insertCourseItemClosures(
+    course_item_closures: InternalCourseItemClosure[]
+  ): Promise<Database["public"]["Tables"]["course_item_closure"]["Row"][]> {
+    const { data, error } = await this.supabase
+      .from("course_item_closure")
+      .insert(course_item_closures)
+      .select()
+      .returns<Database["public"]["Tables"]["course_item_closure"]["Row"][]>();
+
+    if (error) {
+      throw new SupabaseError(
+        error.code,
+        `Failed to insert course item closures, ${error.message}`
+      );
+    }
+
+    if (!data) {
+      throw new SupabaseError("404", `Course item closures not found`);
     }
 
     return data;

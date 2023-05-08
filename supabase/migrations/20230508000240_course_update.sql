@@ -1,0 +1,2 @@
+ALTER TABLE course ALTER COLUMN user_id SET NOT NULL;
+ALTER TABLE course ADD COLUMN origin_course_id UUID;

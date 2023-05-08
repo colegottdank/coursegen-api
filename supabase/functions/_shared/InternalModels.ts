@@ -6,6 +6,7 @@ export interface InternalCourse {
   user_id?: string;
   created_at?: Date;
   updated_at?: Date;
+  original_course_id?: string;
   items: InternalCourseItem[];
 }
 

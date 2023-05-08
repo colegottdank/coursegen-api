@@ -25,10 +25,27 @@ export class TopicDao {
     return data;
   }
 
+  async getTopicsByCourseId(
+    courseId: string
+  ): Promise<Database["public"]["Tables"]["topic"]["Row"][]> {
+    const { data, error } = await this.supabase
+      .from("topic")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("order_index", { ascending: true })
+      .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
+
+    if (error) {
+      throw new SupabaseError(error.code, `Failed to get topics by course id ${courseId}, ${error.message}`);
+    }
+
+    return data;
+  }
+
   async insertTopics(
     topics: InternalTopic[]
-  ): Promise<void> {
-    const { error } = await this.supabase
+  ): Promise<Database["public"]["Tables"]["topic"]["Row"][]> {
+    const { data, error } = await this.supabase
       .from("topic")
       .insert(
         topics.map((topic) => {
@@ -42,11 +59,20 @@ export class TopicDao {
             course_id: topic.course_id
           };
         })
-      );
+      )
+      .select("*")
+      .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
 
     if (error) {
       throw new SupabaseError(error.code, `Failed to insert topics, ${error.message}`);
     }
+
+    if(!data)
+    {
+      throw new SupabaseError("topic_not_found", `Failed to insert topics, no data returned`);
+    }
+
+    return data;
   }
 
   async updateTopicsWithContent(
