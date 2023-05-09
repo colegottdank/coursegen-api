@@ -56,7 +56,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
     const currentLesson = courseItems.find(item => item.id === contentRequest.lesson_id);
     if(!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
 
-    const topics = await openAIClient.generateLessonTopics(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt35);
+    const topics = await openAIClient.generateLessonTopics(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt4);
     const internalTopics = mapTopicsToInternalTopics(topics, contentRequest.lesson_id!, user.id, contentRequest.course_id!);
 
     currentLesson.topics = internalTopics;
