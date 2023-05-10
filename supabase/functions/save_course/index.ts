@@ -5,10 +5,10 @@ import { serve } from "std/server";
 import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { SaveCourseRequest } from "../_shared/dtos/course/SaveCourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
-import { UnauthorizedError } from "../_shared/consts/errors/Errors.ts";
 import { buildCourseOutline, duplicateCourse, duplicateCourseItemClosures, duplicateCourseItems, duplicateTopics, mapCourseDaoToInternalCourse, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalToPublicCourse, mapRowToInternalTopic, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "../_shared/InternalModels.ts";
+import { UnauthorizedError } from "../_shared/consts/Errors.ts";
 
 const httpServiceOptions: HttpServiceOptions = {
   requireLogin: true,
