@@ -27,7 +27,7 @@ jobs:
           version: 1.27.10
 
       - run: |
-          supabase link --project-ref $PROJECT_ID
+          supabase link --project-ref ${{ secrets.STAGING_PROJECT_ID }}
           supabase db push
           supabase functions deploy new_course_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
