@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { SupabaseError } from "../consts/errors/Errors.ts";
+import { SupabaseError } from "../consts/Errors.ts";
 import { Database } from "../database.types.ts";
 import { InternalCourseItem, InternalCourseItemClosure } from "../InternalModels.ts";
 

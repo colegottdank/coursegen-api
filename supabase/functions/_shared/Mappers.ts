@@ -1,7 +1,7 @@
-import { ICourseItem, ICourseOutlineResponseV2 } from "./dtos/course/CourseOutlineResponseV2.ts";
 import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "./InternalModels.ts";
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
+import { ICourseItem, ICourseOutlineResponse } from "./dtos/course/CourseOutlineResponse.ts";
 
 export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
   return {
@@ -279,7 +279,7 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
 }
 
 
-export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse: ICourseOutlineResponseV2): InternalCourse {
+export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse: ICourseOutlineResponse): InternalCourse {
     const externalCourse = courseOutlineResponse.data.course;
     const internalCourse: InternalCourse = {
         title: externalCourse.title,

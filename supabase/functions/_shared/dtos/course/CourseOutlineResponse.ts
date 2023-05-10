@@ -1,10 +1,9 @@
-import { OpenAIInvalidResponseError } from "../../consts/errors/Errors.ts";
+import { OpenAIInvalidResponseError } from "../../consts/Errors.ts";
 
 export interface ICourseOutlineResponse {
   success: boolean;
   data: {
     course: ICourse;
-    sections: ICourseSection[];
   };
   error: {
     code: number;
@@ -16,12 +15,15 @@ export interface ICourse {
   title: string;
   description: string;
   dates?: string;
+  items: ICourseItem[];
 }
 
-export interface ICourseSection {
+export interface ICourseItem {
+  type: string;
   title: string;
   description: string;
   dates?: string;
+  items?: ICourseItem[];
 }
 
 export class CourseOutlineResponse {
@@ -57,25 +59,34 @@ export class CourseOutlineResponse {
     if (course.dates != null && course.dates.length > 50) {
       throw new OpenAIInvalidResponseError("Assistant course dates must be less than 50 characters");
     }
-    
-    const sections = this.response.data.sections;
-    if(sections == null || sections.length == 0) {
-      throw new OpenAIInvalidResponseError("Assistant course must have at least one section")
+
+    const content = this.response.data.course.items;
+    if (content == null || content.length == 0) {
+      throw new OpenAIInvalidResponseError("Assistant course must have at least one item");
     }
 
-    sections.forEach((section) => {
-      if (!section.title || section.title.length > 200) {
-        throw new OpenAIInvalidResponseError("Assistant section title must not be null and less than 200 characters");
+    if(content.length < 2 || content.length > 15) {
+      throw new OpenAIInvalidResponseError("Assistant course must have between 2 and 15 items");
+    }
+
+    const validateContent = (contentItem: ICourseItem) => {
+      if (!contentItem.title || contentItem.title.length > 200) {
+        throw new OpenAIInvalidResponseError("Assistant content title must not be null and less than 200 characters");
       }
-      if (!section.description) {
-        throw new OpenAIInvalidResponseError("Assistant section description must not be null");
+      if (!contentItem.description) {
+        throw new OpenAIInvalidResponseError("Assistant content description must not be null");
       }
-      if (section.description.length > 300) {
-        throw new OpenAIInvalidResponseError("Assistant section description must be less than 300 characters");
+      if (contentItem.description.length > 300) {
+        throw new OpenAIInvalidResponseError("Assistant content description must be less than 300 characters");
       }
-      if (section.dates != null && section.dates.length > 50) {
-        throw new OpenAIInvalidResponseError("Assistant section dates must be less than 50 characters");
+      if (contentItem.dates != null && contentItem.dates.length > 50) {
+        throw new OpenAIInvalidResponseError("Assistant content dates must be less than 50 characters");
       }
-    });
+      if (contentItem.type === 'module' && contentItem.items) {
+        contentItem.items.forEach(validateContent);
+      }
+    };
+
+    content.forEach(validateContent);
   }
 }

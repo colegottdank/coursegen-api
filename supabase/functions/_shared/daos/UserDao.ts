@@ -1,5 +1,5 @@
 import { SupabaseClient, User } from "@supabase/supabase-js";
-import { SupabaseError } from "../consts/errors/Errors.ts";
+import { SupabaseError } from "../consts/Errors.ts";
 import { Database } from "../database.types.ts";
 
 export class UserDao {

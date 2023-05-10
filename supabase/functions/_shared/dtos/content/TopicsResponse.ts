@@ -1,4 +1,4 @@
-import { OpenAIInvalidResponseError } from "../../consts/errors/Errors.ts";
+import { OpenAIInvalidResponseError } from "../../consts/Errors.ts";
 
 export interface ITopicsResponse {
   success: boolean;

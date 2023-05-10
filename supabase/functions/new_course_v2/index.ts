@@ -2,7 +2,6 @@ import "xhr_polyfill";
 import { serve } from "std/server";
 import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
-import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import * as defaults from "../_shared/consts/defaults.ts";
 import { UserDao } from "../_shared/daos/UserDao.ts";
@@ -10,6 +9,7 @@ import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
 import { v4 as uuidv4} from "uuid";
+import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 
 const httpServiceOptions: HttpServiceOptions = {
   requireLogin: true,
@@ -35,7 +35,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
-  const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`);
+  const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`, null);
   courseOutline.id = insertedCourse.id;
 
   updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);

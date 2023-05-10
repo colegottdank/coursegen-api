@@ -54,7 +54,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
     const duplicatedClosures = duplicateCourseItemClosures(courseItemClosures, oldToNewCourseItemIdMap, duplicatedCourse.id!);
 
     // Insert duplicated course outline
-    const insertedCourse = mapCourseDaoToInternalCourse(await courseDao.insertCourseV2(duplicatedCourse, courseResponse.search_text, course.id!));
+    const insertedCourse = mapCourseDaoToInternalCourse(await courseDao.insertCourse(duplicatedCourse, courseResponse.search_text, course.id!));
     const insertedItems = (await courseItemDao.insertCourseItems(duplicatedItems)).map(mapCourseItemDaoToInternalCourseItem);
     await topicDao.insertTopics(duplicatedTopics);
     const insertedClosures = (await courseItemDao.insertCourseItemClosures(duplicatedClosures)).map(mapCourseItemClosureDaoToInternalCourseItemClosure);

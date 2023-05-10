@@ -10,7 +10,7 @@ import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
-import { BadRequestError, NotFoundError } from "../_shared/consts/errors/Errors.ts";
+import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";
 
 const httpServiceOptions: HttpServiceOptions = {
     requireLogin: true,
