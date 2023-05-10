@@ -35,7 +35,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
 
   // Insert course and sections into db
   const courseDao = new CourseDao(supabase);
-  const insertedCourse = await courseDao.insertCourseV2(courseOutline, `Message: ${courseRequest.search_text}, Section Count: ${courseRequest.module_count}, Max Tokens: ${courseRequest.max_tokens}, Temperature: ${courseRequest.temperature}`);
+  const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`);
   courseOutline.id = insertedCourse.id;
 
   updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);
