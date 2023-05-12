@@ -8,6 +8,10 @@ import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
 import { InternalCourse } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
 import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
+import * as defaults from "../../_shared/consts/defaults.ts";
+
 
 export class OpenAIClient {
   private openai: any;
@@ -19,43 +23,56 @@ export class OpenAIClient {
   }
 
   async createCourseOutlineV2(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
-    let messages;
     let user_message = courseRequest.search_text;
-
     if (courseRequest.module_count != null) {
       user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
     }
 
-    if (model === "gpt-4") {
-      messages = [
-        { role: "system", content: new_course_prompts.course_outline_v2 },
-        { role: "user", content: user_message },
-      ];
-    } else if (model === "gpt-3.5-turbo") {
-      messages = [{ role: "user", content: `${new_course_prompts.course_outline_v2}. Course Request Text: ${user_message} ` }];
+    let messages;
+    if(model == defaults.gpt4) {
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_v2), new HumanChatMessage(user_message!)]
+    }
+    else{
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_v2}. Course Request Text: ${user_message}`)]
     }
 
-  let completion: any = undefined;
-    try {
-      completion = await this.openai.createChatCompletion({
-        model: model,
-        messages: messages,
-        max_tokens: courseRequest.max_tokens ?? defaultMaxTokens,
-        temperature: courseRequest.temperature ?? defaultTemperature,
-      });
-    } catch (error) {
+    const chat = new ChatOpenAI({ temperature: courseRequest.temperature ?? defaultTemperature, modelName: model, maxTokens: courseRequest.max_tokens ?? defaultMaxTokens });
+
+    let courseOutline;
+    try{
+      courseOutline = await chat.call([
+        new SystemChatMessage(new_course_prompts.course_outline_v2),
+        new HumanChatMessage(user_message!),
+      ]);
+    }
+    catch(error) {
       if (error.response) {
         throw new OpenAIError(error.response.status, `Failed to retrieve course outline from OpenAI`);
-      } else {
+      }
+      else {
         throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI`);
       }
     }
-
-    if (!completion?.data?.choices[0]?.message?.content) {
-      throw new OpenAIError("404", `Course outline not returned from OpenAI`);
+    
+    if(courseOutline.text.length == 0) {
+      throw new OpenAIError("500", `Failed to retrieve course outline from OpenAI, empty response`);
     }
 
-    const courseOutlineResponse = new CourseOutlineResponse(completion.data.choices[0].message.content);
+    let courseOutlineResponse;
+    try {
+      courseOutlineResponse = new CourseOutlineResponse(courseOutline.text);
+    }
+    catch(error)
+    {
+      const courseOutlineFix = await chat.call([
+        new HumanChatMessage(
+          "The following JSON was returned incorrectly from OpenAI, please correct it: " + courseOutline.text
+        ),
+      ]);
+
+      courseOutlineResponse = new CourseOutlineResponse(courseOutlineFix.text);
+    }
+
     courseOutlineResponse.validate();
 
     const course = mapExternalCourseOutlineResponseToInternal(courseOutlineResponse.response);

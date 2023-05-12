@@ -7,6 +7,7 @@
       "@openai/streams": "https://esm.sh/openai-streams@5.0.0?target=deno&no-check",
       "uuid": "https://esm.sh/uuid@9.0.0?target=deno&no-check",
       "@upstash/ratelimit": "https://cdn.skypack.dev/@upstash/ratelimit@latest",
-      "@upstash/redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts"
+      "@upstash/redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts",
+      "langchain/": "https://esm.sh/langchain@0.0.75/"
     }
 }
