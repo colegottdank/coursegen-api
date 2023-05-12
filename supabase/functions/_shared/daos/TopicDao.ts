@@ -25,6 +25,23 @@ export class TopicDao {
     return data;
   }
 
+  async getTopicsByLessonId(
+    lessonId: string
+  ): Promise<Database["public"]["Tables"]["topic"]["Row"][]> {
+    const { data, error } = await this.supabase
+      .from("topic")
+      .select("*")
+      .eq("lesson_id", lessonId)
+      .order("order_index", { ascending: true })
+      .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
+
+    if (error) {
+      throw new SupabaseError(error.code, `Failed to get topics by lesson id ${lessonId}, ${error.message}`);
+    }
+
+    return data;
+  }
+
   async getTopicsByCourseId(
     courseId: string
   ): Promise<Database["public"]["Tables"]["topic"]["Row"][]> {

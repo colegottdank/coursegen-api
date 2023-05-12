@@ -26,17 +26,17 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
     const user = httpService.getUser() as User;
 
     const topicDao = new TopicDao(supabase);
-    let existingTopics = await topicDao.getTopicsByLessonIdAndUserId(contentRequest.lesson_id!, user.id);
+    let existingTopics = await topicDao.getTopicsByLessonId(contentRequest.lesson_id!);
     if(existingTopics.length > 0)
     {
         throw new BadRequestError(`Lesson ${contentRequest.lesson_id} already has topics.`)
     }
 
     const courseDao = new CourseDao(supabase);
-    const coursePromise = courseDao.getCourseByIdAndUserId(contentRequest.course_id!, user.id);
+    const coursePromise = courseDao.getCourseById(contentRequest.course_id!);
 
     const courseItemDao = new CourseItemDao(supabase);
-    const courseItemsPromise = courseItemDao.getCourseItemsByCourseIdAndUserId(contentRequest.course_id!, user.id);
+    const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(contentRequest.course_id!);
     const courseItemClosuresPromise = courseItemDao.getCourseItemClosuresByCourseId(contentRequest.course_id!);
 
     const [courseResponse, courseItemsResponse, courseItemClosuresResponse] = await Promise.all([
@@ -57,7 +57,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
     if(!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
 
     const topics = await openAIClient.generateLessonTopics(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt4);
-    const internalTopics = mapTopicsToInternalTopics(topics, contentRequest.lesson_id!, user.id, contentRequest.course_id!);
+    const internalTopics = mapTopicsToInternalTopics(topics, contentRequest.lesson_id!, course.user_id!, contentRequest.course_id!);
 
     currentLesson.topics = internalTopics;
 
