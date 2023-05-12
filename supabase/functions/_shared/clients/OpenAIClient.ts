@@ -64,6 +64,7 @@ export class OpenAIClient {
     }
     catch(error)
     {
+      chat.modelName = defaults.gpt35;
       const courseOutlineFix = await chat.call([
         new HumanChatMessage(
           "The following JSON was returned incorrectly from OpenAI, please correct it: " + courseOutline.text
