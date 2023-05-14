@@ -1,3 +1,4 @@
+import { BadRequestError } from "../../consts/Errors.ts";
 import * as validators from "../../util/validators.ts";
 
 export interface ILessonContentRequest {
@@ -22,7 +23,12 @@ export class LessonContentRequest implements ILessonContentRequest {
     gpt_model?: string;
 
     constructor(requestJson: string) {
-        Object.assign(this, requestJson);
+        try{
+            Object.assign(this, requestJson);
+          } catch(error)
+          {
+            throw new BadRequestError("Invalid request body.");
+          }
     }
 
     Validate(): void {

@@ -13,10 +13,10 @@ interface IErrorResponse {
   };
 }
 
-const redis = new Redis({
-  url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
-  token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
-});
+// const redis = new Redis({
+//   url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
+//   token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
+// });
 
 // const ratelimit = new Ratelimit({
 //   redis: Redis.fromEnv(),
@@ -31,14 +31,14 @@ const redis = new Redis({
 // });
 
 export class HttpServiceOptions {
-  constructor(public requireLogin: boolean = false, public rateLimit: boolean = true, public isIdle: boolean = true) {}
+  constructor(public requireLogin: boolean = false, public rateLimit: boolean = true, public isIdle: boolean = true, public isAsync: boolean = false) {}
 }
 
 export class HttpService {
   private supabaseClient: SupabaseClient<Database> | null = null;
   private user: User | null = null;
-  private tooManyRequests: boolean = false;
-  constructor(private options: HttpServiceOptions, private handler: (req: Request) => Promise<any>) {}
+  private context: any = {};
+  constructor(private options: Partial<HttpServiceOptions> = new HttpServiceOptions(), private handler: (reqJson?: string, context?: any) => Promise<any>, private preHandle?: (reqJson?: string, context?: any) => Promise<any>) {}
 
   async handle(req: Request): Promise<Response> {
     // This is needed if you're planning to invoke your function from a browser.
@@ -46,40 +46,42 @@ export class HttpService {
       return new Response("ok", { headers: corsHeaders });
     }
 
+    this.context = {};
+
     try {
-      if (this.options.requireLogin) await this.requireLogin(req);
-      // if (this.options.rateLimit) await this.rateLimit();
-      if (this.options.isIdle && this.options.requireLogin) await this.isIdle(req);
+      await this.runMiddleware(req);
+      const reqJson = await req.json();
 
-      const response = await this.handler(req);
+      // If async, run the preHandle function, set timeout to run the handler (async), and return a 202 response
+      if (this.options.isAsync && this.preHandle) {
+        const response = await this.preHandle(reqJson, this.context);
+        setTimeout(async () => {
+          try {
+            await this.handler(reqJson, this.context);
+          } finally {
+            await this.resetIdleStatus();
+          }
+        }, 1);
 
-      return new Response(JSON.stringify(response), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+        return this.createResponse(response, 202);
+      }
+
+      const response = await this.handler(reqJson, this.context);
+      return this.createResponse(response, 200);
     }
     catch (error) {
-      if (error instanceof AlreadyGeneratingError) {
-        this.tooManyRequests = true;
-      }
-
-      let errorCode = error.code || 400;
-      const errorResponse: IErrorResponse = { error: { code: errorCode, message: error.message } };
-      return new Response(JSON.stringify(errorResponse), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: errorCode,
-      });
+      return this.handleError(error);
     }
     finally {
-      if (this.options.isIdle && this.options.requireLogin && !this.tooManyRequests) {
-        await this.setIdle(req);
+      if (!this.options.isAsync) {
+        await this.resetIdleStatus();
       }
 
-      this.tooManyRequests = false;
+      this.context.TooManyRequests = false;
     }
   }
 
-  getSupabaseClient(req: Request): SupabaseClient<Database> {
+  getSupabaseClient(): SupabaseClient<Database> {
     if (this.supabaseClient) {
       return this.supabaseClient;
     }
@@ -97,18 +99,52 @@ export class HttpService {
     return this.supabaseClient;
   }
 
-  async isIdleRedis(): Promise<void> {
-    let currentStatus = await this.getUserGeneratingStatus();
-
-    if (currentStatus != GeneratingStatus.Idle.toString()) {
-      throw new AlreadyGeneratingError()
+  getUser(): User | null {
+    if(this.options.requireLogin && !this.user)
+    {
+      throw new UnauthorizedError("You must be logged in to access this endpoint.");
     }
 
-    await this.setUserGeneratingStatus(GeneratingStatus.Generating.toString());
+    return this.user;
   }
 
-  async isIdle(req: Request): Promise<void> {
-    const supabase = this.getSupabaseClient(req);
+  private createResponse(body: any, status: number = 200): Response {
+    return new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status,
+    });
+  }
+
+  private handleError(error: any): Response {
+    if (error instanceof AlreadyGeneratingError) {
+      this.context.TooManyRequests = true;
+    }
+
+    let errorCode = error.code || 400;
+    const errorResponse: IErrorResponse = { error: { code: errorCode, message: error.message } };
+    return this.createResponse(errorResponse, errorCode);
+  }
+
+  private async resetIdleStatus(): Promise<void> {
+    if (this.options.isIdle && this.options.requireLogin && !this.context.TooManyRequests) {
+      await this.setIdle();
+    }
+  }
+
+  async setIdle(): Promise<void> {
+    const supabase = this.getSupabaseClient();
+    const userDao = new UserDao(supabase);
+    await userDao.updateProfileGeneratingStatus(this.user!.id, GeneratingStatus.Idle.toString());
+  }
+
+  private async runMiddleware(req: Request): Promise<void> {
+    if (this.options.requireLogin) await this.requireLogin(req);
+    // if (this.options.rateLimit) await this.rateLimit();
+    if (this.options.isIdle && this.options.requireLogin) await this.isIdle();
+  }
+
+  async isIdle(): Promise<void> {
+    const supabase = this.getSupabaseClient();
     const userDao = new UserDao(supabase);
     const profile = await userDao.getProfileByUserId(this.user!.id);
 
@@ -121,11 +157,23 @@ export class HttpService {
     await userDao.updateProfileGeneratingStatus(this.user!.id, GeneratingStatus.Generating.toString());
   }
 
-  async setIdle(req: Request): Promise<void> {
-    const supabase = this.getSupabaseClient(req);
+  async requireLogin(req: Request): Promise<void> {
+    const supabase = this.getSupabaseClient();
     const userDao = new UserDao(supabase);
-    await userDao.updateProfileGeneratingStatus(this.user!.id, GeneratingStatus.Idle.toString());
+    this.user = await userDao.getUserByRequest(req);
+    // Validate if the user is logged in
+    if (!this.user) throw new UnauthorizedError("You must be logged in to access this endpoint.");
   }
+
+  // async isIdleRedis(): Promise<void> {
+  //   let currentStatus = await this.getUserGeneratingStatus();
+
+  //   if (currentStatus != GeneratingStatus.Idle.toString()) {
+  //     throw new AlreadyGeneratingError()
+  //   }
+
+  //   await this.setUserGeneratingStatus(GeneratingStatus.Generating.toString());
+  // }
 
   // async rateLimit(): Promise<void> {
   //   const identifier = "api";
@@ -134,28 +182,11 @@ export class HttpService {
   //   if (!success) throw new TooManyRequestsError("Too many requests");
   // }
 
-  async requireLogin(req: Request): Promise<void> {
-    const supabase = this.getSupabaseClient(req);
-    const userDao = new UserDao(supabase);
-    this.user = await userDao.getUserByRequest(req);
-    // Validate if the user is logged in
-    if (!this.user) throw new UnauthorizedError("You must be logged in to access this endpoint.");
-  }
+  // async setUserGeneratingStatus(status: string) {
+  //   await redis.set(`user:${this.user!.id}:status`, status);
+  // }
 
-  async setUserGeneratingStatus(status: string) {
-    await redis.set(`user:${this.user!.id}:status`, status);
-  }
-
-  async getUserGeneratingStatus() {
-    return await redis.get(`user:${this.user!.id}:status`);
-  }
-
-  getUser(): User | null {
-    if(this.options.requireLogin && !this.user)
-    {
-      throw new UnauthorizedError("You must be logged in to access this endpoint.");
-    }
-
-    return this.user;
-  }
+  // async getUserGeneratingStatus() {
+  //   return await redis.get(`user:${this.user!.id}:status`);
+  // }
 }

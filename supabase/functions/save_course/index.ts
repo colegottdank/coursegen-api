@@ -10,17 +10,19 @@ import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "../_shared/InternalModels.ts";
 import { UnauthorizedError } from "../_shared/consts/Errors.ts";
 
-const httpServiceOptions: HttpServiceOptions = {
+const httpService = new HttpService({
   requireLogin: true,
   rateLimit: true,
   isIdle: false
-};
+}, handle);
 
-const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
-    const saveCourseRequest = new SaveCourseRequest(await req.json());
+serve((req) => httpService.handle(req));
+
+async function handle(reqJson?: string, context?: any) {
+  const saveCourseRequest = new SaveCourseRequest(reqJson!);
     saveCourseRequest.Validate();
 
-    const supabase = httpService.getSupabaseClient(req);
+    const supabase = httpService.getSupabaseClient();
     
     const courseDao = new CourseDao(supabase);
     const courseResponse = await courseDao.getCourseById(saveCourseRequest.course_id!);
@@ -63,6 +65,4 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
     const publicCourse = mapInternalToPublicCourse(courseOutline);
 
     return publicCourse;
-});
-
-serve((req) => httpService.handle(req));
+}

@@ -11,22 +11,22 @@ import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
 import { v4 as uuidv4} from "uuid";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 
-const httpServiceOptions: HttpServiceOptions = {
+const httpService = new HttpService({
   requireLogin: true,
   rateLimit: true,
   isIdle: true
-};
+}, handle);
 
-const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
+serve((req) => httpService.handle(req));
+
+async function handle(reqJson?: string, context?: any) {
   // Parse request parameters
-  const courseRequest = new CourseRequest(await req.json());
+  const courseRequest = new CourseRequest(reqJson!);
   courseRequest.Validate();
 
   // Initialize Supabase client
-  const supabase = httpService.getSupabaseClient(req);
-
-  const userDao = new UserDao(supabase);
-  const user = await userDao.getUserByRequest(req);
+  const supabase = httpService.getSupabaseClient();
+  const user = httpService.getUser();
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
@@ -45,9 +45,7 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
 
   const publicCourse = mapInternalToPublicCourse(courseOutline);
   return publicCourse;
-});
-
-serve((req) => httpService.handle(req));
+}
 
 function updateCourseItemFields(
   items: InternalCourseItem[],

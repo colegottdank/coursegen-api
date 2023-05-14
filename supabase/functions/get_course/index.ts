@@ -1,6 +1,6 @@
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
+import { HttpService } from "../_shared/util/httpservice.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import {
@@ -13,17 +13,19 @@ import {
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { GetCourseRequest } from "../_shared/dtos/course/GetCourseRequest.ts";
 
-const httpServiceOptions: HttpServiceOptions = {
+const httpService = new HttpService({
   requireLogin: false,
   rateLimit: true,
   isIdle: false,
-};
+}, handle);
 
-const httpService = new HttpService(httpServiceOptions, async (req: Request) => {
-  const contentRequest = new GetCourseRequest(await req.json());
+serve((req) => httpService.handle(req));
+
+async function handle(reqJson?: string, context?: any) {
+  const contentRequest = new GetCourseRequest(reqJson!);
 
   // Initialize Supabase client
-  const supabase = httpService.getSupabaseClient(req);
+  const supabase = httpService.getSupabaseClient();
 
   const courseDao = new CourseDao(supabase);
   const coursePromise = courseDao.getCourseById(contentRequest.course_id!);
@@ -49,6 +51,4 @@ const httpService = new HttpService(httpServiceOptions, async (req: Request) => 
   const publicCourse = mapInternalToPublicCourse(courseOutline);
 
   return publicCourse;
-});
-
-serve((req) => httpService.handle(req));
+}

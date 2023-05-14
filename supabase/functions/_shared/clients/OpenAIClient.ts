@@ -11,6 +11,7 @@ import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
 import * as defaults from "../../_shared/consts/defaults.ts";
+import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 
 
 export class OpenAIClient {
@@ -125,10 +126,10 @@ export class OpenAIClient {
       }
     }
 
-    const topicJson = JSON.parse(completion.data.choices[0].message.content);
-    const topics = topicJson["data"]["topics"];
+    const topicResponse = new TopicResponseAI(completion.data.choices[0].message.content)
+    topicResponse.validate();
 
-    return topics;
+    return topicResponse.response.data.topics;
   }
 
   async generateLessonTopicContent(
