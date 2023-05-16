@@ -5,7 +5,7 @@ import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
 import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
 import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
-import { InternalCourse } from "../InternalModels.ts";
+import { InternalCourse, InternalCourseItem } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
 import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResponse.ts";
 import { ChatOpenAI } from "langchain/chat_models/openai";
@@ -128,20 +128,40 @@ export class OpenAIClient {
   }
 
   async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
-    let user_message = JSON.stringify(course);
+    let courseJson = JSON.stringify(this.simplifyCourse(course));
 
     let messages;
     if(model == defaults.gpt4) {
-      messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${user_message!}`)]
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${courseJson!}`)]
     }
     else{
-      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${JSON.stringify(course)}`)]
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${courseJson}`)]
     }
 
     console.log("Generating outline descriptions");
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+
+  simplifyCourse(course: InternalCourse): any {
+    const simplifiedCourse: any = {
+      title: course.title,
+      type: 'course',
+      items: course.items?.map(this.simplifyItem)
+    };
+    return simplifiedCourse;
+  }
+  
+   simplifyItem(item: InternalCourseItem): any {
+    const simplifiedItem: any = {
+      title: item.title,
+      type: item.type,
+    };
+    if (item.items) {
+      simplifiedItem.items = item.items.map(this.simplifyItem);
+    }
+    return simplifiedItem;
   }
   
 
