@@ -127,7 +127,7 @@ export class OpenAIClient {
     return mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
-   simplifyItem(item: InternalCourseItem): any {
+  simplifyItem = (item: InternalCourseItem): any => {
     const simplifiedItem: any = {
       title: item.title,
       type: item.type,
@@ -138,7 +138,7 @@ export class OpenAIClient {
     return simplifiedItem;
   }
   
-   simplifyCourse(course: InternalCourse): any {
+simplifyCourse = (course: InternalCourse): any => {
     const simplifiedCourse: any = {
       title: course.title,
       type: 'course',
@@ -149,8 +149,8 @@ export class OpenAIClient {
     return simplifiedCourse;
   }
 
+
   async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
-    console.log(course);
     let courseJson = JSON.stringify(this.simplifyCourse(course));
 
     let messages;
