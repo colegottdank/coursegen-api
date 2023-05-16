@@ -37,6 +37,8 @@ export class OpenAIClient {
       maxTokens: maxTokens ?? defaultMaxTokens,
     });
   
+    console.log(chat);
+    
     try {
       const response = await chat.call(messages);
       console.log(response.text);
@@ -115,7 +117,6 @@ export class OpenAIClient {
       messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
     }
 
-    console.log("Creating chat completion");
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
