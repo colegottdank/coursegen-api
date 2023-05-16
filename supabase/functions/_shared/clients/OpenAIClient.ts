@@ -38,10 +38,9 @@ export class OpenAIClient {
     });
   
     console.log(chat);
-    
+
     try {
       const response = await chat.call(messages);
-      console.log(response.text);
       const parsedResponse = new responseType(response.text);
       parsedResponse.validate();
       return parsedResponse;
@@ -117,6 +116,7 @@ export class OpenAIClient {
       messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
     }
 
+    console.log("Generating outline titles");
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
@@ -133,6 +133,7 @@ export class OpenAIClient {
       messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${user_message}`)]
     }
 
+    console.log("Generating outline descriptions");
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
