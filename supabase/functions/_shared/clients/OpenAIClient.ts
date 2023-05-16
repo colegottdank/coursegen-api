@@ -37,11 +37,10 @@ export class OpenAIClient {
       maxTokens: maxTokens ?? defaultMaxTokens,
     });
   
-    console.log(chat);
-
     try {
       console.log(messages);
       const response = await chat.call(messages);
+      console.log(response.text);
       let json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}')+1);
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
@@ -50,7 +49,6 @@ export class OpenAIClient {
       if (error instanceof OpenAIError || error instanceof OpenAIInvalidResponseError) {
         throw error;
       } else {
-        console.log("Fixing response");
         // If the error is due to parsing the response, try to fix the JSON
         const fixedResponse = await chat.call([
           new HumanChatMessage(
@@ -58,8 +56,9 @@ export class OpenAIClient {
           ),
         ]);
 
+        console.log(fixedResponse.text);
+
         let json = fixedResponse.text.substring(fixedResponse.text.indexOf('{'), fixedResponse.text.lastIndexOf('}')+1);
-        console.log(json);
         const fixedParsedResponse = new responseType(json);
         fixedParsedResponse.validate();
         return fixedParsedResponse;
@@ -136,7 +135,7 @@ export class OpenAIClient {
       messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${user_message!}`)]
     }
     else{
-      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${user_message}`)]
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${JSON.stringify(course)}`)]
     }
 
     console.log("Generating outline descriptions");
