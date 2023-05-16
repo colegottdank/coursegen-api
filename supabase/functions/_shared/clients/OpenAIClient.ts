@@ -54,7 +54,7 @@ export class OpenAIClient {
         // If the error is due to parsing the response, try to fix the JSON
         const fixedResponse = await chat.call([
           new HumanChatMessage(
-            "The following JSON was returned incorrectly from OpenAI, please correct it: " + error.message
+            "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." + error.message
           ),
         ]);
         const fixedParsedResponse = new responseType(fixedResponse.text);
