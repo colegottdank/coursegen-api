@@ -131,6 +131,7 @@ export class OpenAIClient {
     const simplifiedItem: any = {
       title: item.title,
       type: item.type,
+      items: []
     };
     if (item.items) {
       simplifiedItem.items = item.items.map(this.simplifyItem);
