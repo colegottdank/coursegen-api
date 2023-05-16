@@ -42,8 +42,9 @@ export class OpenAIClient {
     try {
       console.log(messages);
       const response = await chat.call(messages);
-      console.log(response.text);
-      const parsedResponse = new responseType(response.text);
+      let json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}')+1);
+
+      const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
     } catch (error) {
@@ -57,8 +58,9 @@ export class OpenAIClient {
             "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." + error.message
           ),
         ]);
-        console.log(fixedResponse.text);
-        const fixedParsedResponse = new responseType(fixedResponse.text);
+
+        let json = fixedResponse.text.substring(fixedResponse.text.indexOf('{'), fixedResponse.text.lastIndexOf('}')+1);
+        const fixedParsedResponse = new responseType(json);
         fixedParsedResponse.validate();
         return fixedParsedResponse;
       }
