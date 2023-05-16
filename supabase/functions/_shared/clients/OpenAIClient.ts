@@ -41,6 +41,7 @@ export class OpenAIClient {
 
     try {
       const response = await chat.call(messages);
+      console.log(response.text);
       const parsedResponse = new responseType(response.text);
       parsedResponse.validate();
       return parsedResponse;
