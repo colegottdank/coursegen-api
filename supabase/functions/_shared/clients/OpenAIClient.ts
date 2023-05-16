@@ -43,7 +43,6 @@ export class OpenAIClient {
       console.log(messages);
       const response = await chat.call(messages);
       let json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}')+1);
-
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
@@ -60,6 +59,7 @@ export class OpenAIClient {
         ]);
 
         let json = fixedResponse.text.substring(fixedResponse.text.indexOf('{'), fixedResponse.text.lastIndexOf('}')+1);
+        console.log(json);
         const fixedParsedResponse = new responseType(json);
         fixedParsedResponse.validate();
         return fixedParsedResponse;
