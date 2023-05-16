@@ -127,24 +127,25 @@ export class OpenAIClient {
     return mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
-  simplifyItem(item: InternalCourseItem): any {
+   simplifyItem(item: InternalCourseItem): any {
     const simplifiedItem: any = {
       title: item.title,
       type: item.type,
-      items: []
     };
     if (item.items) {
       simplifiedItem.items = item.items.map(this.simplifyItem);
     }
     return simplifiedItem;
   }
-
-  simplifyCourse(course: InternalCourse): any {
+  
+   simplifyCourse(course: InternalCourse): any {
     const simplifiedCourse: any = {
       title: course.title,
       type: 'course',
-      items: course.items?.map(this.simplifyItem)
     };
+    if (course.items) {
+      simplifiedCourse.items = course.items.map(this.simplifyItem);
+    }
     return simplifiedCourse;
   }
 
