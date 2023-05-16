@@ -57,6 +57,7 @@ export class OpenAIClient {
             "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." + error.message
           ),
         ]);
+        console.log(fixedResponse.text);
         const fixedParsedResponse = new responseType(fixedResponse.text);
         fixedParsedResponse.validate();
         return fixedParsedResponse;
