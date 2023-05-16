@@ -50,6 +50,7 @@ export class OpenAIClient {
       if (error instanceof OpenAIError || error instanceof OpenAIInvalidResponseError) {
         throw error;
       } else {
+        console.log("Fixing response");
         // If the error is due to parsing the response, try to fix the JSON
         const fixedResponse = await chat.call([
           new HumanChatMessage(
