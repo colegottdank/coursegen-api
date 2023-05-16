@@ -40,30 +40,33 @@ export interface Database {
           dates: string | null
           description: string
           id: string
+          origin_course_id: string | null
           search_text: string
           title: string
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
           dates?: string | null
           description: string
           id?: string
+          origin_course_id?: string | null
           search_text: string
           title: string
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
           dates?: string | null
           description?: string
           id?: string
+          origin_course_id?: string | null
           search_text?: string
           title?: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
       }
       course_item: {
@@ -110,16 +113,19 @@ export interface Database {
       course_item_closure: {
         Row: {
           ancestor_id: string
+          course_id: string | null
           depth: number
           descendant_id: string
         }
         Insert: {
           ancestor_id: string
+          course_id?: string | null
           depth: number
           descendant_id: string
         }
         Update: {
           ancestor_id?: string
+          course_id?: string | null
           depth?: number
           descendant_id?: string
         }

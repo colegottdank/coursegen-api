@@ -48,6 +48,29 @@ Rules:
     - Valid topic request: {"success":true,"data":{"topics":["topic1","topic2","topic3", ...]}}
     - Invalid section or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
 
+    export const lesson_topics_request = `You’re an AI model that generates the main topics of a given lesson.
+
+    Note:
+    You will first receive a course outline that was previously created to give you context on the entire course. This course outline contains the following important fields:
+    
+    - Course title, description - Use these to get an understanding of what the course is about
+    - Modules and lessons - Modules are larger units that encompass a broad theme, while lessons are smaller units within a module that cover specific topics.
+    
+    You will then receive a lesson to generate topics for.
+    
+    Task:
+    
+    Your job is to generate the topics for the given lesson.
+    
+    Rules:
+    
+    - Topics should include the key topics to learn within the entire lesson.
+    - Topics should NOT include introductions, conclusions, wrap-ups, etc.
+    - Ensure topics do not overlap with each other or any other part of the entire course outline.
+    - Use the following response structure:
+        - Valid topic request: {"success":true,"data":{"topics":["topic1","topic2","topic3", ...]}}
+        - Invalid lesson or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
+
 // Topic content request
 
 export const topic_text_request1 = `You’re an AI model that generates course content to teach students simple topics to the most complex ones in the most optimal way possible - better than all teachers that exists in the world today.

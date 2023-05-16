@@ -1,5 +1,6 @@
-import { BadRequestError } from "../consts/errors/BadRequestError.ts";
-import { v4 as uuidv4, validate as uuidValidate } from "uuid";
+import { validate as uuidValidate } from "uuid";
+import * as defaults from "../../_shared/consts/defaults.ts";
+import { BadRequestError } from "../consts/Errors.ts";
 
 export function notNullAndValidUUID(uuid: string | undefined, paramName: string): void {
   if (!uuid) {
@@ -55,5 +56,11 @@ export function validateSessionKey(sessionKey: string | undefined): void {
   // validate session is a valid uuid
   if(!uuidValidate(sessionKey)) {
     throw new BadRequestError("SessionKey must be a valid UUID");
+  }
+}
+
+export function validateGPTModel(gptModel: string | undefined): void {
+  if (gptModel && gptModel != defaults.gpt35 && gptModel != defaults.gpt4) {
+    throw new BadRequestError(`GPT Model must be ${defaults.gpt35} or ${defaults.gpt4} but was ${gptModel}`);
   }
 }

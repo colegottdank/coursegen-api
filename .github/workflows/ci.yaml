@@ -25,6 +25,3 @@ jobs:
             git diff
             exit 1
           fi
-
-      # - name: Run Tests
-      #   run: supabase test db
