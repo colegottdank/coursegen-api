@@ -117,7 +117,7 @@ export class OpenAIClient {
     }
 
     console.log("Generating outline titles");
-    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, 1500, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
   }
