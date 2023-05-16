@@ -127,23 +127,6 @@ export class OpenAIClient {
     return mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
-  async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
-    let courseJson = JSON.stringify(this.simplifyCourse(course));
-
-    let messages;
-    if(model == defaults.gpt4) {
-      messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${courseJson!}`)]
-    }
-    else{
-      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${courseJson}`)]
-    }
-
-    console.log("Generating outline descriptions");
-    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
-
-    return mapExternalCourseOutlineResponseToInternal(response.response);
-  }
-
   simplifyItem(item: InternalCourseItem): any {
     const simplifiedItem: any = {
       title: item.title,
@@ -162,6 +145,23 @@ export class OpenAIClient {
       items: course.items?.map(this.simplifyItem)
     };
     return simplifiedCourse;
+  }
+
+  async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
+    let courseJson = JSON.stringify(this.simplifyCourse(course));
+
+    let messages;
+    if(model == defaults.gpt4) {
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${courseJson!}`)]
+    }
+    else{
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${courseJson}`)]
+    }
+
+    console.log("Generating outline descriptions");
+    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    return mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
   async createCourseOutlineV2(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
