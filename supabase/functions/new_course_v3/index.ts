@@ -31,7 +31,7 @@ async function handle(reqJson?: string, context?: any) {
 
     // Initialize new OpenAI API client
     const openAIClient = new OpenAIClient();
-    var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, courseRequest.gpt_model ?? defaults.gpt35);
+    var courseOutline = await openAIClient.createCourseOutlineV2(courseRequest, defaults.gpt35);
     courseOutline.user_id = user?.id;
     courseOutline.id = context.courseId;
 

@@ -1,7 +1,7 @@
 import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "./InternalModels.ts";
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
-import { ICourseItem, ICourseOutlineResponse } from "./dtos/course/CourseOutlineResponse.ts";
+import { ICourseItem, ICourseOutlineResponse } from "./dtos/OpenAIResponses/CourseOutlineResponse.ts";
 
 export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
   return {
@@ -71,7 +71,7 @@ export function mapInternalCourseItemToPublicCourseItem(internalCourseItem: Inte
     parent_id: internalCourseItem.parent_id,
     course_id: internalCourseItem.course_id,
     title: internalCourseItem.title,
-    description: internalCourseItem.description,
+    description: internalCourseItem.description ?? "",
     dates: internalCourseItem.dates,
     order_index: internalCourseItem.order_index,
     type: internalCourseItem.type,
@@ -153,7 +153,7 @@ function mapCourseItemForGPT(courseItem: InternalCourseItem): any {
     topics?: any[];
   } = {
     title: courseItem.title,
-    description: courseItem.description,
+    description: courseItem.description ?? "",
     type: courseItem.type,
   };
 
@@ -332,7 +332,7 @@ export function mapInternalToPublicCourse(internalCourse: InternalCourse): Publi
       id: internalItem.id,
       parent_id: internalItem.parent_id,
       title: internalItem.title,
-      description: internalItem.description,
+      description: internalItem.description ?? "",
       dates: internalItem.dates,
       order_index: internalItem.order_index,
       type: internalItem.type,

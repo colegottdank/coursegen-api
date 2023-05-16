@@ -30,7 +30,7 @@ jobs:
           supabase link --project-ref ${{ secrets.STAGING_PROJECT_ID }}
           supabase db push
           supabase functions deploy new_course_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          supabase functions deploy new_course_v3 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+          supabase functions deploy new_course_v4 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy get_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy save_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"

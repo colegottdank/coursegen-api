@@ -1,4 +1,4 @@
-import { OpenAIError } from './../consts/Errors.ts';
+import { OpenAIError, OpenAIInvalidResponseError } from './../consts/Errors.ts';
 import { Configuration, OpenAIApi } from "openai";
 import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
@@ -7,11 +7,12 @@ import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../con
 import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
 import { InternalCourse } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
-import { CourseOutlineResponse } from "../dtos/course/CourseOutlineResponse.ts";
+import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResponse.ts";
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
+import { BaseChatMessage, HumanChatMessage, SystemChatMessage } from "langchain/schema";
 import * as defaults from "../../_shared/consts/defaults.ts";
 import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
+import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
 
 
 export class OpenAIClient {
@@ -22,6 +23,120 @@ export class OpenAIClient {
     this.config = new Configuration({ apiKey: Deno.env.get("OPENAI_APIKEY") });
     this.openai = new OpenAIApi(this.config);
   }
+
+  private async createChatCompletion<T extends IOpenAIResponse>(
+    model: string,
+    messages: any[],
+    responseType: new (responseText: string) => T,
+    maxTokens?: number,
+    temperature?: number
+  ): Promise<T> {
+    const chat = new ChatOpenAI({
+      temperature: temperature ?? defaultTemperature,
+      modelName: model,
+      maxTokens: maxTokens ?? defaultMaxTokens,
+    });
+  
+    try {
+      const response = await chat.call(messages);
+      console.log(response.text);
+      const parsedResponse = new responseType(response.text);
+      parsedResponse.validate();
+      return parsedResponse;
+    } catch (error) {
+      if (error instanceof OpenAIError || error instanceof OpenAIInvalidResponseError) {
+        throw error;
+      } else {
+        // If the error is due to parsing the response, try to fix the JSON
+        const fixedResponse = await chat.call([
+          new HumanChatMessage(
+            "The following JSON was returned incorrectly from OpenAI, please correct it: " + error.message
+          ),
+        ]);
+        const fixedParsedResponse = new responseType(fixedResponse.text);
+        fixedParsedResponse.validate();
+        return fixedParsedResponse;
+      }
+    }
+  }
+  
+
+  // private async createChatCompletion(model: string, messages: any[], maxTokens?: number, temperature?: number): Promise<BaseChatMessage> {
+  //   const chat = new ChatOpenAI({ 
+  //     temperature: temperature ?? defaultTemperature,
+  //     modelName: model, 
+  //     maxTokens: maxTokens ?? defaultMaxTokens 
+  //   });
+
+  //   try {
+  //     return await chat.call(messages);
+  //   } catch (error) {
+  //     if (error.response) {
+  //       throw new OpenAIError(error.response.status, `Failed to retrieve data from OpenAI. ${error.response.data.error.message}`);
+  //     } else {
+  //       throw new OpenAIError("500", `Failed to retrieve data from OpenAI`);
+  //     }
+  //   }
+  // }
+
+  async createCourseOutlineTitlesChain(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
+    let user_message = courseRequest.search_text;
+    if (courseRequest.module_count != null) {
+      user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
+    }
+
+    let messages = [new SystemChatMessage(new_course_prompts.course_outline_v2), new HumanChatMessage(user_message!)]
+
+    let response = await this.createChatCompletion(defaults.gpt35, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    console.log(response.response.data);
+
+    console.log(new_course_prompts.course_outline_v2_improve);
+    let fixMessages = [new SystemChatMessage(new_course_prompts.course_outline_v2_improve), new HumanChatMessage(`Improve this created outline ${response.response.data.course}. Course Request Text: ${user_message}`)]
+
+    response = await this.createChatCompletion(defaults.gpt35, fixMessages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    console.log(response.response.data);
+
+    return mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+
+  async createCourseOutlineTitles(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
+    let user_message = courseRequest.search_text;
+    if (courseRequest.module_count != null) {
+      user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
+    }
+
+    let messages;
+    if(model == defaults.gpt4) {
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_titles), new HumanChatMessage(user_message!)]
+    }
+    else{
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
+    }
+
+    console.log("Creating chat completion");
+    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    return mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+
+  async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
+    let user_message = JSON.stringify(course);
+
+    let messages;
+    if(model == defaults.gpt4) {
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_descriptions), new HumanChatMessage(`Existing course outline: ${user_message!}`)]
+    }
+    else{
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_descriptions}. Existing course outline: ${user_message}`)]
+    }
+
+    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    return mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+  
 
   async createCourseOutlineV2(courseRequest: ICourseRequest, model: string): Promise<InternalCourse> {
     let user_message = courseRequest.search_text;
@@ -80,6 +195,15 @@ export class OpenAIClient {
     const course = mapExternalCourseOutlineResponseToInternal(courseOutlineResponse.response);
 
     return course;
+  }
+
+  async fixInvalidJson(invalidJson: string): Promise<BaseChatMessage> {
+    const chat = new ChatOpenAI({ temperature: 0, modelName: defaults.gpt35, maxTokens: defaultMaxTokens });
+    return await chat.call([
+      new HumanChatMessage(
+        "The following JSON was returned incorrectly from OpenAI, please correct it: " + invalidJson
+      ),
+    ]);
   }
 
   async generateLessonTopics(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, model: string): Promise<string[]> {

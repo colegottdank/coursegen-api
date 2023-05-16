@@ -14,7 +14,7 @@ export interface InternalCourseItem {
   id?: string;
   parent_id?: string;
   title: string;
-  description: string;
+  description?: string;
   dates?: string;
   order_index: number;
   type: CourseItemType;
