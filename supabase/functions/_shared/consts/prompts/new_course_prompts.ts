@@ -150,7 +150,9 @@ Requirements:
 
 Add Descriptions: Comprehensive, captivating, relevant, ≤200 characters.
 Add Dates: If dates are missing, add them if relevant. If the dates are present but not important and/or contain values that are not dates, remove them entirely.
+Response must ONLY contain the JSON.
 Error handling: Offer error messages and corrections for unclear or malicious inputs.
+
 Response formats:
 
 Valid: {"success":true,"data":{"course":{"title":"...","dates":"...","description":"...", "items":[{"type":"module","title":"...","dates":"...","description":"...","items":[{"type":"lesson", "title":"...","dates":"...","description":"..."},{"type":"lesson", "title":"...","dates":"...","description":"..."},{"type":"lesson", "title":"...","dates":"...","description":"..."}]},{"type":"lesson","title":"...","dates":"...","description":"..."}]}}}
