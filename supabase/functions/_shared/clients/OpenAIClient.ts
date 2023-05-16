@@ -148,6 +148,7 @@ export class OpenAIClient {
   }
 
   async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
+    console.log(course);
     let courseJson = JSON.stringify(this.simplifyCourse(course));
 
     let messages;
