@@ -1,0 +1,1 @@
+ALTER TABLE course_item ALTER COLUMN description DROP NOT NULL;
