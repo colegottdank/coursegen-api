@@ -2,6 +2,7 @@ import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemC
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
 import { ICourseItem, ICourseOutlineResponse } from "./dtos/OpenAIResponses/CourseOutlineResponse.ts";
+import { ITitleItem, ITitleResponse, TitleResponse } from "./dtos/OpenAIResponses/TitleResponse.ts";
 
 export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
   return {
@@ -278,6 +279,36 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
   return course;
 }
 
+export function mapExternalTitlesResponseToInternal(titlesResponse: ITitleResponse): InternalCourse {
+  const externalCourse = titlesResponse.d.ti;
+  const internalCourse: InternalCourse = {
+      title: externalCourse.t,
+      items: mapExternalTitleItemToInternal(externalCourse.i),
+  };
+  return internalCourse;
+};
+
+function mapExternalTitleItemToInternal(titleItems: ITitleItem[]): InternalCourseItem[] {
+  const internalCourseItems: InternalCourseItem[] = [];
+
+  let orderIndex = 1;
+  for (const externalCourseItem of titleItems) {
+      const internalCourseItem: InternalCourseItem = {
+          title: externalCourseItem.t,
+          type: externalCourseItem.ty === 'm' ? CourseItemType.Module : CourseItemType.Lesson,
+          order_index: orderIndex
+      };
+
+      if (externalCourseItem.ty === 'm' && externalCourseItem.i) {
+        internalCourseItem.items = mapExternalTitleItemToInternal(externalCourseItem.i);
+      }
+
+      internalCourseItems.push(internalCourseItem);
+      orderIndex++;
+  }
+
+  return internalCourseItems;
+}
 
 export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse: ICourseOutlineResponse): InternalCourse {
     const externalCourse = courseOutlineResponse.data.course;

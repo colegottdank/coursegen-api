@@ -4,7 +4,7 @@ import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
 import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
-import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
+import { mapExternalCourseOutlineResponseToInternal, mapExternalTitlesResponseToInternal } from "../Mappers.ts";
 import { InternalCourse, InternalCourseItem } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
 import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResponse.ts";
@@ -13,7 +13,7 @@ import { BaseChatMessage, HumanChatMessage, SystemChatMessage } from "langchain/
 import * as defaults from "../../_shared/consts/defaults.ts";
 import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
-import { TitleResponse } from "../dtos/OpenAIResponses/TitlesResponse.ts";
+import { TitleResponse } from "../dtos/OpenAIResponses/TitleResponse.ts";
 
 
 export class OpenAIClient {
@@ -116,7 +116,7 @@ export class OpenAIClient {
 
     let messages;
     if(model == defaults.gpt4) {
-      messages = [new SystemChatMessage(new_course_prompts.course_outline_titles_short), new HumanChatMessage(user_message!)]
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_titles), new HumanChatMessage(user_message!)]
     }
     else{
       messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
@@ -125,11 +125,7 @@ export class OpenAIClient {
     console.log("Generating outline titles");
     const response = await this.createChatCompletion(model, messages, TitleResponse, 1000, courseRequest.temperature);
 
-    const test: InternalCourse = {
-      title: "",
-      items: []
-    };
-    return  test;
+    return mapExternalTitlesResponseToInternal(response.response);
   }
 
   simplifyItem = (item: InternalCourseItem): any => {
