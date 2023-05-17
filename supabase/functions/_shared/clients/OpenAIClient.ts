@@ -116,10 +116,10 @@ export class OpenAIClient {
 
     let messages;
     if(model == defaults.gpt4) {
-      messages = [new SystemChatMessage(new_course_prompts.course_outline_titles), new HumanChatMessage(user_message!)]
+      messages = [new SystemChatMessage(new_course_prompts.course_outline_titles_short), new HumanChatMessage(user_message!)]
     }
     else{
-      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
+      messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles_short}. Course Request Text: ${user_message}`)]
     }
 
     console.log("Generating outline titles");
