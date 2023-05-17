@@ -278,7 +278,6 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
   return course;
 }
 
-
 export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse: ICourseOutlineResponse): InternalCourse {
     const externalCourse = courseOutlineResponse.data.course;
     const internalCourse: InternalCourse = {
@@ -288,8 +287,8 @@ export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse
         items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.course.items),
     };
     return internalCourse;
-}
-  
+};
+
 function mapExternalCourseItemsToInternal(externalCourseItems: ICourseItem[]): InternalCourseItem[] {
     const internalCourseItems: InternalCourseItem[] = [];
 
