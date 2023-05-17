@@ -4,8 +4,8 @@ import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
 import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
-import { mapExternalCourseOutlineResponseToInternal, mapExternalTitlesResponseToInternal } from "../Mappers.ts";
-import { InternalCourse, InternalCourseItem } from "../InternalModels.ts";
+import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
+import { InternalCourse } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
 import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResponse.ts";
 import { ChatOpenAI } from "langchain/chat_models/openai";
@@ -13,7 +13,6 @@ import { BaseChatMessage, HumanChatMessage, SystemChatMessage } from "langchain/
 import * as defaults from "../../_shared/consts/defaults.ts";
 import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
-import { TitleResponse } from "../dtos/OpenAIResponses/TitleResponse.ts";
 
 
 export class OpenAIClient {
@@ -118,7 +117,6 @@ export class OpenAIClient {
       messages = [new HumanChatMessage(`${new_course_prompts.course_outline_titles}. Course Request Text: ${user_message}`)]
     }
 
-    console.log("Generating outline titles");
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, 1000, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
