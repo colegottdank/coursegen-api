@@ -38,9 +38,9 @@ export class OpenAIClient {
     });
   
     try {
-      console.log(messages);
+      console.log(`Messages: ${JSON.stringify(messages)}`);
       const response = await chat.call(messages);
-      console.log(response.text);
+      console.log(`Response: ${JSON.stringify(response)}`);
       let json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}')+1);
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
@@ -152,6 +152,7 @@ simplifyCourse = (course: InternalCourse): any => {
 
   async createCourseOutlineDescriptions(courseRequest: ICourseRequest, course: InternalCourse, model: string): Promise<InternalCourse> {
     let courseJson = JSON.stringify(this.simplifyCourse(course));
+    console.log(`CourseJson: ${courseJson}`);
 
     let messages;
     if(model == defaults.gpt4) {

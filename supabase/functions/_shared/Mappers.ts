@@ -288,8 +288,8 @@ export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse
         items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.course.items),
     };
     return internalCourse;
-}
-  
+};
+
 function mapExternalCourseItemsToInternal(externalCourseItems: ICourseItem[]): InternalCourseItem[] {
     const internalCourseItems: InternalCourseItem[] = [];
 
