@@ -2,7 +2,6 @@ import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemC
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
 import { ICourseItem, ICourseOutlineResponse } from "./dtos/OpenAIResponses/CourseOutlineResponse.ts";
-import { ITitleItem, ITitleResponse, TitleResponse } from "./dtos/OpenAIResponses/TitleResponse.ts";
 
 export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
   return {
