@@ -40,7 +40,7 @@ export class CourseOutlineResponse implements IOpenAIResponse {
         this.response = JSON.parse(fixedJson);
       } else {
         // Re-throw the error if it's not a SyntaxError
-        throw error;
+        throw new OpenAIInvalidResponseError(error.message + error.stack);
       }
     }
   }
