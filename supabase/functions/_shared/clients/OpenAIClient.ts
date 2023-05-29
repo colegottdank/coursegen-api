@@ -132,7 +132,7 @@ export class OpenAIClient {
   }
 
   async createLessonContent(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, searchText: string, userId: string): Promise<InternalTopic[]> {
-    const lessonContentMsgs = [new HumanChatMessage(`${lesson_topics_prompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText} Lesson to generate content for: ${lessonTitle}.`)]
+    const lessonContentMsgs = [new HumanChatMessage(`${lesson_topics_prompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson to generate content for: ${lessonTitle}.`)]
 
     let initialLessonContent = await this.createChatCompletion(defaults.gpt35, lessonContentMsgs, LessonContentResponse, lessonRequest.max_tokens, lessonRequest.temperature);
 
