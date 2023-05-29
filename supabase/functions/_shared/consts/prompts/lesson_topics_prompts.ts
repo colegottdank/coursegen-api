@@ -95,7 +95,7 @@ Rules:
 - Topics are used to break the content into smaller parts, only use if it makes sense to do so.
 - Add any markdown formatting to the content if it improves the readability of the content. This includes, tables, lists, bold, italics, etc.
 - Use the following response structure:
-    - Valid lesson: {"success":true,"data":[{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}
+    - Valid lesson: {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
     - Invalid lesson or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
 
 export const improve_lesson_content_request = `You're an AI model with the task of refining, optimizing and further improving lesson content that was generated in a previous request. This lesson content was intended to teach students topics in the most effective way possible, surpassing all existing teachers.
@@ -118,7 +118,7 @@ Check for grammatical accuracy and coherence of ideas.
 Check the length of the content, ensuring it is greater than 2000 words, if not, add more content and/or topics.
 Add any markdown formatting to the content if it improves the readability of the content. This includes, tables, lists, bold, italics, etc.
 Preserve the response structure used previously. That is, valid refined lesson content should be in this format:
-{"success":true,"data":[{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}
+{"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
 
 And in case of an invalid lesson or if uncertainty arises, use this format: {"success":false,"data":{},"error":{"message":""}}
 

@@ -11,7 +11,7 @@ export function mapExternalTopicsToInternalTopics(response: ILessonContentRespon
       id: uuidv4(),
       title: topic.topic,
       content: topic.content,
-      order_index: index,
+      order_index: index+1,
       lesson_id: request.lesson_id!,
       user_id: userId,
       course_id: request.course_id!
