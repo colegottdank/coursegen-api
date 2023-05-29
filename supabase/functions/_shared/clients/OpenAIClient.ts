@@ -4,8 +4,8 @@ import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
 import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
-import { mapExternalCourseOutlineResponseToInternal } from "../Mappers.ts";
-import { InternalCourse } from "../InternalModels.ts";
+import { mapExternalCourseOutlineResponseToInternal, mapExternalTopicsToInternalTopics } from "../Mappers.ts";
+import { InternalCourse, InternalTopic } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
 import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResponse.ts";
 import { ChatOpenAI } from "langchain/chat_models/openai";
@@ -13,6 +13,7 @@ import { BaseChatMessage, HumanChatMessage, SystemChatMessage } from "langchain/
 import * as defaults from "../../_shared/consts/defaults.ts";
 import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
+import { LessonContentResponse } from "../dtos/OpenAIResponses/LessonContentResponse.ts";
 
 
 export class OpenAIClient {
@@ -34,12 +35,20 @@ export class OpenAIClient {
     const chat = new ChatOpenAI({
       temperature: temperature ?? defaultTemperature,
       modelName: model,
-      maxTokens: maxTokens ?? defaultMaxTokens,
+      maxTokens: maxTokens ?? defaultMaxTokens
+    }, {
+      basePath: "https://oai.hconeai.com/v1",
+      baseOptions: {
+        headers: {
+          "Helicone-Auth": `Bearer ${Deno.env.get('HELICONE_API_KEY')}`
+        },
+      },
     });
   
+    let json = ""
     try {
       const response = await chat.call(messages);
-      let json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}')+1);
+      json = response.text.substring(response.text.indexOf('{'), response.text.lastIndexOf('}') + 1);
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
@@ -50,11 +59,11 @@ export class OpenAIClient {
         // If the error is due to parsing the response, try to fix the JSON
         const fixedResponse = await chat.call([
           new HumanChatMessage(
-            "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." + error.message
+            "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." + error.message + "JSON to fix: " + json
           ),
         ]);
 
-        let json = fixedResponse.text.substring(fixedResponse.text.indexOf('{'), fixedResponse.text.lastIndexOf('}')+1);
+        json = fixedResponse.text.substring(fixedResponse.text.indexOf('{'), fixedResponse.text.lastIndexOf('}')+1);
         const fixedParsedResponse = new responseType(json);
         fixedParsedResponse.validate();
         return fixedParsedResponse;
@@ -120,6 +129,20 @@ export class OpenAIClient {
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, 1000, courseRequest.temperature);
 
     return mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+
+  async createLessonContent(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, searchText: string, userId: string): Promise<InternalTopic[]> {
+    const lessonContentMsgs = [new HumanChatMessage(`${lesson_topics_prompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText} Lesson to generate content for: ${lessonTitle}.`)]
+
+    let initialLessonContent = await this.createChatCompletion(defaults.gpt35, lessonContentMsgs, LessonContentResponse, lessonRequest.max_tokens, lessonRequest.temperature);
+
+    const improveLessonContentMsgs = [new HumanChatMessage(`${lesson_topics_prompts.improve_lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson title that content was previously generated for: ${lessonTitle}. Generated lesson content from previous request: ${JSON.stringify(initialLessonContent.response.data)}.`)]
+
+    let improvedLessonContent = await this.createChatCompletion(defaults.gpt35, improveLessonContentMsgs, LessonContentResponse, lessonRequest.max_tokens, lessonRequest.temperature);
+
+    let internalTopics = mapExternalTopicsToInternalTopics(improvedLessonContent.response, lessonRequest, userId);
+
+    return internalTopics;
   }
 
 //   simplifyItem = (item: InternalCourseItem): any => {

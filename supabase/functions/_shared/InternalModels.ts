@@ -2,6 +2,7 @@ export interface InternalCourse {
   id?: string;
   title: string;
   description?: string;
+  search_text?: string;
   dates?: string;
   user_id?: string;
   created_at?: Date;

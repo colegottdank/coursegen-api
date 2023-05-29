@@ -122,8 +122,8 @@ Course requests will be highly personalized and may not technically be considere
 Guidelines:
 
 Course: Comprises modules, lessons, topics.
-Modules: High-level concepts with a minimum of 2 distinct lessons each. Max 10 modules.
-Lessons: Targeted content for user learning. Min 2 and max 10 lessons per module. Decide number of lessons based on what makes the most sense.
+Modules: High-level concepts with a minimum of 3 distinct lessons each. Max 10 modules.
+Lessons: Targeted content for user learning. Min 3 and max 10 lessons per module. Decide number of lessons based on what makes the most sense.
 
 Requirements:
 
