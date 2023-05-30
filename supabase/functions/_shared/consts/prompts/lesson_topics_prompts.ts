@@ -89,7 +89,7 @@ Task:
 Your job is to generate content for the given lesson.
 
 Rules:
-- Content must be > 1500 tokens and < 2250 tokens and must encompass the entire lesson and not include any introductions, conclusions, wrap-ups, etc.
+- Content must be greater than 2000 words and must encompass the entire lesson and not include any introductions, conclusions, wrap-ups, etc.
 - Ensure content does not overlap with any other part of the entire course outline.
 - Ensure the course request text along with the course outline is taken into consideration when generating the content.
 - Topics are used to break the content into smaller parts, only use if it makes sense to do so.
@@ -115,7 +115,7 @@ Pay close attention to the clarity of explanations, simplifying complex ideas wh
 Where possible, identify opportunities to incorporate real-world examples, activities or exercises that could enhance learning.
 Validate the lesson content against the course outline to ensure no repetition or overlap with other parts of the course.
 Check for grammatical accuracy and coherence of ideas.
-Check the length of the content, >1500 tokens and < 2250 tokens, if not, add more content and/or topics.
+Check the length of the content is greater than 2000 words if not, add more content and/or topics.
 Add any markdown formatting to the content if it improves the readability of the content. This includes, tables, lists, bold, italics, etc.
 Preserve the response structure used previously. That is, valid refined lesson content should be in this format:
 {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
