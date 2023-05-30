@@ -14,7 +14,7 @@ import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";
 const httpService = new HttpService({
     requireLogin: true,
     rateLimit: true,
-    isIdle: true
+    isIdle: false
 }, handle);
   
 serve((req) => httpService.handle(req));

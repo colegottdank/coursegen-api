@@ -115,7 +115,7 @@ Pay close attention to the clarity of explanations, simplifying complex ideas wh
 Where possible, identify opportunities to incorporate real-world examples, activities or exercises that could enhance learning.
 Validate the lesson content against the course outline to ensure no repetition or overlap with other parts of the course.
 Check for grammatical accuracy and coherence of ideas.
-Check the length of the content is greater than 2000 words if not, add more content and/or topics.
+Check the length of the content is greater than 2000 words if not, add more content.
 Add any markdown formatting to the content if it improves the readability of the content. This includes, tables, lists, bold, italics, etc.
 Preserve the response structure used previously. That is, valid refined lesson content should be in this format:
 {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
