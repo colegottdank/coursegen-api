@@ -118,6 +118,7 @@ Check for grammatical accuracy and coherence of ideas.
 Check the length of the content is greater than 2000 words if not, add more content.
 Add any markdown formatting to the content if it improves the readability of the content. This includes, tables, lists, bold, italics, etc.
 Add emojis to the topic titles that match the topic using html dec codes.
+Ensure the length of content per topic is not too short. If so, add more content or merge topics together.
 Preserve the response structure used previously. That is, valid refined lesson content should be in this format:
 {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
 
