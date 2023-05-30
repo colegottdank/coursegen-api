@@ -16,7 +16,7 @@ const httpService = new HttpService({
     rateLimit: true,
     isIdle: false
 }, handle);
-  
+
 serve((req) => httpService.handle(req));
 
 async function handle(reqJson?: string, context?: any) {
