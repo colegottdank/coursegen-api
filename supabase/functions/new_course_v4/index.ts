@@ -10,10 +10,12 @@ import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
 import { v4 as uuidv4} from "uuid";
 import { CourseRequest } from "../_shared/dtos/course/CourseRequest.ts";
 
+const envName = Deno.env.get("ENV_NAME");
+
 const httpService = new HttpService({
   requireLogin: true,
   rateLimit: true,
-  isIdle: false
+  isIdle: envName === "staging" ? true : false
 }, handle);
 
 serve((req) => httpService.handle(req));
