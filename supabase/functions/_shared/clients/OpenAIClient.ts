@@ -14,7 +14,7 @@ import * as defaults from "../../_shared/consts/defaults.ts";
 import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
 import { LessonContentResponse } from "../dtos/OpenAIResponses/LessonContentResponse.ts";
-
+import { encode } from 'gpt-tokenizer'
 
 export class OpenAIClient {
   private openai: any;
@@ -32,17 +32,22 @@ export class OpenAIClient {
     maxTokens?: number,
     temperature?: number
   ): Promise<T> {
+    const tokens = encode(JSON.stringify(messages));
+    let maxTokensCalc;
+    if(model == defaults.gpt4) maxTokensCalc = defaults.gpt4MaxTokens - tokens.length;
+    else maxTokensCalc = defaults.gpt35MaxTokens - tokens.length;
+
     const chat = new ChatOpenAI({
       temperature: temperature ?? defaultTemperature,
       modelName: model,
-      maxTokens: maxTokens ?? defaultMaxTokens
+      maxTokens: maxTokensCalc
     }, {
       basePath: "https://oai.hconeai.com/v1",
       baseOptions: {
         headers: {
           "Helicone-Auth": `Bearer ${Deno.env.get('HELICONE_API_KEY')}`
         },
-      },
+      }
     });
   
     let json = ""

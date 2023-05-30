@@ -1,5 +1,4 @@
 import { User } from '@supabase/supabase-js';
-import * as defaults from "../_shared/consts/defaults.ts";
 import { LessonContentRequest } from './../_shared/dtos/content/LessonContentRequest.ts';
 import "xhr_polyfill";
 import { serve } from "std/server";
@@ -7,7 +6,7 @@ import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
-import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
+import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
 import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";

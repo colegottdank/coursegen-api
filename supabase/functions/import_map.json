@@ -8,6 +8,7 @@
       "uuid": "https://esm.sh/uuid@9.0.0?target=deno&no-check",
       "@upstash/ratelimit": "https://cdn.skypack.dev/@upstash/ratelimit@latest",
       "@upstash/redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts",
-      "langchain/": "https://esm.sh/langchain@0.0.75/"
+      "langchain/": "https://esm.sh/langchain@0.0.75/",
+      "gpt-tokenizer": "https://esm.sh/gpt-tokenizer@2.0.0/"
     }
 }
