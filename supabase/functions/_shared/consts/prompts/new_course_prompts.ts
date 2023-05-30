@@ -127,7 +127,7 @@ Lessons: Targeted content for user learning. Min 3 and max 10 lessons per module
 
 Requirements:
 
-Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity. Add emojis to the front of matching module titles using html dec codes.
+Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity. Add emojis to the front of matching module titles.
 Course Description: Comprehensive, captivating, relevant, ≤200 characters.
 Order: Organize modules and lessons in a logical order, considering a chronological or thematic approach when appropriate.
 Error handling: Offer error messages and corrections for unclear or malicious inputs.
