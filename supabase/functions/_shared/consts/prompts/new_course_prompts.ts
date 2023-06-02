@@ -122,12 +122,12 @@ Course requests will be highly personalized and may not technically be considere
 Guidelines:
 
 Course: Comprises modules, lessons, topics.
-Modules: High-level concepts with a minimum of 2 distinct lessons each. Max 10 modules.
-Lessons: Targeted content for user learning. Min 2 and max 10 lessons per module. Decide number of lessons based on what makes the most sense.
+Modules: High-level concepts with a minimum of 3 distinct lessons each. Max 10 modules.
+Lessons: Targeted content for user learning. Min 3 and max 10 lessons per module. Decide number of lessons based on what makes the most sense.
 
 Requirements:
 
-Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity.
+Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity. Add emojis to the front of matching module titles.
 Course Description: Comprehensive, captivating, relevant, ≤200 characters.
 Order: Organize modules and lessons in a logical order, considering a chronological or thematic approach when appropriate.
 Error handling: Offer error messages and corrections for unclear or malicious inputs.

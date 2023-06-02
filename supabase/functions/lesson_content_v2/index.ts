@@ -1,13 +1,12 @@
 import { User } from '@supabase/supabase-js';
-import * as defaults from "../_shared/consts/defaults.ts";
 import { LessonContentRequest } from './../_shared/dtos/content/LessonContentRequest.ts';
 import "xhr_polyfill";
 import { serve } from "std/server";
-import { HttpService, HttpServiceOptions } from "../_shared/util/httpservice.ts";
+import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
-import { buildCourseOutline, mapContentToInternalTopics, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
+import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
 import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
 import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";
@@ -15,9 +14,9 @@ import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";
 const httpService = new HttpService({
     requireLogin: true,
     rateLimit: true,
-    isIdle: true
+    isIdle: false
 }, handle);
-  
+
 serve((req) => httpService.handle(req));
 
 async function handle(reqJson?: string, context?: any) {
@@ -58,19 +57,22 @@ async function handle(reqJson?: string, context?: any) {
     const currentLesson = courseItems.find(item => item.id === contentRequest.lesson_id);
     if(!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
 
+    const internalTopics = await openAIClient.createLessonContent(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), course.search_text!, course.user_id!);
+    currentLesson.topics = internalTopics;
+
 
     //console.log(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt4);
-    const topics = await openAIClient.generateLessonTopics(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt4);
+    // const topics = await openAIClient.generateLessonTopics(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), contentRequest.gpt_model ?? defaults.gpt4);
 
-    const internalTopics = mapTopicsToInternalTopics(topics, contentRequest.lesson_id!, course.user_id!, contentRequest.course_id!);
+    // const internalTopics = mapTopicsToInternalTopics(topics, contentRequest.lesson_id!, course.user_id!, contentRequest.course_id!);
 
-    currentLesson.topics = internalTopics;
+    // currentLesson.topics = internalTopics;
 
-    gptCourseOutline = mapCourseForGPT(courseOutline);
+    // gptCourseOutline = mapCourseForGPT(courseOutline);
 
-    const topicContent = await openAIClient.generateLessonTopicContent(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), topics, defaults.gpt35);
-    mapContentToInternalTopics(internalTopics, topicContent);
-    currentLesson.topics = internalTopics;
+    // const topicContent = await openAIClient.generateLessonTopicContent(contentRequest, currentLesson.title, JSON.stringify(gptCourseOutline), topics, defaults.gpt35);
+    // mapContentToInternalTopics(internalTopics, topicContent);
+    // currentLesson.topics = internalTopics;
 
     topicDao.insertTopics(internalTopics);
 

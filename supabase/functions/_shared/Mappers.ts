@@ -2,6 +2,22 @@ import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemC
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
 import { ICourseItem, ICourseOutlineResponse } from "./dtos/OpenAIResponses/CourseOutlineResponse.ts";
+import { ILessonContentResponse } from "./dtos/OpenAIResponses/LessonContentResponse.ts";
+import { ILessonContentRequest } from "./dtos/content/LessonContentRequest.ts";
+
+export function mapExternalTopicsToInternalTopics(response: ILessonContentResponse, request: ILessonContentRequest, userId: string): InternalTopic[] {
+  return response.data.topics.map((topic, index) => {
+    return {
+      id: uuidv4(),
+      title: topic.topic,
+      content: topic.content,
+      order_index: index+1,
+      lesson_id: request.lesson_id!,
+      user_id: userId,
+      course_id: request.course_id!
+    };
+  });
+}
 
 export function duplicateCourse(course: InternalCourse, newUserId: string): InternalCourse {
   return {
@@ -181,6 +197,7 @@ export function mapCourseDaoToInternalCourse(courseData: any): InternalCourse {
     id: courseData.id,
     title: courseData.title,
     description: courseData.description,
+    search_text: courseData.search_text,
     dates: courseData.dates,
     user_id: courseData.user_id,
     created_at: courseData.created_at,
