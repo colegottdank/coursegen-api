@@ -136,6 +136,18 @@ export class OpenAIClient {
     return mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
+  async createCourseOutline(courseRequest: ICourseRequest): Promise<InternalCourse> {
+    let courseOutlineMsgs1 = [new HumanChatMessage(`${new_course_prompts.course_outline_1}. Course Request Text: ${courseRequest.search_text}`)]
+
+    const initialCourseOutline = await this.createChatCompletion(defaults.gpt35, courseOutlineMsgs1, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    let courseOutlineMsgs2 = [new HumanChatMessage(`${new_course_prompts.course_outline_improve}. Initial course outline: ${JSON.stringify(initialCourseOutline.response.data)}. Course Request Text: ${courseRequest.search_text}.`)]
+
+    const improvedCourseOutline = await this.createChatCompletion(defaults.gpt35, courseOutlineMsgs2, CourseOutlineResponse, courseRequest.max_tokens, courseRequest.temperature);
+
+    return mapExternalCourseOutlineResponseToInternal(improvedCourseOutline.response);
+  }
+
   async createLessonContent(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, searchText: string, userId: string): Promise<InternalTopic[]> {
     const lessonContentMsgs = [new HumanChatMessage(`${lesson_topics_prompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson to generate content for: ${lessonTitle}.`)]
 
