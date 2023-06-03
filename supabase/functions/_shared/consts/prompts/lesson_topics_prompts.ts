@@ -148,6 +148,7 @@ Guidelines:
 - Use markdown formatting for enhanced readability, if it suits the content.
 - Ensure all topic titles are prepended with relevant emojis (do not add to the topic content).
 - Examine the content length of each topic; add more information or merge topics if too short.
+- Ensure content is correctly grouped into topics, if applicable.
 - Replace any introduction and conclusion topics with more content or additional topics, if necessary.
 
 Response Structure:
