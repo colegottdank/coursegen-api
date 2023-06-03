@@ -187,7 +187,7 @@ Guidelines:
 - Enhance the course description for clarity, engagement, and relevance, staying within the 200-character limit.
 - Check for content overlap between modules and lessons and resolve if found.
 - Validate all module tiles are prepended with relevant emojis.
-- Sometimes GPT always returns 3 lessons per module. Please ensure that the number of lessons per module and number of modules is appropriate for the given course request.
+- Sometimes GPT always returns 3 lessons per module. Please ensure that the number of lessons per module and number of modules is appropriate for the given course request and not always the minimum.
 
 Error Handling:
 - Provide error messages and suggest corrections for unclear or malicious inputs.
