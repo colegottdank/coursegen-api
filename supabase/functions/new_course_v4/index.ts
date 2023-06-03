@@ -14,12 +14,13 @@ const envName = Deno.env.get("ENV_NAME");
 const httpService = new HttpService({
   requireLogin: true,
   rateLimit: true,
-  isIdle: envName === "staging" ? true : false
+  isIdle: false
 }, handle);
 
 serve((req) => httpService.handle(req));
 
 async function handle(reqJson?: string, context?: any) {
+  console.log("handle");
   // Parse request parameters
   const courseRequest = new CourseRequest(reqJson!);
   courseRequest.Validate();
