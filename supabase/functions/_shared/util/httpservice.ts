@@ -2,7 +2,6 @@ import { GeneratingStatus } from './../Statuses.ts';
 import { corsHeaders } from "./../consts/cors.ts";
 import { createClient, SupabaseClient, User } from "@supabase/supabase-js";
 import { Database } from "../database.types.ts";
-import { Redis } from "@upstash/redis";
 import { UserDao } from "../daos/UserDao.ts";
 import { AlreadyGeneratingError, NotFoundError, SupabaseError, UnauthorizedError } from "../consts/Errors.ts";
 

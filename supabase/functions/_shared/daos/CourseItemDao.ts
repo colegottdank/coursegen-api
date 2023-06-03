@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseError } from "../consts/Errors.ts";
 import { Database } from "../database.types.ts";
-import { InternalCourseItem, InternalCourseItemClosure } from "../InternalModels.ts";
+import { InternalCourseItem } from "../InternalModels.ts";
 
 export class CourseItemDao {
   constructor(private supabase: SupabaseClient) {}
@@ -60,32 +60,6 @@ export class CourseItemDao {
     return data;
   }
 
-  async getCourseItemClosuresByCourseId(
-    course_id: string
-  ): Promise<Database["public"]["Tables"]["course_item_closure"]["Row"][]> {
-    const { data, error } = await this.supabase
-      .from("course_item_closure")
-      .select()
-      .eq("course_id", course_id)
-      .returns<Database["public"]["Tables"]["course_item_closure"]["Row"][]>();
-      
-    if (error) {
-      throw new SupabaseError(
-        error.code,
-        `Failed to get course item closures for course ${course_id}`
-      );
-    }
-
-    if (!data) {
-      throw new SupabaseError(
-        "course_item_closure_not_found",
-        `Course item closures not found for course ${course_id}`
-      );
-    }
-
-    return data;
-  }
-
   async insertCourseItems(
     course_items: InternalCourseItem[]
   ): Promise<Database["public"]["Tables"]["course_item"]["Row"][]> {
@@ -115,29 +89,6 @@ export class CourseItemDao {
 
     if (!data) {
       throw new SupabaseError("404", `Course items not found`);
-    }
-
-    return data;
-  }
-
-  async insertCourseItemClosures(
-    course_item_closures: InternalCourseItemClosure[]
-  ): Promise<Database["public"]["Tables"]["course_item_closure"]["Row"][]> {
-    const { data, error } = await this.supabase
-      .from("course_item_closure")
-      .insert(course_item_closures)
-      .select()
-      .returns<Database["public"]["Tables"]["course_item_closure"]["Row"][]>();
-
-    if (error) {
-      throw new SupabaseError(
-        error.code,
-        `Failed to insert course item closures, ${error.message}`
-      );
-    }
-
-    if (!data) {
-      throw new SupabaseError("404", `Course item closures not found`);
     }
 
     return data;
@@ -176,42 +127,6 @@ export class CourseItemDao {
 
     if (error) {
       throw error;
-    }
-
-    // Insert items into the closure table
-    for (const item of flattenedItems) {
-      // Create an array for the rows to be inserted into the closure table
-      const rowsToInsert = [
-        {
-          ancestor_id: item.id,
-          descendant_id: item.id,
-          depth: 0,
-          course_id: item.course_id,
-        },
-      ];
-
-      // Find all the ancestors of the current item and create closure table rows for each ancestor
-      let currentParentId = item.parent_id;
-      let currentDepth = 1;
-      while (currentParentId) {
-        rowsToInsert.push({
-          ancestor_id: currentParentId,
-          descendant_id: item.id,
-          depth: currentDepth,
-          course_id: item.course_id,
-        });
-
-        // Move up to the next ancestor
-        const parentItem = flattenedItems.find((i) => i.id === currentParentId);
-        currentParentId = parentItem ? parentItem.parent_id : undefined;
-        currentDepth++;
-      }
-
-      const { error: closureError } = await this.supabase.from("course_item_closure").insert(rowsToInsert);
-
-      if (closureError) {
-        throw closureError;
-      }
     }
   }
 }

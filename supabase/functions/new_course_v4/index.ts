@@ -3,7 +3,6 @@ import { serve } from "std/server";
 import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
-import * as defaults from "../_shared/consts/defaults.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
@@ -31,7 +30,7 @@ async function handle(reqJson?: string, context?: any) {
 
   // Initialize new OpenAI API client
   const openAIClient = new OpenAIClient();
-  let courseOutline = await openAIClient.createCourseOutlineTitles(courseRequest, courseRequest.gpt_model ?? defaults.gpt4);
+  let courseOutline = await openAIClient.createCourseOutline(courseRequest);
   courseOutline.user_id = user?.id;
 
   // Insert course and sections into db

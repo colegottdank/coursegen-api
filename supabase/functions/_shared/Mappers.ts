@@ -1,4 +1,4 @@
-import { CourseItemType, InternalCourse, InternalCourseItem, InternalCourseItemClosure, InternalTopic } from "./InternalModels.ts";
+import { CourseItemType, InternalCourse, InternalCourseItem, InternalTopic } from "./InternalModels.ts";
 import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels.ts";
 import { v4 as uuidv4} from "uuid";
 import { ICourseItem, ICourseOutlineResponse } from "./dtos/OpenAIResponses/CourseOutlineResponse.ts";
@@ -66,17 +66,6 @@ export function duplicateTopics(topics: InternalTopic[], newUserId: string, oldT
       course_id: newCourseId,
       created_at: new Date(),
       updated_at: new Date()
-    };
-  });
-}
-
-export function duplicateCourseItemClosures(courseItemClosures: InternalCourseItemClosure[], oldToNewCourseItemId: Map<string, string>, newCourseId: string): InternalCourseItemClosure[] {
-  return courseItemClosures.map((closure) => {
-    return {
-      ancestor_id: oldToNewCourseItemId.get(closure.ancestor_id!)!,
-      descendant_id: oldToNewCourseItemId.get(closure.descendant_id)!,
-      depth: closure.depth,
-      course_id: newCourseId,
     };
   });
 }
@@ -240,48 +229,33 @@ export function mapRowToInternalTopic(row: any): InternalTopic {
   return internalTopic;
 }
 
-
-export function mapCourseItemClosureDaoToInternalCourseItemClosure(courseItemClosureData: any): InternalCourseItemClosure {
-  const internalCourseItemClosure: InternalCourseItemClosure = {
-    ancestor_id: courseItemClosureData.ancestor_id,
-    descendant_id: courseItemClosureData.descendant_id,
-    depth: courseItemClosureData.depth,
-    course_id: courseItemClosureData.course_id,
-  };
-
-  return internalCourseItemClosure;
-}
-
-export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[], courseItemClosures: InternalCourseItemClosure[]): InternalCourse {
+export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[]): InternalCourse {
   // Create a map of course items for easy lookup
   const courseItemsMap = new Map<string, InternalCourseItem>();
   courseItems.forEach((item) => {
     courseItemsMap.set(item.id!, item);
   });
 
-  // Filter out only the top-level course items (i.e., those with no parent)
-  const topLevelCourseItems = courseItems.filter((item) => !item.parent_id);
-
   // Recursive function to build the nested structure
   function buildNestedCourseItems(courseItem: InternalCourseItem) {
     if (courseItem.type === CourseItemType.Module) {
-      // Use nullish coalescing operator to ensure an empty array is used when courseItem.items is undefined
       courseItem.items = courseItem.items ?? [];
 
-      courseItemClosures
-        .filter((closure) => closure.ancestor_id === courseItem.id && closure.depth === 1)
-        .forEach((closure) => {
-          const childItem = courseItemsMap.get(closure.descendant_id);
-          if (childItem) {
-            buildNestedCourseItems(childItem);
-            courseItem.items!.push(childItem);
-          }
+      // Find and nest the course items whose parent_id is the current courseItem.id
+      courseItems
+        .filter((item) => item.parent_id === courseItem.id)
+        .forEach((childItem) => {
+          buildNestedCourseItems(childItem);
+          courseItem.items!.push(childItem);
         });
 
       // Sort the nested items by their order_index
       courseItem.items.sort((a, b) => a.order_index - b.order_index);
     }
   }
+
+  // Filter out only the top-level course items (i.e., those with no parent)
+  const topLevelCourseItems = courseItems.filter((item) => !item.parent_id);
 
   // Build the nested structure for each top-level course item
   topLevelCourseItems.forEach(buildNestedCourseItems);
