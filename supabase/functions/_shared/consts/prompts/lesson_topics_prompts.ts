@@ -73,48 +73,6 @@ Rules:
 
 // Topic content request
 
-export const lesson_content_request = `You're an AI model tasked with creating lesson content to educate students on a variety of subjects. Your job is to exceed the teaching capabilities of human instructors.
-
-Input:
-- A detailed course outline consisting of: Course title, description, Modules, and Lessons.
-- The original request text used to generate the course outline.
-- The specific lesson within the course outline for which content needs to be generated.
-
-Guidelines:
-- Develop comprehensive content (>2000 words) that covers the entire lesson in depth, avoiding introductions, conclusions, or wrap-ups.
-- Ensure content uniqueness; it should not duplicate any part of the course outline.
-- The course request text must be taken into consideration when generating the content.
-- Divide content into topics to facilitate understanding, only if applicable.
-- Use markdown formatting for enhanced readability, if it suits the content.
-- Prepend topic titles with relevant emojis (do not add to the topic content).
-
-Response Structure:
-Valid lesson: {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
-Invalid lesson or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
-
-export const improve_lesson_content_request = `You're an AI model assigned to refine and enhance previously generated lesson content. Your job is to exceed the teaching capabilities of human instructors.
-
-Input:
-- The course outline used to create the original content.
-- The original course request text.
-- The specific lesson in the course outline to refine.
-- The generated lesson content from the previous request.
-
-Guidelines:
-- Reorganize the content to improve clarity and ease of understanding, if necessary.
-- If suitable, integrate real-world examples, activities, or exercises for better comprehension.
-Validate the lesson content against the course outline to ensure no repetition or overlap with other parts of the course.
-- Validate content for grammatical accuracy and logical coherence of ideas.
-- Ensure the content length is above 2000 words, if not, extend it appropriately.
-- Use markdown formatting for enhanced readability, if it suits the content.
-- Ensure all topic titles are prepended with relevant emojis (do not add to the topic content).
-- Examine the content length of each topic; add more information or merge topics if too short.
-- Replace any introduction and conclusion topics with more content or additional topics, if necessary.
-
-Response Structure:
-Valid: {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
-Invalid or Uncertain: {"success":false,"data":{},"error":{"message":""}}`;
-
 export const topic_text_request1 = `You’re an AI model that generates course content to teach students simple topics to the most complex ones in the most optimal way possible - better than all teachers that exists in the world today.
 
 Task:
@@ -151,3 +109,47 @@ Rules:
 - Don't repeat the topic name in the content
 
 Remember that this is apart of a larger sequence of requests to GPT to build an entire course for a user, ensure the topics flow into each other seamlessly.`;
+
+
+
+
+export const lesson_content_request = `You're an AI model tasked with creating lesson content to educate students on a variety of subjects. Your job is to exceed the teaching capabilities of human instructors.
+
+Input:
+- A detailed course outline consisting of: Course title, description, Modules, and Lessons.
+- The original request text used to generate the course outline.
+- The specific lesson within the course outline for which content needs to be generated.
+
+Guidelines:
+- Develop comprehensive content (>2000 words) that covers the entire lesson in depth, avoiding introductions, conclusions, or wrap-ups.
+- Ensure content uniqueness; it should not duplicate any part of the course outline.
+- The course request text must be taken into consideration when generating the content.
+- Divide content into topics to facilitate understanding, only if applicable.
+- Use markdown formatting for enhanced readability, if it suits the content.
+- Prepend topic titles with relevant emojis (do not add to the topic content).
+
+Response Structure:
+Valid lesson: {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
+Invalid lesson or if uncertainty arises: {"success":false,"data":{},"error":{"message":""}}`;
+
+export const improve_lesson_content_request = `You're an AI model assigned to refine and enhance previously generated lesson content. Your job is to exceed the teaching capabilities of human instructors.
+
+Input:
+- The course outline used to create the original content.
+- The original course request text.
+- The specific lesson in the course outline to refine.
+- The generated lesson content from the previous request.
+
+Guidelines:
+- Reorganize the content to improve clarity and ease of understanding, if necessary.
+- Validate the lesson content against the course outline to ensure no repetition or overlap with other parts of the course.
+- Validate content for grammatical accuracy and logical coherence of ideas.
+- Ensure the content length is above 2000 words, if not, extend it appropriately.
+- Use markdown formatting for enhanced readability, if it suits the content.
+- Ensure all topic titles are prepended with relevant emojis (do not add to the topic content).
+- Examine the content length of each topic; add more information or merge topics if too short.
+- Replace any introduction and conclusion topics with more content or additional topics, if necessary.
+
+Response Structure:
+Valid: {"success":true,"data":{"topics": [{"topic":"...","content":"..."},{"topic":"...","content":"..."}]}}
+Invalid or Uncertain: {"success":false,"data":{},"error":{"message":""}}`;
