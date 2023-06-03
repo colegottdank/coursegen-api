@@ -6,8 +6,8 @@ import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
-import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemClosureDaoToInternalCourseItemClosure, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
-import { InternalCourse, InternalCourseItem, InternalCourseItemClosure } from "../_shared/InternalModels.ts";
+import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics, mapTopicsToInternalTopics } from "../_shared/Mappers.ts";
+import { InternalCourse, InternalCourseItem } from "../_shared/InternalModels.ts";
 import { TopicDao } from "../_shared/daos/TopicDao.ts";
 import { BadRequestError, NotFoundError } from "../_shared/consts/Errors.ts";
 
@@ -38,19 +38,16 @@ async function handle(reqJson?: string, context?: any) {
 
     const courseItemDao = new CourseItemDao(supabase);
     const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(contentRequest.course_id!);
-    const courseItemClosuresPromise = courseItemDao.getCourseItemClosuresByCourseId(contentRequest.course_id!);
 
-    const [courseResponse, courseItemsResponse, courseItemClosuresResponse] = await Promise.all([
+    const [courseResponse, courseItemsResponse] = await Promise.all([
         coursePromise,
         courseItemsPromise,
-        courseItemClosuresPromise,
     ]);
 
     const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
     const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);
-    const courseItemClosures: InternalCourseItemClosure[] = courseItemClosuresResponse.map(mapCourseItemClosureDaoToInternalCourseItemClosure);
 
-    const courseOutline = buildCourseOutline(course, courseItems, courseItemClosures);
+    const courseOutline = buildCourseOutline(course, courseItems);
     let gptCourseOutline = mapCourseForGPT(courseOutline);
 
     const openAIClient = new OpenAIClient();

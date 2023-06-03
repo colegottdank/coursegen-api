@@ -25,13 +25,6 @@ export interface InternalCourseItem {
   topics?: InternalTopic[];
 }
 
-export interface InternalCourseItemClosure {
-  ancestor_id: string;
-  descendant_id: string;
-  depth: number;
-  course_id: string;
-}
-
 export interface InternalTopic {
   id: string;
   title: string;

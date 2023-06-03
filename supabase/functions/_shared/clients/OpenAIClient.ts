@@ -1,9 +1,8 @@
 import { OpenAIError, OpenAIInvalidResponseError } from './../consts/Errors.ts';
-import { Configuration, OpenAIApi } from "openai";
 import { ICourseRequest } from "../dtos/course/CourseRequest.ts";
 import * as new_course_prompts from "../consts/prompts/new_course_prompts.ts";
 import * as lesson_topics_prompts from "../consts/prompts/lesson_topics_prompts.ts";
-import { defaultMaxTokens, defaultProficiency, defaultTemperature } from "../consts/defaults.ts";
+import { defaultMaxTokens, defaultTemperature } from "../consts/defaults.ts";
 import { mapExternalCourseOutlineResponseToInternal, mapExternalTopicsToInternalTopics } from "../Mappers.ts";
 import { InternalCourse, InternalTopic } from "../InternalModels.ts";
 import { ILessonContentRequest } from "../dtos/content/LessonContentRequest.ts";
@@ -11,20 +10,11 @@ import { CourseOutlineResponse } from "../dtos/OpenAIResponses/CourseOutlineResp
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BaseChatMessage, HumanChatMessage, SystemChatMessage } from "langchain/schema";
 import * as defaults from "../../_shared/consts/defaults.ts";
-import { TopicResponseAI } from "../dtos/content/TopicResponseAI.ts";
 import { IOpenAIResponse } from "../dtos/OpenAIResponses/IOpenAIResponse.ts";
 import { LessonContentResponse } from "../dtos/OpenAIResponses/LessonContentResponse.ts";
 import { encode } from 'gpt-tokenizer'
 
 export class OpenAIClient {
-  private openai: any;
-  private config: any;
-
-  constructor() {
-    this.config = new Configuration({ apiKey: Deno.env.get("OPENAI_APIKEY") });
-    this.openai = new OpenAIApi(this.config);
-  }
-
   private async createChatCompletion<T extends IOpenAIResponse>(
     model: string,
     messages: any[],
@@ -271,127 +261,127 @@ export class OpenAIClient {
     ]);
   }
 
-  async generateLessonTopics(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, model: string): Promise<string[]> {
-    let topicMessages: any[] = [];
+  // async generateLessonTopics(lessonRequest: ILessonContentRequest, lessonTitle: string, courseOutline: string, model: string): Promise<string[]> {
+  //   let topicMessages: any[] = [];
 
-    if (model === "gpt-4") {
-      topicMessages = [
-        {
-          role: "system",
-          content: lesson_topics_prompts.lesson_topics_request + ". Existing course outline: " + courseOutline,
-        },
-        {
-          role: "user",
-          content: `Lesson to generate topics for: ${lessonTitle}
-          }`,
-        },
-      ];
-    } else if (model === "gpt-3.5-turbo") {
-      topicMessages = [
-        {
-          role: "user",
-          content:
-            lesson_topics_prompts.lesson_topics_request +
-            ". Existing course outline: " +
-            courseOutline +
-            `. Lesson to generate topics for: ${lessonTitle}.`,
-        },
-      ];
-    }
+  //   if (model === "gpt-4") {
+  //     topicMessages = [
+  //       {
+  //         role: "system",
+  //         content: lesson_topics_prompts.lesson_topics_request + ". Existing course outline: " + courseOutline,
+  //       },
+  //       {
+  //         role: "user",
+  //         content: `Lesson to generate topics for: ${lessonTitle}
+  //         }`,
+  //       },
+  //     ];
+  //   } else if (model === "gpt-3.5-turbo") {
+  //     topicMessages = [
+  //       {
+  //         role: "user",
+  //         content:
+  //           lesson_topics_prompts.lesson_topics_request +
+  //           ". Existing course outline: " +
+  //           courseOutline +
+  //           `. Lesson to generate topics for: ${lessonTitle}.`,
+  //       },
+  //     ];
+  //   }
 
-    let completion: any = undefined;
-    try {
-      completion = await this.openai.createChatCompletion({
-        model: model,
-        messages: topicMessages,
-        max_tokens: lessonRequest.max_tokens ?? defaultMaxTokens,
-        temperature: lessonRequest.temperature ?? defaultTemperature,
-      });
-    } catch (error) {
-      if (error.response) {
-        throw new OpenAIError(error.response.status, `Failed to retrieve topics from OpenAI. ${error.response.data.error.message}`);
-      } else {
-        throw new OpenAIError("500", `Failed to retrieve topics from OpenAI`);
-      }
-    }
+  //   let completion: any = undefined;
+  //   try {
+  //     completion = await this.openai.createChatCompletion({
+  //       model: model,
+  //       messages: topicMessages,
+  //       max_tokens: lessonRequest.max_tokens ?? defaultMaxTokens,
+  //       temperature: lessonRequest.temperature ?? defaultTemperature,
+  //     });
+  //   } catch (error) {
+  //     if (error.response) {
+  //       throw new OpenAIError(error.response.status, `Failed to retrieve topics from OpenAI. ${error.response.data.error.message}`);
+  //     } else {
+  //       throw new OpenAIError("500", `Failed to retrieve topics from OpenAI`);
+  //     }
+  //   }
 
-    const topicResponse = new TopicResponseAI(completion.data.choices[0].message.content)
-    topicResponse.validate();
+  //   const topicResponse = new TopicResponseAI(completion.data.choices[0].message.content)
+  //   topicResponse.validate();
 
-    return topicResponse.response.data.topics;
-  }
+  //   return topicResponse.response.data.topics;
+  // }
 
-  async generateLessonTopicContent(
-    lessonRequest: ILessonContentRequest,
-    lessonTitle: string,
-    courseOutline: string,
-    topics: string[],
-    model: string
-  ): Promise<string[]> {
-    // First generate topics
-    let messages: any[] = [];
-    if (model == "gpt-4") {
-      // messages = topics.map((topic: any) => {
-      //   return [
-      //     {
-      //       role: "system",
-      //       content: lesson_topics_prompts.topic_text_request2 + ". Existing course outline: " + courseOutline,
-      //     },
-      //     {
-      //       role: "user",
-      //       content: `Lesson to generate topics for: ${topicsRequest.title}
-      //       }`,
-      //     },
-      //   ];
-      // });
-    } else if (model == "gpt-3.5-turbo") {
-      messages = topics.map((topic: any) => {
-        return [
-          {
-            role: "user",
-            content:
-              lesson_topics_prompts.topic_text_request2 +
-              ". Existing course outline: " +
-              courseOutline +
-              `. Topic to generate content for: ${topic}. Lesson which the topic belongs to: ${
-                lessonTitle
-              }, Proficiency for which to consider: ${lessonRequest.proficiency ?? defaultProficiency}`,
-          },
-        ];
-      });
-    }
+//   async generateLessonTopicContent(
+//     lessonRequest: ILessonContentRequest,
+//     lessonTitle: string,
+//     courseOutline: string,
+//     topics: string[],
+//     model: string
+//   ): Promise<string[]> {
+//     // First generate topics
+//     let messages: any[] = [];
+//     if (model == "gpt-4") {
+//       // messages = topics.map((topic: any) => {
+//       //   return [
+//       //     {
+//       //       role: "system",
+//       //       content: lesson_topics_prompts.topic_text_request2 + ". Existing course outline: " + courseOutline,
+//       //     },
+//       //     {
+//       //       role: "user",
+//       //       content: `Lesson to generate topics for: ${topicsRequest.title}
+//       //       }`,
+//       //     },
+//       //   ];
+//       // });
+//     } else if (model == "gpt-3.5-turbo") {
+//       messages = topics.map((topic: any) => {
+//         return [
+//           {
+//             role: "user",
+//             content:
+//               lesson_topics_prompts.topic_text_request2 +
+//               ". Existing course outline: " +
+//               courseOutline +
+//               `. Topic to generate content for: ${topic}. Lesson which the topic belongs to: ${
+//                 lessonTitle
+//               }, Proficiency for which to consider: ${lessonRequest.proficiency ?? defaultProficiency}`,
+//           },
+//         ];
+//       });
+//     }
 
-    const promises = messages.map((message: any) => {
-      return this.openai.createChatCompletion({
-        model: model,
-        messages: message,
-        max_tokens: lessonRequest.max_tokens ?? defaultMaxTokens,
-        temperature: lessonRequest.temperature ?? defaultTemperature,
-      });
-    });
+//     const promises = messages.map((message: any) => {
+//       return this.openai.createChatCompletion({
+//         model: model,
+//         messages: message,
+//         max_tokens: lessonRequest.max_tokens ?? defaultMaxTokens,
+//         temperature: lessonRequest.temperature ?? defaultTemperature,
+//       });
+//     });
 
-    let responses;
-    try {
-      responses = await Promise.all(promises);
-    } catch (error) {
-      if (error.response) {
-        throw new OpenAIError(
-          error.response.status,
-          `Failed to retrieve topic text from OpenAI. ${error.response.data.error.message}`
-        );
-      } else {
-        throw new OpenAIError("500", `Failed to retrieve topic text from OpenAI`);
-      }
-    }
+//     let responses;
+//     try {
+//       responses = await Promise.all(promises);
+//     } catch (error) {
+//       if (error.response) {
+//         throw new OpenAIError(
+//           error.response.status,
+//           `Failed to retrieve topic text from OpenAI. ${error.response.data.error.message}`
+//         );
+//       } else {
+//         throw new OpenAIError("500", `Failed to retrieve topic text from OpenAI`);
+//       }
+//     }
 
-    let content: string[] = [];
-    responses.forEach((response) => {
-      content.push(response.data.choices[0].message.content);
-    });
+//     let content: string[] = [];
+//     responses.forEach((response) => {
+//       content.push(response.data.choices[0].message.content);
+//     });
 
-    return content;
-  }
-}
+//     return content;
+//   }
+// }
 
 
 
@@ -480,3 +470,4 @@ export class OpenAIClient {
 // export const config = {
 //   runtime: "edge",
 // };
+}

@@ -3,7 +3,6 @@ import { serve } from "std/server";
 import { HttpService } from "../_shared/util/httpservice.ts";
 import { OpenAIClient } from "../_shared/clients/OpenAIClient.ts";
 import { CourseDao } from "../_shared/daos/CourseDao.ts";
-import * as defaults from "../_shared/consts/defaults.ts";
 import { CourseItemDao } from "../_shared/daos/CourseItemDao.ts";
 import { InternalCourseItem } from "../_shared/InternalModels.ts";
 import { mapInternalToPublicCourse } from "../_shared/Mappers.ts";
