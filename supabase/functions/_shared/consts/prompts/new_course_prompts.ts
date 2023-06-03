@@ -147,7 +147,7 @@ Input:
 Definitions:
 Course: Comprises modules, lessons, topics.
 Modules: High-level concepts with a minimum of 3 and a maximum of 10 distinct lessons each module. Max 10 total modules.
-Lessons: Targeted content for user learning. Min 3 and max 10 lessons per module. Decide number of lessons based on what makes the most sense.
+Lessons: Targeted content for user learning. Min 3 and max 10 lessons per module. Decide number of lessons based on what makes the most sense. DO NOT ALWAYS RETURN THE MINIMUM NUMBER OF LESSONS.
 
 Guidelines:
 - Develop a course outline with an optimal mix of modules and standalone lessons, ensuring minimal content overlap.
