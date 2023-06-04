@@ -1,7 +1,19 @@
 import { Router } from 'itty-router';
+import { createClient } from '@supabase/supabase-js';
+import { RequestWrapper } from './lib/RequestWrapper';
 
 // now let's create a router (note the lack of "new")
 const router = Router();
+
+// POST course
+router.post('/api/v1/courses', async (request, requestWrapper: RequestWrapper) => {
+	const supabase = createClient(requestWrapper.getSupabaseUrl(), requestWrapper.getSupabaseServiceRoleKey());
+	const content = await request.json();
+
+	return new Response('Creating Course: ' + JSON.stringify(content));
+});
+
+router.get('/api/v1/courses', () => new Response('Courses Index!'));
 
 // GET collection index
 router.get('/api/todos', () => new Response('Todos Index!'));

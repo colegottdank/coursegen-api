@@ -1,4 +1,8 @@
 interface Env {
+	SUPABASE_SERVICE_ROLE_KEY: string;
+	SUPABASE_URL: string;
+	OPENAI_API_KEY: string;
+	OPENAI_ORG: string;
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
 	// MY_KV_NAMESPACE: KVNamespace;
 	//
