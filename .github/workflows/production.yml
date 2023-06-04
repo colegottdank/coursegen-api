@@ -1,4 +1,4 @@
-name: Deploy Migrations and Deploy
+name: PRODUCTION - Deploy Migrations and Workers
 
 on:
   push:
