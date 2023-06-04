@@ -1,4 +1,4 @@
-name: Deploy Migrations to Staging
+name: Deploy Migrations and Deploy
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-migrations:
     runs-on: ubuntu-22.04
 
     env:
@@ -34,3 +34,13 @@ jobs:
           supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy get_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy save_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+          
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.PROD_CLOUDFLARE_API_TOKEN }}
