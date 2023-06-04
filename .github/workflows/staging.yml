@@ -35,13 +35,14 @@ jobs:
           supabase functions deploy get_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy save_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           
-  deploy:
+  deploy-workers:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - uses: actions/checkout@v2
-      - name: Deploy
+      - uses: actions/checkout@v3
+      - name: Publish to production
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.PROD_CLOUDFLARE_API_TOKEN }}
           environment: 'production'
+          workingDirectory: 'workers'
