@@ -1,10 +1,10 @@
-name: Deploy Migrations to Test (for local testing)
+name: STAGING - Deploy Migrations and Workers
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-migrations:
     runs-on: ubuntu-22.04
 
     env:
@@ -31,3 +31,16 @@ jobs:
           supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy get_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
           supabase functions deploy save_course --project-ref ${{ secrets.TEST_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
+      
+  deploy-workers:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v3
+      - name: Publish to staging
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          preCommands: 'npm install'
+          environment: 'staging'
+          workingDirectory: 'workers'
