@@ -9,14 +9,9 @@
  */
 
 import { RequestWrapper } from "./lib/RequestWrapper";
-import handleProxy from "./proxy";
-import handleRedirect from "./redirect";
 import apiRouter from "./router";
 
-// Export a default object containing event handlers
 export default {
-  // The fetch handler is invoked when this worker receives a HTTP(S) request
-  // and should return a Response (optionally wrapped in a Promise)
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
 	  let requestWrapper = new RequestWrapper(request, env);
@@ -29,9 +24,6 @@ export default {
       return new Response(
         `Try making requests to:
       <ul>
-      <li><code><a href="/redirect?redirectUrl=https://example.com/">/redirect?redirectUrl=https://example.com/</a></code>,</li>
-      <li><code><a href="/proxy?modify&proxyUrl=https://example.com/">/proxy?modify&proxyUrl=https://example.com/</a></code>, or</li>
-      <li><code><a href="/api/todos">/api/todos</a></code></li>
 	  <li><code><a href="/api/v1/courses">/api/v1/courses</a></code></li>
 	  </ul>`,
         { headers: { "Content-Type": "text/html" } }
@@ -40,7 +32,7 @@ export default {
       return new Response(
         JSON.stringify({
           "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
-          support: "Please reach out...!",
+          support: "Please reach out to support@coursegen.ai",
           "coursegen-error": JSON.stringify(error),
         }),
         {

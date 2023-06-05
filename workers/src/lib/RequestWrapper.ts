@@ -1,28 +1,25 @@
-import { SupabaseClient, User, createClient } from "@supabase/supabase-js";
+import { SupabaseClient, User } from "@supabase/supabase-js";
 
 export class RequestWrapper {
   url: URL;
   authorization: string | undefined;
   user: User | undefined;
   supabase: SupabaseClient | undefined;
+  bodyAsJson: string | undefined;
 
   constructor(private request: Request, private env: Env) {
     this.url = new URL(request.url);
     this.authorization = request.headers.get("Authorization")?.replace("Bearer ", "");
   }
 
-  async getUser(request: Request): Promise<User | null> {
-    if (this.user) return this.user;
-    if (!this.authorization) return null;
-
-    this.supabase = createClient(this.env.SUPABASE_URL, this.env.SUPABASE_SERVICE_ROLE_KEY);
-    const user = await this.supabase.auth.getUser(this.authorization);
-    this.user = user?.data?.user ?? undefined;
-    return user?.data?.user;
-  }
-
   getBody(): ReadableStream<Uint8Array> | null {
     return this.request.body;
+  }
+
+  async getBodyAsText(): Promise<string | undefined> {
+    if(this.bodyAsJson) return this.bodyAsJson;
+    this.bodyAsJson = await this.request.json();
+    return this.bodyAsJson;
   }
 
   getHeaders(): Headers {
@@ -51,5 +48,17 @@ export class RequestWrapper {
 
   getSupabaseServiceRoleKey(): string {
     return this.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+
+  getHeliconeApiKey(): string {
+    return this.env.HELICONE_API_KEY;
+  }
+
+  getOpenAIApiKey(): string {
+    return this.env.OPENAI_API_KEY;
+  }
+
+  getAuthorization(): string | undefined {
+    return this.authorization;
   }
 }
