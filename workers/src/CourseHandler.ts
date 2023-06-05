@@ -4,7 +4,7 @@ import { CourseRequestPost } from "./dtos/CourseDtos";
 import { HttpService } from "./lib/HttpService";
 import { InternalCourseItem } from "./lib/InternalModels";
 import { mapInternalToPublicCourse } from "./lib/Mappers";
-import { OpenAIClient } from "./lib/OpenAIClient";
+// import { OpenAIClient } from "./lib/OpenAIClient";
 import { v4 as uuidv4 } from "uuid";
 import * as defaults from './consts/Defaults';
 
@@ -19,22 +19,22 @@ export class CourseHandler {
     const user = httpService.getUser();
 
     // Initialize new OpenAI API client
-    const openAIClient = new OpenAIClient(reqWrapper);
-    let courseOutline = await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
-    courseOutline.user_id = user?.id;
+    // const openAIClient = new OpenAIClient(reqWrapper);
+    // let courseOutline = await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+    // courseOutline.user_id = user?.id;
 
-    // Insert course and sections into db
-    const courseDao = new CourseDao(supabase);
-    const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`, null);
-    courseOutline.id = insertedCourse.id;
+    // // Insert course and sections into db
+    // const courseDao = new CourseDao(supabase);
+    // const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`, null);
+    // courseOutline.id = insertedCourse.id;
 
-    this.updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);
+    // this.updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);
 
-    const courseItemDao = new CourseItemDao(supabase);
-    await courseItemDao.insertCourseItemsRecursivelyV2(courseOutline.items);
+    // const courseItemDao = new CourseItemDao(supabase);
+    // await courseItemDao.insertCourseItemsRecursivelyV2(courseOutline.items);
 
-    const publicCourse = mapInternalToPublicCourse(courseOutline);
-    return publicCourse;
+    // const publicCourse = mapInternalToPublicCourse(courseOutline);
+    return "publicCourse";
   }
 
   updateCourseItemFields(items: InternalCourseItem[], userId?: string, courseId?: string, parentId?: string): void {
