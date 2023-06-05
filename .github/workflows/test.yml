@@ -36,8 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - name: install dependencies
-        run: npm install --prefix ../workers
       - uses: actions/checkout@v3
       - name: Publish to staging
         uses: cloudflare/wrangler-action@2.0.0
@@ -45,6 +43,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           environment: 'staging'
           workingDirectory: 'workers'
+          preCommand: npm install
         env:
           SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
