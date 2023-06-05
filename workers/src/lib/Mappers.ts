@@ -1,5 +1,7 @@
 import { ICourseItem, ICourseOutlineResponse } from "../dtos/CourseOutlineResponse";
-import { CourseItemType, InternalCourse, InternalCourseItem } from "./InternalModels";
+import { ILessonContentResponse } from "../dtos/LessonContentResponse";
+import { ILessonContentPost } from "../dtos/LessonDtos";
+import { CourseItemType, InternalCourse, InternalCourseItem, InternalTopic } from "./InternalModels";
 import { PublicCourse, PublicCourseItem } from "./PublicModels";
 import { v4 as uuidv4 } from "uuid";
 
@@ -66,7 +68,7 @@ function mapExternalCourseItemsToInternal(externalCourseItems: ICourseItem[]): I
   return internalCourseItems;
 }
 
-export function mapExternalTopicsToInternalTopics(response: ILessonContentResponse, request: ILessonContentRequest, userId: string): InternalTopic[] {
+export function mapExternalTopicsToInternalTopics(response: ILessonContentResponse, request: ILessonContentPost, userId: string): InternalTopic[] {
   return response.data.topics.map((topic, index) => {
     return {
       id: uuidv4(),
