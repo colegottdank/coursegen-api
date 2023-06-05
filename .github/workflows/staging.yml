@@ -39,13 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - name: Install dependencies
-        run: npm install
       - uses: actions/checkout@v3
       - name: Publish to production
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          preCommands: 'npm install'
           environment: 'production'
           workingDirectory: 'workers'
         env:
