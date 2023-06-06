@@ -1,4 +1,5 @@
 import { SupabaseClient, User } from "@supabase/supabase-js";
+import { Env } from "../worker";
 
 export class RequestWrapper {
   url: URL;
