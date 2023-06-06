@@ -58,14 +58,13 @@ jobs:
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          preCommands: 'npm install'
           environment: 'production'
+          workingDirectory: 'workers'
           secrets: |
             SUPABASE_URL
             SUPABASE_SERVICE_ROLE_KEY
             OPENAI_API_KEY
             OPENAI_ORG
-          workingDirectory: 'workers'
         env:
           SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_ROLE_KEY }}
