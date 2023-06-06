@@ -18,6 +18,7 @@
     "@types/uuid": "^9.0.1",
     "gpt-tokenizer": "^2.1.1",
     "itty-router": "^3.0.12",
+    "langchain": "^0.0.91",
     "uuid": "^9.0.0"
   }
 }
