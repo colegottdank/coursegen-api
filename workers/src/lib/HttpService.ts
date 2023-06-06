@@ -70,7 +70,7 @@ export class HttpService {
     try {
       this.supabaseClient = createClient<Database>(
         this.request?.getSupabaseUrl() ?? "",
-        process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+        this.request?.getSupabaseServiceRoleKey() ?? ""
       );
     } catch (error) {
       console.error("Error creating the client:", error);
