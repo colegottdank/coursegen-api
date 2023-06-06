@@ -12,6 +12,7 @@ export interface Env {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
+		console.log(env);
       let requestWrapper = new RequestWrapper(request, env);
 
       if (requestWrapper.getUrl().pathname.startsWith("/api/")) {
