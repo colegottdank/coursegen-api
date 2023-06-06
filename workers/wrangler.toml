@@ -44,7 +44,6 @@ workers_dev = false
 
 [env.production.vars]
 SUPABASE_URL = "https://pufqwmjkygvrkelrdfuj.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY = "Test"
 
 [env.staging]
 name = "coursegen-worker-staging"
