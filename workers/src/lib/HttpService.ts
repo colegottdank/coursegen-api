@@ -67,12 +67,10 @@ export class HttpService {
       return this.supabaseClient;
     }
 
-    console.log(`Creating a new Supabase client for ${this.request?.getSupabaseUrl()} with service role key ${this.request?.getSupabaseServiceRoleKey()}`)
-
     try {
       this.supabaseClient = createClient<Database>(
         this.request?.getSupabaseUrl() ?? "",
-        this.request?.getSupabaseServiceRoleKey() ?? ""
+        process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""
       );
     } catch (error) {
       console.error("Error creating the client:", error);

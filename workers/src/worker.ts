@@ -14,7 +14,6 @@ import apiRouter from "./router";
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-	  console.log(env.SUPABASE_SERVICE_ROLE_KEY);
 	  let requestWrapper = new RequestWrapper(request, env);
 
       if (requestWrapper.getUrl().pathname.startsWith("/api/")) {
