@@ -67,7 +67,7 @@ jobs:
             OPENAI_ORG
           workingDirectory: 'workers'
         env:
-          SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: ${{ secrets.PROD_OPENAI_API_KEY }}
           OPENAI_ORG: ${{ secrets.OPENAI_ORG }}

@@ -58,7 +58,7 @@ jobs:
           environment: 'staging'
           workingDirectory: 'workers'
         env:
-          SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
           OPENAI_ORG: ${{ secrets.OPENAI_ORG }}
