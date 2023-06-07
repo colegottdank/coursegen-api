@@ -65,8 +65,10 @@ jobs:
             SUPABASE_SERVICE_ROLE_KEY
             OPENAI_API_KEY
             OPENAI_ORG
+            HELICONE_API_KEY
         env:
           SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: ${{ secrets.PROD_OPENAI_API_KEY }}
           OPENAI_ORG: ${{ secrets.OPENAI_ORG }}
+          HELICONE_API_KEY: ${{ secrets.PROD_HELICONE_API_KEY }}
