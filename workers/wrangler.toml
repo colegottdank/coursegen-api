@@ -38,16 +38,16 @@ workers_dev = false
 # 	{ binding = "RATE_LIMIT_KV", id = "0492dc9511cb4ed5b6f012a85354fa34", preview_id = "d275df550f7a4276ad50a3115f3e84b4" },
 # ]
 
-[env.production.vars]
-SUPABASE_URL = "https://pufqwmjkygvrkelrdfuj.supabase.co"
+# [env.production.vars]
+# SUPABASE_URL = "https://pufqwmjkygvrkelrdfuj.supabase.co"
 
 [env.staging]
 name = "coursegen-worker-staging"
 routes = [{ pattern = "staging_api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = true
 
-[env.staging.vars]
-SUPABASE_URL = "https://bmelvtkixuawptrgxnyl.supabase.co"
+# [env.staging.vars]
+# SUPABASE_URL = "https://bmelvtkixuawptrgxnyl.supabase.co"
 
 
 # [env.staging]
