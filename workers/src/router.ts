@@ -2,7 +2,6 @@ import { Router } from "itty-router";
 import { RequestWrapper } from "./lib/RequestWrapper";
 import { HttpService } from "./lib/HttpService";
 import { CourseHandler } from "./CourseHandler";
-import { Env } from "./worker";
 
 // now let's create a router (note the lack of "new")
 const router = Router();

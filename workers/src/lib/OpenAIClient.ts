@@ -1,4 +1,3 @@
-import { encode } from "gpt-tokenizer";
 import { IOpenAIResponse } from "../dtos/IOpenAIResponse";
 import * as defaults from "../consts/Defaults";
 import { RequestWrapper } from "./RequestWrapper";
@@ -16,23 +15,30 @@ export class OpenAIClient {
   private chatClient: any;
   private langchain: any;
 
-  constructor(private requestWrapper: RequestWrapper) {
-    import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
-      this.chatClient = new ChatOpenAI(
-        {
-          openAIApiKey: this.requestWrapper.getOpenAIApiKey(),
-        },
-        {
-          basePath: "https://oai.hconeai.com/v1",
-          baseOptions: {
-            headers: {
-              "Helicone-Auth": `Bearer ${this.requestWrapper.getHeliconeApiKey()}`,
-            },
+  constructor(private requestWrapper: RequestWrapper) {}
+
+  private async loadChatClient() {
+    if (!this.chatClient) {
+      await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
+        this.chatClient = new ChatOpenAI(
+          {
+            openAIApiKey: this.requestWrapper.getOpenAIApiKey(),
           },
-        }
-      );
-    });
+          {
+            basePath: "https://oai.hconeai.com/v1",
+            baseOptions: {
+              headers: {
+                "Helicone-Auth": `Bearer ${this.requestWrapper.getHeliconeApiKey()}`,
+              },
+            },
+          }
+        );
+      });
+    }
+
+    return this.chatClient;
   }
+
 
   private async loadLangchainSchema() {
     if (!this.langchain) {
@@ -52,7 +58,9 @@ export class OpenAIClient {
     maxTokens?: number,
     temperature?: number
   ): Promise<T> {
-    const tokens = encode(JSON.stringify(messages));
+    await this.loadChatClient();
+    let gpt_tokenizer = await import("gpt-tokenizer");
+    const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) this.chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
     else this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
     this.chatClient.temperature = temperature ?? defaults.defaultTemperature;
