@@ -1,34 +1,32 @@
-import { IOpenAIResponse } from "../dtos/IOpenAIResponse";
 import * as defaults from "../consts/Defaults";
-import { RequestWrapper } from "./RequestWrapper";
 import { OpenAIError, OpenAIInvalidResponseError } from "../consts/Errors";
-import { InternalCourse, InternalTopic } from "./InternalModels";
-import { CourseOutlineResponse } from "../dtos/CourseOutlineResponse";
-import * as Mappers from "./Mappers";
-import { ILessonContentPost as ILessonContentRequestPost } from "../dtos/LessonDtos";
+import { InternalCourse, InternalTopic } from "../lib/InternalModels";
+import * as Mappers from "../lib/Mappers";
+import { ILessonContentPost as ILessonContentRequestPost } from "../dtos/TopicDto";
 import { ICourseRequestPost } from "../dtos/CourseDtos";
 import * as NewCoursePrompts from "../consts/NewCoursePrompts";
 import * as LessonPrompts from "../consts/LessonPrompts";
-import { LessonContentResponse } from "../dtos/LessonContentResponse";
+import { CourseOutlineResponse, IOpenAIResponse, LessonContentResponse } from "./OpenAIResponses";
+import { RequestWrapper } from "../router";
 
 export class OpenAIClient {
   private chatClient: any;
   private langchain: any;
 
-  constructor(private requestWrapper: RequestWrapper) {}
+  constructor(private request: RequestWrapper) {}
 
   private async loadChatClient() {
     if (!this.chatClient) {
       await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
         this.chatClient = new ChatOpenAI(
           {
-            openAIApiKey: this.requestWrapper.getOpenAIApiKey(),
+            openAIApiKey: this.request.env.OPENAI_API_KEY,
           },
           {
             basePath: "https://oai.hconeai.com/v1",
             baseOptions: {
               headers: {
-                "Helicone-Auth": `Bearer ${this.requestWrapper.getHeliconeApiKey()}`,
+                "Helicone-Auth": `Bearer ${this.request.env.HELICONE_API_KEY}`,
               },
             },
           }
@@ -60,6 +58,7 @@ export class OpenAIClient {
   ): Promise<T> {
     await this.loadChatClient();
     let gpt_tokenizer = await import("gpt-tokenizer");
+    console.log(`About to do this chat completion jawn, here is the client: ${this.chatClient}`)
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) this.chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
     else this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;

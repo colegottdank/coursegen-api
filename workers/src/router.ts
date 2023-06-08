@@ -1,42 +1,60 @@
-import { Router } from "itty-router";
-import { RequestWrapper } from "./lib/RequestWrapper";
-import { HttpService } from "./lib/HttpService";
-import { CourseHandler } from "./CourseHandler";
+import { IRequest, Router, createCors, error } from "itty-router";
+import { CourseManager } from "./managers/CourseManager";
+import { NotFoundError, UnauthorizedError } from "./consts/Errors";
+import { Env } from "./worker";
+import { UserDao } from "./daos/UserDao";
+import { SupabaseClient, User } from "@supabase/supabase-js";
+import { Database } from "./consts/database.types";
+import { TopicManager } from "./managers/TopicManager";
 
 // now let's create a router (note the lack of "new")
-const router = Router();
+export type RequestWrapper = {
+  env: Env;
+  supabaseClient: SupabaseClient<Database>;
+  user: User | null;
+} & IRequest;
 
-// POST course
-router.post("/api/v1/courses", async (request, requestWrapper: RequestWrapper) => {
-  let course = new CourseHandler();
-  const httpService = new HttpService(
-    requestWrapper,
-    {
-      requireLogin: true,
-      rateLimit: true,
-    },
-    course.postCourse.bind(course)
-  );
+const router = Router<RequestWrapper>();
 
-  return httpService.handle();
-});
+// router.all("*", createCors);
 
-router.get("/api/v1/courses", () => new Response("Courses Index!"));
+// Course
+router
+  .post("/api/v1/courses", authenticate, async (request) => {
+    let course = new CourseManager();
+    return await course.postCourse(request);
+  })
+  .get("/api/v1/courses/:id", authenticate, async (request) => {
+    let course = new CourseManager();
+    let publicCourse = await course.getCourse(request);
+    return publicCourse;
+  });
 
-// GET collection index
-router.get("/api/todos", () => new Response("Todos Index!"));
-
-// GET item
-router.get("/api/todos/:id", ({ params }) => new Response(`Todo #${params.id}`));
-
-// POST to the collection (we'll use async here)
-router.post("/api/todos", async (request) => {
-  const content = await request.json();
-
-  return new Response("Creating Todo: " + JSON.stringify(content));
+router.post("api/v1/topics", authenticate, async (request) => {
+  let manager = new TopicManager();
+  return await manager.postTopic(request);
 });
 
 // 404 for everything else
-router.all("*", () => new Response("Not Found.", { status: 404 }));
+router.all("*", () => error(404));
 
 export default router;
+
+// ###################################################################################
+// ################################## MiddleWare #####################################
+// ###################################################################################
+async function authenticate(request: RequestWrapper, env: Env): Promise<void> {
+  let token = request.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token) throw new UnauthorizedError("No token provided");
+
+  const userDao = new UserDao(request.supabaseClient);
+  request.user = await userDao.getUserByAuthHeader(token);
+  // Validate if the user is logged in
+  if (!request.user) throw new NotFoundError("User not found");
+}
+
+const { preflight, corsify } = createCors({
+  origins: ["*"],
+  methods: ["OPTIONS"],
+  headers: ["authorization, x-client-info, apikey, content-type"],
+});

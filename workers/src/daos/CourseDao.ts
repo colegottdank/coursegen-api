@@ -1,11 +1,11 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "../consts/database.types";
 import { SupabaseError } from "../consts/Errors";
 import { InternalCourse } from "../lib/InternalModels";
+import { Database } from "../consts/database.types";
 
 
 export class CourseDao {
-  constructor(private supabase: SupabaseClient) {}
+  constructor(private supabase: SupabaseClient<Database>) {}
 
   async getCourseById(courseId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
     const {data, error} = await this.supabase
@@ -51,10 +51,10 @@ export class CourseDao {
       .from("course")
       .insert({
         id: course.id,
-        description: course.description,
+        description: course.description!,
         title: course.title,
         dates: course.dates,
-        user_id: course.user_id,
+        user_id: course.user_id!,
         search_text: search_text,
         origin_course_id: origin_course_id
       })

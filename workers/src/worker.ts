@@ -1,5 +1,8 @@
-import { RequestWrapper } from "./lib/RequestWrapper";
-import apiRouter from "./router";
+import { json } from "itty-router/json";
+import { NotFoundError } from "./consts/Errors";
+import apiRouter, { RequestWrapper } from "./router";
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "./consts/database.types";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -12,36 +15,41 @@ export interface Env {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      let requestWrapper = new RequestWrapper(request, env);
+      let url = new URL(request.url);
+      if (url.pathname.startsWith("/api/")) {
+        let requestWrapper = request as RequestWrapper;
+        requestWrapper.env = env;
+        requestWrapper.supabaseClient = createClient<Database>(
+          env.SUPABASE_URL ?? "",
+          env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+        );
 
-      if (requestWrapper.getUrl().pathname.startsWith("/api/")) {
-        // You can also use more robust routing
-        return apiRouter.handle(request, requestWrapper);
+        return apiRouter
+          .handle(requestWrapper)
+          .then(json)
+          .catch((error) => errorResponse(error));
       }
 
-      return new Response(
-        `Try making requests to:
-      <ul>
-	  <li><code><a href="/api/v1/courses">/api/v1/courses</a></code></li>
-	  <li><code><a href="/api/v1/env">/api/v1/env</a></code></li>
-	  </ul>`,
-        { headers: { "Content-Type": "text/html" } }
-      );
+      throw new NotFoundError("Path not found");
     } catch (error) {
-      return new Response(
-        JSON.stringify({
-          "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
-          support: "Please reach out to support@coursegen.ai",
-          "coursegen-error": JSON.stringify(error),
-        }),
-        {
-          status: 500,
-          headers: {
-            "content-type": "application/json;charset=UTF-8",
-            "helicone-error": "true",
-          },
-        }
-      );
+      return errorResponse(error);
     }
   },
 };
+
+function errorResponse(error: any) {
+  return new Response(
+    JSON.stringify({
+      "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
+      support: "Please reach out to support@coursegen.ai",
+      "coursegen-error": JSON.stringify(error),
+    }),
+    {
+      status: 500,
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        "helicone-error": "true",
+      },
+    }
+  );
+}
