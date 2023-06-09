@@ -30,10 +30,6 @@ compatibility_date = "2023-06-04"
 # name = "my-queue"
 # zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 
-[vars]
-SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
-SUPABASE_URL = "http://localhost:54321"
-
 [env.production]
 name = "coursegen-worker-prod"
 routes = [{ pattern = "api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
@@ -42,16 +38,16 @@ workers_dev = false
 # 	{ binding = "RATE_LIMIT_KV", id = "0492dc9511cb4ed5b6f012a85354fa34", preview_id = "d275df550f7a4276ad50a3115f3e84b4" },
 # ]
 
-[env.production.vars]
-SUPABASE_URL = "https://pufqwmjkygvrkelrdfuj.supabase.co"
+# [env.production.vars]
+# SUPABASE_URL = "https://pufqwmjkygvrkelrdfuj.supabase.co"
 
 [env.staging]
 name = "coursegen-worker-staging"
 routes = [{ pattern = "staging_api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = true
 
-[env.staging.vars]
-SUPABASE_URL = "https://bmelvtkixuawptrgxnyl.supabase.co"
+# [env.staging.vars]
+# SUPABASE_URL = "https://bmelvtkixuawptrgxnyl.supabase.co"
 
 
 # [env.staging]

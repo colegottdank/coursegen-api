@@ -35,3 +35,24 @@ export class CourseRequestPost implements ICourseRequestPost {
   }
 }
 
+export interface ICourseRequestGet {
+  course_id?: string;
+}
+
+export class CourseRequestGet implements ICourseRequestGet {
+  course_id?: string;
+
+  constructor(requestJson: string | undefined) {
+    if(!requestJson) throw new BadRequestError("Request body must exist for CourseRequestPost.");
+
+    try {
+      Object.assign(this, requestJson);
+    } catch(error) {
+      throw new BadRequestError("Invalid request body format for CourseRequestPost.");
+    }
+  }
+
+  Validate(): void {
+      validators.notNullAndValidUUID(this.course_id, "course_id");
+  }
+}
