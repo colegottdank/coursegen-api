@@ -18,7 +18,7 @@ export interface InternalCourseItem {
   description?: string;
   dates?: string;
   order_index: number;
-  type: CourseItemType;
+  type: InternalCourseItemType;
   course_id?: string;
   user_id?: string;
   items?: InternalCourseItem[];
@@ -37,7 +37,30 @@ export interface InternalTopic {
   updated_at?: Date;
 }
 
-export enum CourseItemType {
+export enum InternalCourseItemType {
   Module = "module",
   Lesson = "lesson",
+}
+
+export interface InternalGenerationLog {
+  id?: string;
+  reference_name: string;
+  reference_id: string;
+  reference_type: InternalGenerationReferenceType;
+  generation_status: InternalGenerationStatus;
+  generator_user_id: string;
+  owner_user_id: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+export enum InternalGenerationStatus {
+  InProgress = "in_progress",
+  Success = "success",
+  Failure = "failure"
+}
+
+export enum InternalGenerationReferenceType {
+  Course = "course",
+  Lesson = "lesson"
 }

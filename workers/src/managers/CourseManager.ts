@@ -1,41 +1,59 @@
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
 import { CourseRequestPost } from "../dtos/CourseDtos";
-import { InternalCourse, InternalCourseItem } from "../lib/InternalModels";
-import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseItemDaoToInternalCourseItem, mapInternalToPublicCourse } from "../lib/Mappers";
+import {
+  InternalGenerationReferenceType,
+  InternalCourse,
+  InternalCourseItem,
+} from "../lib/InternalModels";
+import {
+  buildCourseOutline,
+  mapCourseDaoToInternalCourse,
+  mapCourseItemDaoToInternalCourseItem,
+  mapInternalToPublicCourse,
+} from "../lib/Mappers";
 import { v4 as uuidv4 } from "uuid";
 import * as defaults from "../consts/Defaults";
 import { OpenAIClient } from "../clients/OpenAIClient";
 import * as validators from "../lib/Validators";
 import { RequestWrapper } from "../router";
+import { GenerationWrapper } from "../clients/GenerationClientWrapper";
 
 export class CourseManager {
-  async postCourse(request: RequestWrapper) {
+  async createCourse(request: RequestWrapper) {
     let courseRequest = new CourseRequestPost(await request.json());
     courseRequest.Validate();
 
     // Initialize Supabase client
-    const supabase = request.supabaseClient;
-    const user = request.user;
+    const { supabaseClient, user } = request;
+    let courseId = uuidv4();
 
     // Initialize new OpenAI API client
+    const generationWrapper = new GenerationWrapper(supabaseClient);
     const openAIClient = new OpenAIClient(request);
-    let courseOutline = await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
-    courseOutline.user_id = user?.id;
-    console.log(courseOutline);
+    let internalCourse = await generationWrapper.wrapGenerationRequest(
+      user!.id,
+      courseRequest.search_text!,
+      courseId,
+      InternalGenerationReferenceType.Course,
+      async () => {
+        await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+      }
+    );
+
+    internalCourse.user_id = user?.id;
+    internalCourse.id = courseId;
 
     // Insert course and sections into db
-    const courseDao = new CourseDao(supabase);
-    const insertedCourse = await courseDao.insertCourse(courseOutline, `${courseRequest.search_text}`, null);
-    courseOutline.id = insertedCourse.id;
+    const courseDao = new CourseDao(supabaseClient);
+    await courseDao.insertCourse(internalCourse, courseRequest.search_text!, null);
 
-    this.updateCourseItemFields(courseOutline.items, user?.id, insertedCourse.id);
+    this.updateCourseItemFields(internalCourse.items, user?.id, internalCourse.id);
 
-    const courseItemDao = new CourseItemDao(supabase);
-    await courseItemDao.insertCourseItemsRecursivelyV2(courseOutline.items);
+    const courseItemDao = new CourseItemDao(supabaseClient);
+    await courseItemDao.insertCourseItemsRecursivelyV2(internalCourse.items);
 
-    const publicCourse = mapInternalToPublicCourse(courseOutline);
-    return publicCourse;
+    return mapInternalToPublicCourse(internalCourse);
   }
 
   async getCourse(request: RequestWrapper) {
@@ -53,7 +71,6 @@ export class CourseManager {
 
     const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
 
-    console.log(courseItemsResponse);
     const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
     const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);
 

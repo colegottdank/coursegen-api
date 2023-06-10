@@ -1,5 +1,5 @@
 import { json } from "itty-router/json";
-import { NotFoundError } from "./consts/Errors";
+import { BaseError, NotFoundError } from "./consts/Errors";
 import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
@@ -10,6 +10,7 @@ export interface Env {
   OPENAI_API_KEY: string;
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
+  ENVIRONMENT: string;
 }
 
 export default {
@@ -27,7 +28,8 @@ export default {
         return apiRouter
           .handle(requestWrapper)
           .then(json)
-          .catch((error) => errorResponse(error));
+          .catch((error: BaseError) => baseErrorResponse(error))
+          .catch((error: any) => errorResponse(error));
       }
 
       throw new NotFoundError("Path not found");
@@ -37,12 +39,29 @@ export default {
   },
 };
 
+function baseErrorResponse(error: BaseError) {
+  return new Response(
+    JSON.stringify({
+      "coursegen-message": "CourseGen ran into an error servicing your request: " + error.message,
+      "coursegen-error-code": error.code,
+      support: "Please reach out to support@coursegen.ai",
+    }),
+    {
+      status: Number(error.httpStatus),
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        "helicone-error": "true",
+      },
+    }
+  );
+}
+
 function errorResponse(error: any) {
   return new Response(
     JSON.stringify({
       "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
-      support: "Please reach out to support@coursegen.ai",
       "coursegen-error": JSON.stringify(error),
+      support: "Please reach out to support@coursegen.ai"
     }),
     {
       status: 500,

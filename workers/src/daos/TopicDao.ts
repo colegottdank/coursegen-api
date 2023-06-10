@@ -90,27 +90,6 @@ export class TopicDao {
     }
 
     return data;
-  }
-
-  async updateTopicsWithContent(
-    topics: InternalTopic[]
-  ): Promise<void> {
-    const { error } = await this.supabase
-      .from("topic")
-      .update(
-        topics.map((topic) => {
-          return {
-            content: topic.content,
-          };
-        }
-      )
-    );
-        
-    if (error) {
-      throw new SupabaseError(error.code, `Failed to update topics, ${error.message}`);
-    }
-  
-    return;
-  }  
+  } 
 }
 
