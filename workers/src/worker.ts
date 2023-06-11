@@ -3,6 +3,7 @@ import { BaseError, NotFoundError } from "./consts/Errors";
 import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
+import { corsify } from "./consts/CorsConfig";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -34,7 +35,8 @@ export default {
             } else {
               return errorResponse(error);
             }
-          });
+          })
+          .then(corsify);
       }
 
       throw new NotFoundError("Path not found");

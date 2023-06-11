@@ -67,7 +67,7 @@ export class GenerationLogDao {
     return ToInternalGenerationLogFromDbArray(data);
   }
 
-  async getRecentGenerationLogsByUserIdAndStatus(
+  async getRecentGenerationLogsByUserIdsAndStatus(
     userId: string,
     generationStatuses: InternalGenerationStatus[],
     recentInMinutes: number
@@ -75,7 +75,7 @@ export class GenerationLogDao {
     const { data, error } = await this.supabaseClient
       .from("generation_log")
       .select("*")
-      .eq("generator_user_id", userId)
+      .or(`generator_user_id.eq.${userId},owner_user_id.eq.${userId}`)
       .in("generation_status", generationStatuses)
       .gte("updated_at", new Date(Date.now() - recentInMinutes * 60000).toISOString());
 

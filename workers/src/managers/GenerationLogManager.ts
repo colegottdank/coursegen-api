@@ -8,7 +8,7 @@ export class GenerationLogManager {
     const { supabaseClient, user } = request;
 
     const generationLogDao = new GenerationLogDao(supabaseClient);
-    let generationLogs = await generationLogDao.getRecentGenerationLogsByUserIdAndStatus(
+    let generationLogs = await generationLogDao.getRecentGenerationLogsByUserIdsAndStatus(
       user!.id,
       [InternalGenerationStatus.Failure, InternalGenerationStatus.Success, InternalGenerationStatus.InProgress],
       10

@@ -269,7 +269,8 @@ export function ToInternalGenerationLogFromDb(
 export function ToInternalGenerationLog(
   reference_name: string,
   reference_id: string,
-  userId: string,
+  generator_user_id: string,
+  owner_user_id: string,
   reference_type: InternalGenerationReferenceType,
   generation_status: InternalGenerationStatus
 ): InternalGenerationLog {
@@ -278,8 +279,8 @@ export function ToInternalGenerationLog(
     reference_name: reference_name,
     reference_id: reference_id,
     reference_type: reference_type,
-    generator_user_id: userId,
-    owner_user_id: userId,
+    generator_user_id: generator_user_id,
+    owner_user_id: owner_user_id,
     generation_status: generation_status,
   };
 }

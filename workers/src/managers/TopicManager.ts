@@ -50,6 +50,7 @@ export class TopicManager {
     const generationWrapper = new GenerationWrapper(supabaseClient);
     let internalTopics = await generationWrapper.wrapGenerationRequest<InternalTopic[]>(
       user!.id,
+      currentLesson.user_id!,
       currentLesson.title,
       currentLesson.id!,
       InternalGenerationReferenceType.Lesson,

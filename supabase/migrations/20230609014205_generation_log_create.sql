@@ -11,15 +11,17 @@ CREATE TABLE generation_log (
     reference_type reference_type_enum NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT "UX_generation_log_reference_id_generator_user_id" UNIQUE (reference_id, generator_user_id),
-    CONSTRAINT "UX_generation_log_reference_id_owner_user_id" UNIQUE (reference_id, owner_user_id)
+    CONSTRAINT "UX_generation_log_reference_id_status" UNIQUE (reference_id, generation_status)
 );
 
-CREATE INDEX idx_generation_log_status_reference_id
-ON generation_log (generation_status, reference_id);
-
 CREATE INDEX idx_generation_log_status_generator_user_id
-ON generation_log (generation_status, generator_user_id);
+ON public.generation_log
+USING btree (generation_status, generator_user_id);
 
-CREATE INDEX idx_generation_log_status_generator_user_id_owner_user_id
-ON generation_log (generation_status, generator_user_id, owner_user_id);
+CREATE INDEX idx_generation_log_status_generator_user_id_owner_user_id_updated_at
+ON public.generation_log
+USING btree (generation_status, generator_user_id, owner_user_id, updated_at);
+
+CREATE INDEX idx_generation_log_status_reference_id
+ON public.generation_log
+USING btree (generation_status, reference_id);

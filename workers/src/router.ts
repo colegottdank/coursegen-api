@@ -11,6 +11,7 @@ import { GenerationLogDao } from "./daos/GenerationLogDao";
 import { InternalGenerationReferenceType, InternalGenerationStatus } from "./lib/InternalModels";
 import * as validators from "./lib/Validators";
 import { Environments } from "./consts/Environments";
+import { preflight } from "./consts/CorsConfig";
 
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
@@ -21,7 +22,7 @@ export type RequestWrapper = {
 
 const router = Router<RequestWrapper>();
 
-router.all("*", authenticate);
+router.all("*", preflight, authenticate);
 
 router.post(
   "/api/v1/courses",
@@ -69,12 +70,6 @@ async function authenticate(request: RequestWrapper, env: Env): Promise<void> {
   // Validate if the user is logged in
   if (!request.user) throw new NotFoundError("User not found");
 }
-
-const { preflight, corsify } = createCors({
-  origins: ["*"],
-  methods: ["OPTIONS"],
-  headers: ["authorization, x-client-info, apikey, content-type"],
-});
 
 async function validateGenerationLogs(
   request: RequestWrapper,

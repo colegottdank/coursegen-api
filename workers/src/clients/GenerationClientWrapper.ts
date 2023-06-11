@@ -10,7 +10,8 @@ export class GenerationWrapper {
     }
 
     async wrapGenerationRequest<T>(
-        userId: string,
+        generator_user_id: string,
+        owner_user_id: string,
         referenceName: string,
         referenceId: string,
         referenceType: InternalGenerationReferenceType,
@@ -20,7 +21,8 @@ export class GenerationWrapper {
         const generationLog = ToInternalGenerationLog(
             referenceName,
             referenceId,
-            userId,
+            generator_user_id,
+            owner_user_id,
             referenceType,
             InternalGenerationStatus.InProgress
         );

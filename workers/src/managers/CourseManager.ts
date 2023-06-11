@@ -33,6 +33,7 @@ export class CourseManager {
     const openAIClient = new OpenAIClient(request);
     let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
       user!.id,
+      user!.id,
       courseRequest.search_text!,
       courseId,
       InternalGenerationReferenceType.Course,
