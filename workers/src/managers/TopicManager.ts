@@ -1,13 +1,14 @@
-import { BadRequestError, NotFoundError } from "../consts/Errors";
+import { AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
-import { InternalCourse, InternalCourseItem, InternalGenerationReferenceType } from "../lib/InternalModels";
+import { InternalCourse, InternalCourseItem, InternalGenerationReferenceType, InternalGenerationStatus, InternalTopic } from "../lib/InternalModels";
 import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemDaoToInternalCourseItem, mapInternalTopicsToPublicTopics } from "../lib/Mappers";
 import { RequestWrapper } from "../router";
 import { LessonContentPost } from "../dtos/TopicDto";
 import { TopicDao } from "../daos/TopicDao";
 import { OpenAIClient } from "../clients/OpenAIClient";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
+import { GenerationLogDao } from "../daos/GenerationLogDao";
 
 export class TopicManager {
   async postTopic(request: RequestWrapper) {
@@ -39,15 +40,21 @@ export class TopicManager {
     const currentLesson = courseItems.find((item) => item.id === contentRequest.lesson_id);
     if (!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
 
+    // Ensure no one else is generating the same lesson
+    const generationLogDao = new GenerationLogDao(supabaseClient);
+    const generationLog = await generationLogDao.getGenerationLogByReferenceIdAndStatus(currentLesson.id!, [InternalGenerationStatus.InProgress]);
+    if(generationLog) throw new AlreadyGeneratingError(InternalGenerationReferenceType.Lesson, currentLesson.id!);
+
+    // Generate topics w/ rate limiting
     const openAIClient = new OpenAIClient(request);
     const generationWrapper = new GenerationWrapper(supabaseClient);
-    let internalTopics = await generationWrapper.wrapGenerationRequest(
+    let internalTopics = await generationWrapper.wrapGenerationRequest<InternalTopic[]>(
       user!.id,
       currentLesson.title,
       currentLesson.id!,
       InternalGenerationReferenceType.Lesson,
       async () => {
-        await openAIClient.createLessonContent(
+        return await openAIClient.createLessonContent(
           contentRequest,
           currentLesson.title,
           JSON.stringify(gptCourseOutline),

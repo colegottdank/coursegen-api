@@ -28,8 +28,13 @@ export default {
         return apiRouter
           .handle(requestWrapper)
           .then(json)
-          .catch((error: BaseError) => baseErrorResponse(error))
-          .catch((error: any) => errorResponse(error));
+          .catch((error: any) => {
+            if (error instanceof BaseError) {
+              return baseErrorResponse(error);
+            } else {
+              return errorResponse(error);
+            }
+          });
       }
 
       throw new NotFoundError("Path not found");
@@ -47,7 +52,7 @@ function baseErrorResponse(error: BaseError) {
       support: "Please reach out to support@coursegen.ai",
     }),
     {
-      status: Number(error.httpStatus),
+      status: parseHttpStatus(error.httpStatus),
       headers: {
         "content-type": "application/json;charset=UTF-8",
         "helicone-error": "true",
@@ -61,7 +66,7 @@ function errorResponse(error: any) {
     JSON.stringify({
       "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
       "coursegen-error": JSON.stringify(error),
-      support: "Please reach out to support@coursegen.ai"
+      support: "Please reach out to support@coursegen.ai",
     }),
     {
       status: 500,
@@ -71,4 +76,16 @@ function errorResponse(error: any) {
       },
     }
   );
+}
+
+function parseHttpStatus(httpStatus: string): number {
+  const parsedStatus = parseInt(httpStatus, 10);
+
+  // Check if parsing was successful and in the range 200 to 599
+  if (!isNaN(parsedStatus) && parsedStatus >= 200 && parsedStatus < 600) {
+    return parsedStatus;
+  }
+
+  // Default to 500
+  return 500;
 }

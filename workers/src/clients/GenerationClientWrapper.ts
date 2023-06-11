@@ -9,13 +9,13 @@ export class GenerationWrapper {
         this.generationLogDao = new GenerationLogDao(this.supabaseClient);
     }
 
-    async wrapGenerationRequest(
+    async wrapGenerationRequest<T>(
         userId: string,
         referenceName: string,
         referenceId: string,
         referenceType: InternalGenerationReferenceType,
-        requestCallback: () => Promise<any>
-    ): Promise<any> {
+        requestCallback: () => Promise<T>
+    ): Promise<T> {
         // Insert initial InProgress generation log
         const generationLog = ToInternalGenerationLog(
             referenceName,

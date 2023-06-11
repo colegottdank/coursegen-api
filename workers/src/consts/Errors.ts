@@ -43,8 +43,8 @@ export class OpenAIInvalidResponseError extends BaseError {
 }
 
 export class SupabaseError extends BaseError {
-  constructor(httpStatus: string, message: string) {
-    super(httpStatus, message);
+  constructor(httpStatus: string, message: string, code?: string) {
+    super(httpStatus, message, code);
   }
 }
 

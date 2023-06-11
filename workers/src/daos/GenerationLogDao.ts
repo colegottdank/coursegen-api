@@ -21,7 +21,8 @@ export class GenerationLogDao {
     if (error) {
       throw new SupabaseError(
         "422",
-        `Failed to insert generation log ${generationLog.id}. Error message: ${error.message}. Error code: ${error.code}`
+        `Failed to insert generation log ${generationLog.id}. Error message: ${error.message}. Error code: ${error.code}`,
+        error.code
       );
     }
   }
@@ -39,7 +40,8 @@ export class GenerationLogDao {
     if (error) {
       throw new SupabaseError(
         "422",
-        `Failed to update generation log ${generationLogId} status to ${generationStatus}. Error message: ${error.message}. Error code: ${error.code}`
+        `Failed to update generation log ${generationLogId} status to ${generationStatus}. Error message: ${error.message}. Error code: ${error.code}`,
+        error.code
       );
     }
   }
@@ -57,7 +59,8 @@ export class GenerationLogDao {
     if (error) {
       throw new SupabaseError(
         "422",
-        `Failed to get generation logs for user ${userId} with status ${generationStatuses}. Error message: ${error.message}. Error code: ${error.code}`
+        `Failed to get generation logs for user ${userId} with status ${generationStatuses}. Error message: ${error.message}. Error code: ${error.code}`,
+        error.code
       );
     }
 
@@ -79,7 +82,8 @@ export class GenerationLogDao {
     if (error) {
       throw new SupabaseError(
         "422",
-        `Failed to get generation logs for user ${userId} with status ${generationStatuses} since . Error message: ${error.message}. Error code: ${error.code}`
+        `Failed to get generation logs for user ${userId} with status ${generationStatuses} since . Error message: ${error.message}. Error code: ${error.code}`,
+        error.code
       );
     }
 
@@ -95,19 +99,20 @@ export class GenerationLogDao {
       .select("*")
       .eq("reference_id", referenceId)
       .in("generation_status", generationStatuses)
-      .single();
+      .limit(1);
 
     if (error) {
       throw new SupabaseError(
         "422",
-        `Failed to get generation logs for reference ${referenceId} with status ${generationStatuses}. Error message: ${error.message}. Error code: ${error.code}`
+        `Failed to get generation logs for reference ${referenceId} with status ${generationStatuses}. Error message: ${error.message}. Error code: ${error.code}`,
+        error.code
       );
     }
 
-    if (!data) {
+    if (!data || data.length === 0) {
       return null;
     }
 
-    return ToInternalGenerationLogFromDb(data);
+    return ToInternalGenerationLogFromDb(data[0]);
   }
 }

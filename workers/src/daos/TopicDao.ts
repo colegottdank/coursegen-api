@@ -19,7 +19,7 @@ export class TopicDao {
       .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to get topics by lesson id, ${error.message} and userId ${userId}`);
+      throw new SupabaseError("422", `Failed to get topics by lesson id, ${error.message} and userId ${userId}`, error.code);
     }
 
     return data;
@@ -36,7 +36,7 @@ export class TopicDao {
       .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to get topics by lesson id ${lessonId}, ${error.message}`);
+      throw new SupabaseError("422", `Failed to get topics by lesson id ${lessonId}, ${error.message}`, error.code);
     }
 
     return data;
@@ -53,7 +53,7 @@ export class TopicDao {
       .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to get topics by course id ${courseId}, ${error.message}`);
+      throw new SupabaseError("422", `Failed to get topics by course id ${courseId}, ${error.message}`, error.code);
     }
 
     return data;
@@ -81,12 +81,12 @@ export class TopicDao {
       .returns<Database["public"]["Tables"]["topic"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to insert topics, ${error.message}`);
+      throw new SupabaseError("422", `Failed to insert topics, ${error.message}`, error.code);
     }
 
     if(!data)
     {
-      throw new SupabaseError("topic_not_found", `Failed to insert topics, no data returned`);
+      throw new SupabaseError("404", `Failed to insert topics, no data returned`);
     }
 
     return data;

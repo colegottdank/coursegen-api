@@ -14,7 +14,7 @@ export interface PublicCourseItem {
   description: string;
   dates?: string;
   order_index: number;
-  type: PublicCourseItemType;
+  type: string;
   course_id?: string;
   user_id?: string;
   items?: PublicCourseItem[];

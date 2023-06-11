@@ -31,13 +31,13 @@ export class CourseManager {
     // Initialize new OpenAI API client
     const generationWrapper = new GenerationWrapper(supabaseClient);
     const openAIClient = new OpenAIClient(request);
-    let internalCourse = await generationWrapper.wrapGenerationRequest(
+    let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
       user!.id,
       courseRequest.search_text!,
       courseId,
       InternalGenerationReferenceType.Course,
       async () => {
-        await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+        return await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
       }
     );
 
