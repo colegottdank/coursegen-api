@@ -21,7 +21,7 @@ export class UserDao {
         .single();
   
       if (error) {
-        throw new SupabaseError(error.code, `Failed to retrieve profile`);
+        throw new SupabaseError("422", `Failed to retrieve profile`, error.code);
       }
   
       if (!data) {
@@ -41,7 +41,7 @@ export class UserDao {
         .eq('id', user_id);
   
       if (error) {
-        throw new SupabaseError(error.code, `Failed to update profile generating status`);
+        throw new SupabaseError("422", `Failed to update profile generating status`, error.code);
       }
     }
 }

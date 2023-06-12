@@ -16,11 +16,11 @@ export class CourseDao {
       .single();
 
       if(error) {
-        throw new SupabaseError("course_not_found", `Failed to get course by id ${courseId}`);
+        throw new SupabaseError("422", `Failed to get course by id ${courseId}`, error.code);
       }
   
       if(!data) {
-        throw new SupabaseError("course_not_found", `Course not found by id ${courseId}`);
+        throw new SupabaseError("404", `Course not found by id ${courseId}`);
       }
 
     return data;
@@ -36,17 +36,17 @@ export class CourseDao {
       .single();
 
     if(error) {
-      throw new SupabaseError("course_not_found", `Failed to get course by id ${courseId} and user id ${userId}`);
+      throw new SupabaseError("422", `Failed to get course by id ${courseId} and user id ${userId}`, error.code);
     }
 
     if(!data) {
-      throw new SupabaseError("course_not_found", `Course not found by id ${courseId} for user ${userId}`);
+      throw new SupabaseError("404", `Course not found by id ${courseId} for user ${userId}`);
     }
 
     return data;
   }
 
-  async insertCourse(course: InternalCourse, search_text: string, origin_course_id: string | null): Promise<Database["public"]["Tables"]["course"]["Row"]> {    
+  async insertCourse(course: InternalCourse, search_text: string, origin_course_id: string | null): Promise<Database["public"]["Tables"]["course"]["Row"]> { 
     const {data, error} = await this.supabase
       .from("course")
       .insert({
@@ -63,7 +63,7 @@ export class CourseDao {
       .single();
 
     if(error) {
-      throw new SupabaseError(error.code, `Failed to insert course, ${error.message}`);
+      throw new SupabaseError("422", `Failed to insert course, ${error.message}`, error.code);
     } 
 
     if(!data) {

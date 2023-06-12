@@ -19,14 +19,15 @@ export class CourseItemDao {
 
     if (error) {
       throw new SupabaseError(
-        error.code,
-        `Failed to get course items for course ${course_id} and user ${user_id}`
+        "422",
+        `Failed to get course items for course ${course_id} and user ${user_id}`,
+        error.code
       );
     }
 
     if (!data) {
       throw new SupabaseError(
-        "course_item_not_found",
+        "404",
         `Course items not found for course ${course_id} and user ${user_id}`
       );
     }
@@ -45,14 +46,15 @@ export class CourseItemDao {
 
     if (error) {
       throw new SupabaseError(
-        error.code,
-        `Failed to get course items for course ${course_id}`
+        "422",
+        `Failed to get course items for course ${course_id}`,
+        error.code
       );
     }
 
     if (!data) {
       throw new SupabaseError(
-        "course_item_not_found",
+        "404",
         `Course items not found for course ${course_id}`
       );
     }
@@ -84,7 +86,7 @@ export class CourseItemDao {
       .returns<Database["public"]["Tables"]["course_item"]["Row"][]>();
 
     if (error) {
-      throw new SupabaseError(error.code, `Failed to insert course items, ${error.message}`);
+      throw new SupabaseError("422", `Failed to insert course items, ${error.message}`, error.code);
     }
 
     if (!data) {
@@ -126,7 +128,7 @@ export class CourseItemDao {
     );
 
     if (error) {
-      throw error;
+      throw new SupabaseError("422", `Failed to insert course items, ${error.message}`, error.code);
     }
   }
 }

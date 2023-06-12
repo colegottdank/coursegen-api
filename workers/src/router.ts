@@ -6,6 +6,12 @@ import { UserDao } from "./daos/UserDao";
 import { SupabaseClient, User } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
 import { TopicManager } from "./managers/TopicManager";
+import { GenerationLogManager } from "./managers/GenerationLogManager";
+import { GenerationLogDao } from "./daos/GenerationLogDao";
+import { InternalGenerationReferenceType, InternalGenerationStatus } from "./lib/InternalModels";
+import * as validators from "./lib/Validators";
+import { Environments } from "./consts/Environments";
+import { preflight } from "./consts/CorsConfig";
 
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
@@ -16,23 +22,35 @@ export type RequestWrapper = {
 
 const router = Router<RequestWrapper>();
 
-// router.all("*", createCors);
+router.all("*", preflight, authenticate);
 
-// Course
-router
-  .post("/api/v1/courses", authenticate, async (request) => {
+router.post(
+  "/api/v1/courses",
+  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
+  async (request) => {
     let course = new CourseManager();
-    return await course.postCourse(request);
-  })
-  .get("/api/v1/courses/:id", authenticate, async (request) => {
-    let course = new CourseManager();
-    let publicCourse = await course.getCourse(request);
-    return publicCourse;
-  });
+    return await course.createCourse(request);
+  }
+);
 
-router.post("api/v1/topics", authenticate, async (request) => {
-  let manager = new TopicManager();
-  return await manager.postTopic(request);
+router.get("/api/v1/courses/:id", async (request) => {
+  let course = new CourseManager();
+  let publicCourse = await course.getCourse(request);
+  return publicCourse;
+});
+
+router.post(
+  "api/v1/topics",
+  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Lesson),
+  async (request) => {
+    let manager = new TopicManager();
+    return await manager.postTopic(request);
+  }
+);
+
+router.get("api/v1/generationlogs", authenticate, async (request) => {
+  let manager = new GenerationLogManager();
+  return await manager.getGenerationLogsByUser(request);
 });
 
 // 404 for everything else
@@ -53,8 +71,15 @@ async function authenticate(request: RequestWrapper, env: Env): Promise<void> {
   if (!request.user) throw new NotFoundError("User not found");
 }
 
-const { preflight, corsify } = createCors({
-  origins: ["*"],
-  methods: ["OPTIONS"],
-  headers: ["authorization, x-client-info, apikey, content-type"],
-});
+async function validateGenerationLogs(
+  request: RequestWrapper,
+  reference_type: InternalGenerationReferenceType
+): Promise<void> {
+  if (request.env.ENVIRONMENT !== Environments.Production) return;
+  const { supabaseClient, user } = request;
+  const generationLogDao = new GenerationLogDao(supabaseClient);
+  let generationLogs = await generationLogDao.getGenerationLogByUserIdAndStatus(user!.id, [
+    InternalGenerationStatus.InProgress,
+  ]);
+  validators.validateGenerationLogs(generationLogs, reference_type);
+}

@@ -37,7 +37,6 @@ export class OpenAIClient {
     return this.chatClient;
   }
 
-
   private async loadLangchainSchema() {
     if (!this.langchain) {
       this.langchain = await import("langchain/schema");
@@ -58,7 +57,6 @@ export class OpenAIClient {
   ): Promise<T> {
     await this.loadChatClient();
     let gpt_tokenizer = await import("gpt-tokenizer");
-    console.log(`About to do this chat completion jawn, here is the client: ${this.chatClient}`)
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) this.chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
     else this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;

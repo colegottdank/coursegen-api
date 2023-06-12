@@ -1,7 +1,22 @@
 import { ICourseItem, ICourseOutlineResponse, ILessonContentResponse } from "../clients/OpenAIResponses";
+import { InvalidGenerationReferenceTypeError, InvalidGenerationStatusError } from "../consts/Errors";
+import { Database } from "../consts/database.types";
 import { ILessonContentPost } from "../dtos/TopicDto";
-import { CourseItemType, InternalCourse, InternalCourseItem, InternalTopic } from "./InternalModels";
-import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels";
+import { InternalGenerationReferenceType, InternalGenerationStatus } from "./InternalModels";
+import {
+  InternalCourseItemType,
+  InternalGenerationLog,
+  InternalCourse,
+  InternalCourseItem,
+  InternalTopic,
+} from "./InternalModels";
+import {
+  PublicCourse,
+  PublicCourseItem,
+  PublicGenerationReferenceType,
+  PublicGenerationStatus,
+  PublicTopic,
+} from "./PublicModels";
 import { v4 as uuidv4 } from "uuid";
 
 export function mapInternalToPublicCourse(internalCourse: InternalCourse): PublicCourse {
@@ -32,51 +47,57 @@ function mapInternalToPublicCourseItem(internalItem: InternalCourseItem): Public
   return publicItem;
 }
 
-export function mapExternalCourseOutlineResponseToInternal(courseOutlineResponse: ICourseOutlineResponse): InternalCourse {
+export function mapExternalCourseOutlineResponseToInternal(
+  courseOutlineResponse: ICourseOutlineResponse
+): InternalCourse {
   const externalCourse = courseOutlineResponse.data.course;
   const internalCourse: InternalCourse = {
-      title: externalCourse.title,
-      description: externalCourse.description,
-      dates: externalCourse.dates,
-      items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.course.items),
+    title: externalCourse.title,
+    description: externalCourse.description,
+    dates: externalCourse.dates,
+    items: mapExternalCourseItemsToInternal(courseOutlineResponse.data.course.items),
   };
   return internalCourse;
-};
+}
 
 function mapExternalCourseItemsToInternal(externalCourseItems: ICourseItem[]): InternalCourseItem[] {
   const internalCourseItems: InternalCourseItem[] = [];
 
   let orderIndex = 1;
   for (const externalCourseItem of externalCourseItems) {
-      const internalCourseItem: InternalCourseItem = {
-          title: externalCourseItem.title,
-          description: externalCourseItem.description,
-          dates: externalCourseItem.dates,
-          type: externalCourseItem.type === 'module' ? CourseItemType.Module : CourseItemType.Lesson,
-          order_index: orderIndex
-      };
+    const internalCourseItem: InternalCourseItem = {
+      title: externalCourseItem.title,
+      description: externalCourseItem.description,
+      dates: externalCourseItem.dates,
+      type: externalCourseItem.type === "module" ? InternalCourseItemType.Module : InternalCourseItemType.Lesson,
+      order_index: orderIndex,
+    };
 
-      if (externalCourseItem.type === 'module' && externalCourseItem.items) {
-        internalCourseItem.items = mapExternalCourseItemsToInternal(externalCourseItem.items);
-      }
+    if (externalCourseItem.type === "module" && externalCourseItem.items) {
+      internalCourseItem.items = mapExternalCourseItemsToInternal(externalCourseItem.items);
+    }
 
-      internalCourseItems.push(internalCourseItem);
-      orderIndex++;
+    internalCourseItems.push(internalCourseItem);
+    orderIndex++;
   }
 
   return internalCourseItems;
 }
 
-export function mapExternalTopicsToInternalTopics(response: ILessonContentResponse, request: ILessonContentPost, userId: string): InternalTopic[] {
+export function mapExternalTopicsToInternalTopics(
+  response: ILessonContentResponse,
+  request: ILessonContentPost,
+  userId: string
+): InternalTopic[] {
   return response.data.topics.map((topic, index) => {
     return {
       id: uuidv4(),
       title: topic.topic,
       content: topic.content,
-      order_index: index+1,
+      order_index: index + 1,
       lesson_id: request.lesson_id!,
       user_id: userId,
-      course_id: request.course_id!
+      course_id: request.course_id!,
     };
   });
 }
@@ -122,7 +143,7 @@ export function buildCourseOutline(course: InternalCourse, courseItems: Internal
 
   // Recursive function to build the nested structure
   function buildNestedCourseItems(courseItem: InternalCourseItem) {
-    if (courseItem.type === CourseItemType.Module) {
+    if (courseItem.type === InternalCourseItemType.Module) {
       courseItem.items = courseItem.items ?? [];
 
       // Find and nest the course items whose parent_id is the current courseItem.id
@@ -167,7 +188,7 @@ function mapCourseItemForGPT(courseItem: InternalCourseItem): any {
   const gptCourseItem: {
     title: string;
     description: string;
-    type: CourseItemType;
+    type: InternalCourseItemType;
     items?: any[];
     topics?: any[];
   } = {
@@ -176,11 +197,11 @@ function mapCourseItemForGPT(courseItem: InternalCourseItem): any {
     type: courseItem.type,
   };
 
-  if (courseItem.type === CourseItemType.Module && courseItem.items) {
+  if (courseItem.type === InternalCourseItemType.Module && courseItem.items) {
     gptCourseItem.items = courseItem.items.map(mapCourseItemForGPT);
   }
 
-  if (courseItem.type === CourseItemType.Lesson && courseItem.topics) {
+  if (courseItem.type === InternalCourseItemType.Lesson && courseItem.topics) {
     gptCourseItem.topics = mapTopicsForGPT(courseItem.topics);
   }
 
@@ -190,7 +211,7 @@ function mapCourseItemForGPT(courseItem: InternalCourseItem): any {
 function mapTopicsForGPT(topics: InternalTopic[]): any[] {
   return topics.map((topic) => {
     return {
-      title: topic.title
+      title: topic.title,
     };
   });
 }
@@ -201,8 +222,92 @@ export function mapInternalTopicsToPublicTopics(internalTopics: InternalTopic[])
       id: internalTopic.id,
       title: internalTopic.title,
       content: internalTopic.content,
-      order_index: internalTopic.order_index
+      order_index: internalTopic.order_index,
     };
     return publicTopic;
   });
+}
+
+export function ToInternalGenerationLogFromDbArray(
+  generationLogs: Database["public"]["Tables"]["generation_log"]["Row"][]
+): InternalGenerationLog[] {
+  return generationLogs.map((generationLog) => {
+    const internalGenerationLog: InternalGenerationLog = {
+      id: generationLog.id,
+      reference_name: generationLog.reference_name,
+      reference_id: generationLog.reference_id,
+      reference_type: parseToReferenceType(generationLog.reference_type),
+      generation_status: parseToGenerationStatus(generationLog.generation_status),
+      generator_user_id: generationLog.generator_user_id,
+      owner_user_id: generationLog.owner_user_id,
+      created_at: new Date(generationLog.created_at),
+      updated_at: new Date(generationLog.updated_at),
+    };
+
+    return internalGenerationLog;
+  });
+}
+
+export function ToInternalGenerationLogFromDb(
+  generationLog: Database["public"]["Tables"]["generation_log"]["Row"]
+): InternalGenerationLog {
+  const internalGenerationLog: InternalGenerationLog = {
+    id: generationLog.id,
+    reference_name: generationLog.reference_name,
+    reference_id: generationLog.reference_id,
+    reference_type: parseToReferenceType(generationLog.reference_type),
+    generation_status: parseToGenerationStatus(generationLog.generation_status),
+    generator_user_id: generationLog.generator_user_id,
+    owner_user_id: generationLog.owner_user_id,
+    created_at: new Date(generationLog.created_at),
+    updated_at: new Date(generationLog.updated_at),
+  };
+
+  return internalGenerationLog;
+}
+
+export function ToInternalGenerationLog(
+  reference_name: string,
+  reference_id: string,
+  generator_user_id: string,
+  owner_user_id: string,
+  reference_type: InternalGenerationReferenceType,
+  generation_status: InternalGenerationStatus
+): InternalGenerationLog {
+  return {
+    id: uuidv4(),
+    reference_name: reference_name,
+    reference_id: reference_id,
+    reference_type: reference_type,
+    generator_user_id: generator_user_id,
+    owner_user_id: owner_user_id,
+    generation_status: generation_status,
+  };
+}
+
+function parseToReferenceType(value: string): InternalGenerationReferenceType {
+  const normalizedValue = value.toLowerCase();
+
+  for (const key in InternalGenerationReferenceType) {
+    if (
+      InternalGenerationReferenceType[key as keyof typeof InternalGenerationReferenceType].toLowerCase() ===
+      normalizedValue
+    ) {
+      return InternalGenerationReferenceType[key as keyof typeof InternalGenerationReferenceType];
+    }
+  }
+
+  throw new InvalidGenerationReferenceTypeError(value);
+}
+
+function parseToGenerationStatus(value: string): InternalGenerationStatus {
+  const normalizedValue = value.toLowerCase();
+
+  for (const key in InternalGenerationStatus) {
+    if (InternalGenerationStatus[key as keyof typeof InternalGenerationStatus].toLowerCase() === normalizedValue) {
+      return InternalGenerationStatus[key as keyof typeof InternalGenerationStatus];
+    }
+  }
+
+  throw new InvalidGenerationStatusError(value);
 }

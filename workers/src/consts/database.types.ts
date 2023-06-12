@@ -110,6 +110,41 @@ export interface Database {
           user_id?: string | null
         }
       }
+      generation_log: {
+        Row: {
+          created_at: string
+          generation_status: Database["public"]["Enums"]["generation_status_enum"]
+          generator_user_id: string
+          id: string
+          owner_user_id: string
+          reference_id: string
+          reference_name: string
+          reference_type: Database["public"]["Enums"]["reference_type_enum"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          generation_status: Database["public"]["Enums"]["generation_status_enum"]
+          generator_user_id: string
+          id?: string
+          owner_user_id: string
+          reference_id: string
+          reference_name: string
+          reference_type: Database["public"]["Enums"]["reference_type_enum"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          generation_status?: Database["public"]["Enums"]["generation_status_enum"]
+          generator_user_id?: string
+          id?: string
+          owner_user_id?: string
+          reference_id?: string
+          reference_name?: string
+          reference_type?: Database["public"]["Enums"]["reference_type_enum"]
+          updated_at?: string
+        }
+      }
       lesson_origin_topic: {
         Row: {
           lesson_id: string
@@ -263,6 +298,8 @@ export interface Database {
     Enums: {
       course_item_type: "module" | "lesson"
       generating_status: "generating" | "idle"
+      generation_status_enum: "in_progress" | "success" | "failure"
+      reference_type_enum: "course" | "lesson"
     }
     CompositeTypes: {
       [_ in never]: never

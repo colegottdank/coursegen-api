@@ -1,6 +1,12 @@
-import { BadRequestError } from "../consts/Errors";
+import {
+  BadRequestError,
+  TooManyConcurrentCourseGenerations,
+  TooManyConcurrentGenerations,
+  TooManyConcurrentLessonGenerations,
+} from "../consts/Errors";
 import { validate } from "uuid";
 import * as defaults from "../consts/Defaults";
+import { InternalGenerationLog, InternalGenerationReferenceType, InternalGenerationStatus } from "./InternalModels";
 
 export function notNullAndValidUUID(uuid: string | undefined, paramName: string): void {
   if (!uuid) {
@@ -54,7 +60,7 @@ export function validateSectionId(sectionId: number | undefined): void {
 
 export function validateSessionKey(sessionKey: string | undefined): void {
   // validate session is a valid uuid
-  if(!sessionKey || !validate(sessionKey!)) {
+  if (!sessionKey || !validate(sessionKey!)) {
     throw new BadRequestError("SessionKey must be a valid UUID");
   }
 }
@@ -63,4 +69,41 @@ export function validateGPTModel(gptModel: string | undefined): void {
   if (gptModel && gptModel != defaults.gpt35 && gptModel != defaults.gpt4) {
     throw new BadRequestError(`GPT Model must be ${defaults.gpt35} or ${defaults.gpt4} but was ${gptModel}`);
   }
+}
+
+export function validateGenerationLogs(generationLogs: InternalGenerationLog[],newGenerationReferenceType: InternalGenerationReferenceType) {
+  let inProgress = 0;
+  let courseInProgress = 0;
+  let lessonInProgress = 0;
+
+  const checkLimits = (referenceType: InternalGenerationReferenceType) => {
+    switch (referenceType) {
+      case InternalGenerationReferenceType.Course:
+        courseInProgress++;
+        if (courseInProgress > defaults.max_concurrent_course_generations) {
+          throw new TooManyConcurrentCourseGenerations(defaults.max_concurrent_course_generations);
+        }
+        break;
+      case InternalGenerationReferenceType.Lesson:
+        lessonInProgress++;
+        if (lessonInProgress > defaults.max_concurrent_lesson_generations) {
+          throw new TooManyConcurrentLessonGenerations(defaults.max_concurrent_lesson_generations);
+        }
+        break;
+    }
+    inProgress++;
+    if (inProgress > defaults.max_concurrent_generations) {
+      throw new TooManyConcurrentGenerations(defaults.max_concurrent_generations);
+    }
+  };
+
+  // First check the new generation
+  checkLimits(newGenerationReferenceType);
+
+  // Then iterate through the existing logs
+  generationLogs.forEach((log) => {
+    if (log.generation_status === InternalGenerationStatus.InProgress) {
+      checkLimits(log.reference_type);
+    }
+  });
 }

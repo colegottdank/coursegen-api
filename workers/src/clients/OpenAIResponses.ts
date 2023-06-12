@@ -1,4 +1,4 @@
-import { OpenAIInvalidResponseError } from "../consts/Errors";
+import { ErrorCodes, OpenAIInvalidResponseError } from "../consts/Errors";
 
 export interface IOpenAIResponse {
   validate(): void;
@@ -50,7 +50,7 @@ export class CourseOutlineResponse implements IOpenAIResponse {
 
   validate(): void {
     if (!this.response.success) {
-      throw new OpenAIInvalidResponseError(`${this.response.error?.message}`);
+      throw new OpenAIInvalidResponseError(`${this.response.error?.message}`, ErrorCodes.InvalidCourseRequest);
     }
 
     const course = this.response.data.course;

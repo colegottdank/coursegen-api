@@ -1,8 +1,9 @@
 import { json } from "itty-router/json";
-import { NotFoundError } from "./consts/Errors";
+import { BaseError, NotFoundError } from "./consts/Errors";
 import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
+import { corsify } from "./consts/CorsConfig";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -10,6 +11,7 @@ export interface Env {
   OPENAI_API_KEY: string;
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
+  ENVIRONMENT: string;
 }
 
 export default {
@@ -27,7 +29,14 @@ export default {
         return apiRouter
           .handle(requestWrapper)
           .then(json)
-          .catch((error) => errorResponse(error));
+          .catch((error: any) => {
+            if (error instanceof BaseError) {
+              return baseErrorResponse(error);
+            } else {
+              return errorResponse(error);
+            }
+          })
+          .then(corsify);
       }
 
       throw new NotFoundError("Path not found");
@@ -37,12 +46,29 @@ export default {
   },
 };
 
+function baseErrorResponse(error: BaseError) {
+  return new Response(
+    JSON.stringify({
+      "coursegen-message": "CourseGen ran into an error servicing your request: " + error.message,
+      "coursegen-error-code": error.code,
+      support: "Please reach out to support@coursegen.ai",
+    }),
+    {
+      status: parseHttpStatus(error.httpStatus),
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+        "helicone-error": "true",
+      },
+    }
+  );
+}
+
 function errorResponse(error: any) {
   return new Response(
     JSON.stringify({
       "coursegen-message": "CourseGen ran into an error servicing your request: " + error,
-      support: "Please reach out to support@coursegen.ai",
       "coursegen-error": JSON.stringify(error),
+      support: "Please reach out to support@coursegen.ai",
     }),
     {
       status: 500,
@@ -52,4 +78,16 @@ function errorResponse(error: any) {
       },
     }
   );
+}
+
+function parseHttpStatus(httpStatus: string): number {
+  const parsedStatus = parseInt(httpStatus, 10);
+
+  // Check if parsing was successful and in the range 200 to 599
+  if (!isNaN(parsedStatus) && parsedStatus >= 200 && parsedStatus < 600) {
+    return parsedStatus;
+  }
+
+  // Default to 500
+  return 500;
 }
