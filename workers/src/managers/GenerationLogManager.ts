@@ -17,7 +17,12 @@ export class GenerationLogManager {
     const generationLogDao = new GenerationLogDao(supabaseClient);
     let generationLogs = await generationLogDao.getRecentGenerationLogsByUserIdsAndStatus(
       user!.id,
-      [InternalGenerationStatus.Failure, InternalGenerationStatus.Success, InternalGenerationStatus.InProgress],
+      [
+        InternalGenerationStatus.Failure,
+        InternalGenerationStatus.Timeout,
+        InternalGenerationStatus.Success,
+        InternalGenerationStatus.InProgress,
+      ],
       lookback_period_minutes
     );
 

@@ -57,7 +57,8 @@ export interface InternalGenerationLog {
 export enum InternalGenerationStatus {
   InProgress = "in_progress",
   Success = "success",
-  Failure = "failure"
+  Failure = "failure",
+  Timeout = "timeout"
 }
 
 export enum InternalGenerationReferenceType {
