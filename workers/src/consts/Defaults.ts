@@ -9,3 +9,4 @@ export const gpt35MaxTokens = 4096;
 export const max_concurrent_course_generations = 1;
 export const max_concurrent_lesson_generations = 5;
 export const max_concurrent_generations = max_concurrent_course_generations + max_concurrent_lesson_generations;
+export const generationLogLookBackPeriodMinutes = 10;
