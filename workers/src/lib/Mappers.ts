@@ -13,8 +13,6 @@ import {
 import {
   PublicCourse,
   PublicCourseItem,
-  PublicGenerationReferenceType,
-  PublicGenerationStatus,
   PublicTopic,
 } from "./PublicModels";
 import { v4 as uuidv4 } from "uuid";
@@ -132,6 +130,26 @@ export function mapCourseItemDaoToInternalCourseItem(courseItemData: any): Inter
   };
 
   return internalCourseItem;
+}
+
+export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): { lessons: Array<{ title: string, content: string }> } {
+  const lessons: Array<{ title: string, content: string }> = [];
+
+  const mapItems = (items: InternalCourseItem[]) => {
+    items.forEach(item => {
+      if (item.type === InternalCourseItemType.Lesson) {
+        lessons.push({ title: item.title, content: "Lengthy, detailed content that flows together with the entire course and contains markdown formatting goes here." });
+      }
+
+      if (item.items) {
+        mapItems(item.items);
+      }
+    });
+  };
+
+  mapItems(internalCourse.items);
+
+  return { lessons };
 }
 
 export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[]): InternalCourse {

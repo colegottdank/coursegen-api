@@ -4,29 +4,38 @@ import { InternalCourse, InternalTopic } from "../lib/InternalModels";
 import * as Mappers from "../lib/Mappers";
 import { ILessonContentPost as ILessonContentRequestPost } from "../dtos/TopicDto";
 import { ICourseRequestPost } from "../dtos/CourseDtos";
-import * as NewCoursePrompts from "../consts/NewCoursePrompts";
-import * as LessonPrompts from "../consts/LessonPrompts";
-import { CourseOutlineResponse, IOpenAIResponse, LessonContentResponse } from "./OpenAIResponses";
-import { RequestWrapper } from "../router";
+import * as NewCoursePrompts from "../consts/prompts/course/NewCoursePrompts";
+import * as LessonPrompts from "../consts/prompts/lesson/LessonPrompts";
+import {
+  CourseOutlineResponse,
+  IOpenAIResponse,
+  CourseContentResponse,
+  LessonContentResponse,
+} from "./OpenAIResponses";
+import { Env } from "../worker";
+import { Outline_0_0_1_ } from "../consts/prompts/course/Outline_0.0.1";
+import { FullCourse_0_0_1 } from "../consts/prompts/lesson/FullCourse_0.0.1";
 
 export class OpenAIClient {
   private chatClient: any;
-  private langchain: any;
+  private langchainSchema: any;
+  private langchainPrompts: any;
 
-  constructor(private request: RequestWrapper) {}
+  constructor(private env: Env) {}
 
   private async loadChatClient() {
     if (!this.chatClient) {
       await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
         this.chatClient = new ChatOpenAI(
           {
-            openAIApiKey: this.request.env.OPENAI_API_KEY,
+            openAIApiKey: this.env.OPENAI_API_KEY,
           },
           {
             basePath: "https://oai.hconeai.com/v1",
             baseOptions: {
               headers: {
-                "Helicone-Auth": `Bearer ${this.request.env.HELICONE_API_KEY}`,
+                "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
+                "helicone-increase-timeout": true,
               },
             },
           }
@@ -38,10 +47,17 @@ export class OpenAIClient {
   }
 
   private async loadLangchainSchema() {
-    if (!this.langchain) {
-      this.langchain = await import("langchain/schema");
+    if (!this.langchainSchema) {
+      this.langchainSchema = await import("langchain/schema");
     }
-    return this.langchain;
+    return this.langchainSchema;
+  }
+
+  private async loadLangchainPrompts() {
+    if (!this.langchainPrompts) {
+      this.langchainPrompts = await import("langchain/prompts");
+    }
+    return this.langchainPrompts;
   }
 
   // Wrapper for OpenAI's chat API that handles
@@ -59,19 +75,26 @@ export class OpenAIClient {
     let gpt_tokenizer = await import("gpt-tokenizer");
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) this.chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
-    else this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
+    else if (model == defaults.gpt35) this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
+    else if (model == defaults.gpt3516k) this.chatClient.maxTokens = defaults.gpt3516kMaxTokens - tokens.length;
     this.chatClient.temperature = temperature ?? defaults.defaultTemperature;
     this.chatClient.modelName = model;
 
     let json = "";
     try {
-      const response = await this.chatClient.call(messages);
+      console.log("Calling OpenAI API", JSON.stringify(messages));
+      const controller = new AbortController();
+      const signal = controller.signal;
+      setTimeout(() => controller.abort(), 1000 * 60 * 30);
+
+      const response = await this.chatClient.call(messages, {signal: signal});
+      console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
     } catch (error: any) {
-      if (error instanceof OpenAIError || error instanceof OpenAIInvalidResponseError) {
+      if (error instanceof OpenAIError || error instanceof OpenAIInvalidResponseError || model == defaults.gpt3516k) {
         throw error;
       } else {
         // If the error is due to parsing the response, try to fix the JSON
@@ -97,23 +120,68 @@ export class OpenAIClient {
   // GPT-4
   async createCourseOutlineTitles(courseRequest: ICourseRequestPost, model: string): Promise<InternalCourse> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
-    let user_message = courseRequest.search_text;
-    // if (courseRequest.module_count != null) {
-    //   user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
-    // }
 
-    let messages;
-    if (model == defaults.gpt4) {
-      messages = [new SystemChatMessage(NewCoursePrompts.course_outline_titles), new HumanChatMessage(user_message!)];
-    } else {
-      messages = [
-        new HumanChatMessage(`${NewCoursePrompts.course_outline_titles}. Course Request Text: ${user_message}`),
-      ];
-    }
+    const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
+      await this.loadLangchainPrompts();
+
+    const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+      SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
+      HumanMessagePromptTemplate.fromTemplate(courseRequest.search_text!),
+    ]);
+
+    const responseC = await chatPrompt.formatPromptValue({
+      course_request: courseRequest.search_text!,
+    });
+
+    const messages = responseC.toChatMessages();
+
+    // let user_message = courseRequest.search_text;
+    // // if (courseRequest.module_count != null) {
+    // //   user_message = `${user_message}. Module Count: ${courseRequest.module_count}`;
+    // // }
+
+    // let messages;
+    // if (model == defaults.gpt4) {
+    //   messages = [new SystemChatMessage(NewCoursePrompts.course_outline_titles), new HumanChatMessage(user_message!)];
+    // } else {
+    //   messages = [
+    //     new HumanChatMessage(`${NewCoursePrompts.course_outline_titles}. Course Request Text: ${user_message}`),
+    //   ];
+    // }
 
     const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, undefined, undefined);
 
     return Mappers.mapExternalCourseOutlineResponseToInternal(response.response);
+  }
+
+  // 16k model
+  async createCourseContent(course: string, searchText: string): Promise<string[]> {
+    const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
+
+    const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
+      await this.loadLangchainPrompts();
+
+    const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+      HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
+    ]);
+
+    const responseC = await chatPrompt.formatPromptValue({
+      course_request: searchText,
+      course: course,
+    });
+
+    let messages = responseC.toChatMessages();
+
+    let lessonContent = await this.createChatCompletion(
+      defaults.gpt3516k,
+      messages,
+      CourseContentResponse,
+      undefined,
+      undefined
+    );
+
+    console.log(lessonContent.response.data.lessons);
+    return lessonContent.response.data.lessons;
   }
 
   // GPT-3.5 Chained

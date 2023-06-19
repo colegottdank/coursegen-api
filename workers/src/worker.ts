@@ -4,6 +4,8 @@ import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
 import { corsify } from "./consts/CorsConfig";
+import { TopicManager } from "./managers/TopicManager";
+import { LessonContentCreateMessage } from "./lib/Messages";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -12,6 +14,7 @@ export interface Env {
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
   ENVIRONMENT: string;
+  LESSON_CONTENT_CREATE_QUEUE: Queue<string>;
 }
 
 export default {
@@ -42,6 +45,25 @@ export default {
       throw new NotFoundError("Path not found");
     } catch (error) {
       return errorResponse(error);
+    }
+  },
+  async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
+    batch.ackAll();
+    console.log("Message received");
+    switch(batch.queue) {
+      case 'lesson-content-create-queue':
+        const body = batch.messages[0].body;
+        const supabaseClient = createClient<Database>(
+          env.SUPABASE_URL ?? "",
+          env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+        );
+        let message : LessonContentCreateMessage = JSON.parse(body);
+        let topicManager = new TopicManager();
+        await topicManager.createTopicsForCourse(supabaseClient, message, env);
+        break;
+      case 'lesson-content-create-queue-dlq':
+        console.log("Message received in DLQ");
+        break;
     }
   },
 };

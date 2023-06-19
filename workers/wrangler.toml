@@ -30,9 +30,6 @@ compatibility_date = "2023-06-04"
 # name = "my-queue"
 # zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 
-[vars]
-ENVIRONMENT = "DEVELOPMENT"
-
 [env.production]
 name = "coursegen-worker-prod"
 routes = [{ pattern = "api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
@@ -51,6 +48,21 @@ workers_dev = true
 
 [env.staging.vars]
 ENVIRONMENT = "STAGING"
+
+[env.local.vars]
+ENVIRONMENT = "DEVELOPMENT"
+
+[[queues.producers]]
+queue = "lesson-content-create-queue"
+binding = "LESSON_CONTENT_CREATE_QUEUE"
+
+[[queues.consumers]]
+queue = "lesson-content-create-queue"
+max_batch_size = 1
+max_batch_timeout = 30
+max_retries = 0
+max_concurrency = 1
+dead_letter_queue = "lesson-content-create-queue-dlq"
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"

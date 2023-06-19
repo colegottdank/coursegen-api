@@ -132,3 +132,50 @@ export class LessonContentResponse implements IOpenAIResponse {
     }
   }
 }
+
+export interface ICourseContentResponse {
+  success: boolean;
+  data: {
+    lessons: string[];
+  };
+  error: {
+    code: number;
+    message: string;
+  };
+}
+
+export class CourseContentResponse implements IOpenAIResponse {
+  response: ICourseContentResponse;
+
+  constructor(json: string) {
+    try {
+      this.response = JSON.parse(json);
+    } catch (error: any) {
+      if (error instanceof SyntaxError) {
+        // Handle the extra closing bracket issue
+        const fixedJson = json.slice(0, -1);
+        this.response = JSON.parse(fixedJson);
+      } else {
+        // Re-throw the error if it's not a SyntaxError
+        throw new OpenAIInvalidResponseError(error.message + error.stack);
+      }
+    }
+  }
+
+  validate(): void {
+    if (!this.response.success) {
+      throw new OpenAIInvalidResponseError(`${this.response.error?.message}`, ErrorCodes.InvalidCourseRequest);
+    }
+
+    const lessons = this.response.data.lessons;
+    if (lessons == null || lessons.length == 0) {
+      throw new OpenAIInvalidResponseError("Response must have at least one lesson");
+    }
+
+    lessons.forEach(lesson => {
+      if (!lesson || lesson.length < 100) { // Please adjust the validation criteria as per your requirements
+        throw new OpenAIInvalidResponseError("Each lesson must be at least 100 characters long");
+      }
+    });
+  }
+}

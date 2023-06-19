@@ -18,6 +18,7 @@ import { OpenAIClient } from "../clients/OpenAIClient";
 import * as validators from "../lib/Validators";
 import { RequestWrapper } from "../router";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
+import { LessonContentCreateMessage } from "../lib/Messages";
 
 export class CourseManager {
   async createCourse(request: RequestWrapper) {
@@ -30,7 +31,7 @@ export class CourseManager {
 
     // Initialize new OpenAI API client
     const generationWrapper = new GenerationWrapper(supabaseClient);
-    const openAIClient = new OpenAIClient(request);
+    const openAIClient = new OpenAIClient(request.env);
     let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
       user!.id,
       user!.id,
@@ -53,6 +54,17 @@ export class CourseManager {
 
     const courseItemDao = new CourseItemDao(supabaseClient);
     await courseItemDao.insertCourseItemsRecursivelyV2(internalCourse.items);
+
+    let lessonContentCreateMsg : LessonContentCreateMessage = {
+      course_id: courseId,
+      course: internalCourse,
+      user_id: user!.id,
+      search_text: courseRequest.search_text!
+    };
+
+    console.log("Sending message to queue");
+    await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+    console.log("Message sent to queue");
 
     return mapInternalToPublicCourse(internalCourse);
   }
