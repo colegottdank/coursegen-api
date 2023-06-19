@@ -17,10 +17,10 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[env.production.queues.consumers]]
 queue = "lesson-content-create-queue-prod"
-max_batch_size = 1
-max_batch_timeout = 30
+max_batch_size = 10
+max_batch_timeout = 5
 max_retries = 0
-max_concurrency = 1
+max_concurrency = 10
 dead_letter_queue = "lesson-content-create-queue-dlq-prod"
 
 # STAGING
