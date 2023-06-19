@@ -298,7 +298,7 @@ export interface Database {
     Enums: {
       course_item_type: "module" | "lesson"
       generating_status: "generating" | "idle"
-      generation_status_enum: "in_progress" | "success" | "failure"
+      generation_status_enum: "in_progress" | "success" | "failure" | "timeout"
       reference_type_enum: "course" | "lesson"
     }
     CompositeTypes: {
