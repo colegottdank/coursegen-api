@@ -83,11 +83,7 @@ export class OpenAIClient {
     let json = "";
     try {
       console.log("Calling OpenAI API", JSON.stringify(messages));
-      const controller = new AbortController();
-      const signal = controller.signal;
-      setTimeout(() => controller.abort(), 1000 * 60 * 30);
-
-      const response = await this.chatClient.call(messages, {signal: signal});
+      const response = await this.chatClient.call(messages);
       console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
       const parsedResponse = new responseType(json);
