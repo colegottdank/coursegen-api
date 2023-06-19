@@ -133,10 +133,15 @@ export class LessonContentResponse implements IOpenAIResponse {
   }
 }
 
+export interface ILesson {
+  title: string;
+  content: string;
+}
+
 export interface ICourseContentResponse {
   success: boolean;
   data: {
-    lessons: string[];
+    lessons: ILesson[]; // An array of ILesson objects
   };
   error: {
     code: number;
@@ -173,7 +178,7 @@ export class CourseContentResponse implements IOpenAIResponse {
     }
 
     lessons.forEach(lesson => {
-      if (!lesson || lesson.length < 100) { // Please adjust the validation criteria as per your requirements
+      if (!lesson || lesson.content.length < 100) { // Please adjust the validation criteria as per your requirements
         throw new OpenAIInvalidResponseError("Each lesson must be at least 100 characters long");
       }
     });

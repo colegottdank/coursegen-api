@@ -11,6 +11,7 @@ import {
   IOpenAIResponse,
   CourseContentResponse,
   LessonContentResponse,
+  ILesson,
 } from "./OpenAIResponses";
 import { Env } from "../worker";
 import { Outline_0_0_1_ } from "../consts/prompts/course/Outline_0.0.1";
@@ -151,7 +152,7 @@ export class OpenAIClient {
   }
 
   // 16k model
-  async createCourseContent(course: string, searchText: string): Promise<string[]> {
+  async createCourseContent(course: string, searchText: string): Promise<ILesson[]> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
     const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
@@ -176,7 +177,6 @@ export class OpenAIClient {
       undefined
     );
 
-    console.log(lessonContent.response.data.lessons);
     return lessonContent.response.data.lessons;
   }
 

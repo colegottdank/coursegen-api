@@ -31,7 +31,7 @@ export class TopicManager {
         let topic : InternalTopic = {
           id: uuidv4(),
           title: item.title,
-          content: lessons[index],
+          content: lessons[index].content,
           order_index: index,
           lesson_id: item.id!,
           user_id: message.user_id,

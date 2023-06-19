@@ -1,4 +1,4 @@
-import { ICourseItem, ICourseOutlineResponse, ILessonContentResponse } from "../clients/OpenAIResponses";
+import { ICourseContentResponse, ICourseItem, ICourseOutlineResponse, ILessonContentResponse } from "../clients/OpenAIResponses";
 import { InvalidGenerationReferenceTypeError, InvalidGenerationStatusError } from "../consts/Errors";
 import { Database } from "../consts/database.types";
 import { ILessonContentPost } from "../dtos/TopicDto";
@@ -132,7 +132,7 @@ export function mapCourseItemDaoToInternalCourseItem(courseItemData: any): Inter
   return internalCourseItem;
 }
 
-export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): { lessons: Array<{ title: string, content: string }> } {
+export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): ICourseContentResponse {
   const lessons: Array<{ title: string, content: string }> = [];
 
   const mapItems = (items: InternalCourseItem[]) => {
@@ -149,7 +149,15 @@ export function mapInternalCourseToLessonContent(internalCourse: InternalCourse)
 
   mapItems(internalCourse.items);
 
-  return { lessons };
+  // Assuming you want to return success: true and no error in this function
+  return { 
+    success: true,
+    data: { lessons: lessons }, // convert the lessons array to a string
+    error: {
+      code: 0,
+      message: 'error message IF error'
+    }
+  };
 }
 
 export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[]): InternalCourse {

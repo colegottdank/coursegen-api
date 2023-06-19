@@ -47,21 +47,20 @@ export default {
       return errorResponse(error);
     }
   },
-  async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
+  async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
     console.log("Message received");
-    if (batch.queue.startsWith('lesson-content-create-queue')) {
-      const body = batch.messages[0].body;
-      const supabaseClient = createClient<Database>(
-        env.SUPABASE_URL ?? "",
-        env.SUPABASE_SERVICE_ROLE_KEY ?? ""
-      );
-      let message : LessonContentCreateMessage = JSON.parse(body);
+    if (batch.queue.startsWith("lesson-content-create-queue")) {
+      const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
       let topicManager = new TopicManager();
-      await topicManager.createTopicsForCourse(supabaseClient, message, env);
-    } else if (batch.queue.startsWith('lesson-content-create-queue-dlq')) {
+
+      batch.messages.forEach(async (message) => {
+        let createMessage: LessonContentCreateMessage = JSON.parse(message.body);
+        await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
+      });
+    } else if (batch.queue.startsWith("lesson-content-create-queue-dlq")) {
       console.log("Message received in DLQ");
     }
-  }
+  },
 };
 
 function baseErrorResponse(error: BaseError) {
