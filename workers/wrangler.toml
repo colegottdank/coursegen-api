@@ -52,11 +52,11 @@ ENVIRONMENT = "STAGING"
 [env.local.vars]
 ENVIRONMENT = "DEVELOPMENT"
 
-[[queues.producers]]
+[[env.local.queues.producers]]
 queue = "lesson-content-create-queue"
 binding = "LESSON_CONTENT_CREATE_QUEUE"
 
-[[queues.consumers]]
+[[env.local.queues.consumers]]
 queue = "lesson-content-create-queue"
 max_batch_size = 1
 max_batch_timeout = 30
