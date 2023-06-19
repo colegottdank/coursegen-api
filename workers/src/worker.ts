@@ -48,24 +48,20 @@ export default {
     }
   },
   async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
-    batch.ackAll();
     console.log("Message received");
-    switch(batch.queue) {
-      case 'lesson-content-create-queue':
-        const body = batch.messages[0].body;
-        const supabaseClient = createClient<Database>(
-          env.SUPABASE_URL ?? "",
-          env.SUPABASE_SERVICE_ROLE_KEY ?? ""
-        );
-        let message : LessonContentCreateMessage = JSON.parse(body);
-        let topicManager = new TopicManager();
-        await topicManager.createTopicsForCourse(supabaseClient, message, env);
-        break;
-      case 'lesson-content-create-queue-dlq':
-        console.log("Message received in DLQ");
-        break;
+    if (batch.queue.startsWith('lesson-content-create-queue')) {
+      const body = batch.messages[0].body;
+      const supabaseClient = createClient<Database>(
+        env.SUPABASE_URL ?? "",
+        env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+      );
+      let message : LessonContentCreateMessage = JSON.parse(body);
+      let topicManager = new TopicManager();
+      await topicManager.createTopicsForCourse(supabaseClient, message, env);
+    } else if (batch.queue.startsWith('lesson-content-create-queue-dlq')) {
+      console.log("Message received in DLQ");
     }
-  },
+  }
 };
 
 function baseErrorResponse(error: BaseError) {
