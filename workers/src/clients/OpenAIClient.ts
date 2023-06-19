@@ -37,6 +37,7 @@ export class OpenAIClient {
               headers: {
                 "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
                 "helicone-increase-timeout": true,
+                "Connection": "keep-alive"
               },
             },
           }
@@ -84,7 +85,7 @@ export class OpenAIClient {
     let json = "";
     try {
       console.log("Calling OpenAI API", JSON.stringify(messages));
-      const response = await this.chatClient.call(messages);
+      const response = await this.chatClient.call(messages, { timeout: 1800 });
       console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
       const parsedResponse = new responseType(json);
