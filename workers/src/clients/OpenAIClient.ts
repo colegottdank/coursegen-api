@@ -37,7 +37,7 @@ export class OpenAIClient {
               headers: {
                 "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
                 "helicone-increase-timeout": true,
-                "Connection": "keep-alive"
+                // "Connection": "keep-alive"
               },
             },
           }
