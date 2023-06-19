@@ -76,6 +76,7 @@ async function validateGenerationLogs(
   reference_type: InternalGenerationReferenceType
 ): Promise<void> {
   if (request.env.ENVIRONMENT !== Environments.Production) return;
+  console.log("Validating generation logs");
   const { supabaseClient, user } = request;
   const generationLogDao = new GenerationLogDao(supabaseClient);
   let generationLogs = await generationLogDao.getGenerationLogByUserIdAndStatus(user!.id, [
