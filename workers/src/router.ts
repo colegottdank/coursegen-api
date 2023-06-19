@@ -26,7 +26,7 @@ router.all("*", preflight, authenticate);
 
 router.post(
   "/api/v1/courses",
-  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
+  (request) => validateGenerationLogs(request, InternalGenerationReferenceType.Course),
   async (request) => {
     let course = new CourseManager();
     return await course.createCourse(request);
