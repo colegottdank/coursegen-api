@@ -57,6 +57,7 @@ jobs:
       - name: Publish to production
         uses: cloudflare/wrangler-action@2.0.0
         with:
+          command: publish --env production
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           environment: 'production'
           workingDirectory: 'workers'

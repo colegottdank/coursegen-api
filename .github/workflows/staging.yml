@@ -54,6 +54,7 @@ jobs:
       - name: Publish to staging
         uses: cloudflare/wrangler-action@2.0.0
         with:
+          command: publish --env staging
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           environment: 'staging'
           workingDirectory: 'workers'

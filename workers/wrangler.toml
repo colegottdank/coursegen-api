@@ -7,9 +7,7 @@ compatibility_date = "2023-06-04"
 name = "coursegen-worker-prod"
 routes = [{ pattern = "api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = false
-
-[env.production.vars]
-ENVIRONMENT = "PRODUCTION"
+vars = { ENVIRONMENT = "production" }
 
 [[env.production.queues.producers]]
 queue = "lesson-content-create-queue-prod"
@@ -17,9 +15,9 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[env.production.queues.consumers]]
 queue = "lesson-content-create-queue-prod"
-max_batch_size = 10
+max_batch_size = 50
 max_batch_timeout = 5
-max_retries = 0
+max_retries = 10
 max_concurrency = 10
 dead_letter_queue = "lesson-content-create-queue-dlq-prod"
 
@@ -28,9 +26,7 @@ dead_letter_queue = "lesson-content-create-queue-dlq-prod"
 name = "coursegen-worker-staging"
 routes = [{ pattern = "staging_api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = true
-
-[env.staging.vars]
-ENVIRONMENT = "STAGING"
+vars = { ENVIRONMENT = "staging" }
 
 [[env.staging.queues.producers]]
 queue = "lesson-content-create-queue-staging"
@@ -38,28 +34,26 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[env.staging.queues.consumers]]
 queue = "lesson-content-create-queue-staging"
-max_batch_size = 1
-max_batch_timeout = 30
-max_retries = 0
-max_concurrency = 1
+max_batch_size = 50
+max_batch_timeout = 5
+max_retries = 10
+max_concurrency = 10
 dead_letter_queue = "lesson-content-create-queue-dlq-staging"
 
-
 # LOCAL
-[env.local.vars]
-ENVIRONMENT = "DEVELOPMENT"
+[vars]
+ENVIRONMENT = "local"
 
-[[env.local.queues.producers]]
+[[queues.producers]]
 queue = "lesson-content-create-queue"
 binding = "LESSON_CONTENT_CREATE_QUEUE"
 
-[[env.local.queues.consumers]]
+[[queues.consumers]]
 queue = "lesson-content-create-queue"
-max_batch_size = 1
-max_batch_timeout = 30
-max_retries = 0
-max_concurrency = 1
-dead_letter_queue = "lesson-content-create-queue-dlq"
+max_batch_size = 50
+max_batch_timeout = 5
+max_retries = 10
+max_concurrency = 10
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"
