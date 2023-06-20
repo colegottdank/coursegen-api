@@ -25,6 +25,9 @@ export class TopicManager {
     const lessons = await openAIClient.createCourseContent(course, message.search_text);
     console.log("Finished creating course content");
 
+    console.log(JSON.stringify(message));
+
+    console.log(JSON.stringify(message.course));
     let topics : InternalTopic[] = [];
     message.course.items.forEach((item, index) => {
       if (item.type === InternalCourseItemType.Lesson) {
@@ -41,6 +44,7 @@ export class TopicManager {
       }
     });
 
+    console.log(JSON.stringify(topics));
     const topicDao = new TopicDao(supabaseClient);
     await topicDao.insertTopics(topics);
 
