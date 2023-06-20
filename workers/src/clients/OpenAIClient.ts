@@ -23,7 +23,7 @@ export class OpenAIClient {
 
   constructor(private env: Env) {}
 
-  private async loadChatClient(): Promise<any>{
+  private async loadChatClient(): Promise<any> {
     let chatClient;
     if (!chatClient) {
       await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
@@ -119,6 +119,56 @@ export class OpenAIClient {
     }
   }
 
+  private async createChatCompletionStreaming<T extends IOpenAIResponse>(
+    model: string,
+    messages: any[],
+    responseType: new (responseText: string) => T,
+    maxTokens?: number,
+    temperature?: number
+  ): Promise<T> {
+    let chatClient = await this.loadChatClient();
+    let gpt_tokenizer = await import("gpt-tokenizer");
+    const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
+    if (model == defaults.gpt4) chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
+    else if (model == defaults.gpt35) chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
+    else if (model == defaults.gpt3516k) chatClient.maxTokens = defaults.gpt3516kMaxTokens - tokens.length;
+    chatClient.temperature = temperature ?? defaults.defaultTemperature;
+    chatClient.modelName = model;
+    chatClient.streaming = true;
+
+    let json = "";
+    let fullResponse = ""; // Variable to store the full response string
+
+    try {
+      console.log(`Model: ${chatClient.modelName}`);
+      console.log(`Max tokens: ${chatClient.maxTokens}`);
+      console.log(`Temperature: ${chatClient.temperature}`);
+      console.log("Calling OpenAI API", JSON.stringify(messages));
+
+      // Enable streaming and provide the event handler for handleLLMNewToken
+      const response = await chatClient.call(messages, undefined, [
+        {
+          handleLLMNewToken(token: string) {
+            fullResponse += token; // Append each token to the fullResponse string
+          },
+        },
+      ]);
+
+      console.log("OpenAI API response received");
+
+      // You may use the fullResponse variable here
+      console.log("Full Response: " + fullResponse);
+
+      json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
+      console.log("JSON: " + json);
+      const parsedResponse = new responseType(json);
+      parsedResponse.validate();
+      return parsedResponse;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
   // GPT-4
   async createCourseOutlineTitles(courseRequest: ICourseRequestPost, model: string): Promise<InternalCourse> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
@@ -158,8 +208,7 @@ export class OpenAIClient {
 
   // 16k model
   async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
-    const { ChatPromptTemplate, HumanMessagePromptTemplate } =
-      await this.loadLangchainPrompts();
+    const { ChatPromptTemplate, HumanMessagePromptTemplate } = await this.loadLangchainPrompts();
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
@@ -172,7 +221,7 @@ export class OpenAIClient {
 
     let messages = responseC.toChatMessages();
 
-    let lessonContent = await this.createChatCompletion(
+    let lessonContent = await this.createChatCompletionStreaming(
       defaults.gpt3516k,
       messages,
       CourseContentResponse,
