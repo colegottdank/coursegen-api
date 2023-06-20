@@ -15,10 +15,10 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[env.production.queues.consumers]]
 queue = "lesson-content-create-queue-prod"
-max_batch_size = 50
+max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 10
-max_concurrency = 10
+max_concurrency = 1
 dead_letter_queue = "lesson-content-create-queue-dlq-prod"
 
 # STAGING
@@ -34,10 +34,10 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[env.staging.queues.consumers]]
 queue = "lesson-content-create-queue-staging"
-max_batch_size = 50
+max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 10
-max_concurrency = 10
+max_concurrency = 1
 dead_letter_queue = "lesson-content-create-queue-dlq-staging"
 
 # LOCAL
@@ -50,10 +50,10 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 
 [[queues.consumers]]
 queue = "lesson-content-create-queue"
-max_batch_size = 50
+max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 10
-max_concurrency = 10
+max_concurrency = 1
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"
