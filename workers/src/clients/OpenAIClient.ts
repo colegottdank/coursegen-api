@@ -36,8 +36,8 @@ export class OpenAIClient {
             baseOptions: {
               headers: {
                 "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
-                // "helicone-increase-timeout": true,
-                // "Connection": "keep-alive"
+                "helicone-increase-timeout": true,
+                "Connection": "keep-alive"
               },
             },
           }
@@ -149,6 +149,7 @@ export class OpenAIClient {
       const response = await chatClient.call(messages, undefined, [
         {
           handleLLMNewToken(token: string) {
+            console.log(token);
             fullResponse += token; // Append each token to the fullResponse string
           },
         },
