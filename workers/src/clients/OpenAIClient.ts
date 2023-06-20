@@ -158,9 +158,7 @@ export class OpenAIClient {
 
   // 16k model
   async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
-    const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
-
-    const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
+    const { ChatPromptTemplate, HumanMessagePromptTemplate } =
       await this.loadLangchainPrompts();
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
