@@ -36,8 +36,8 @@ export class OpenAIClient {
             baseOptions: {
               headers: {
                 "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
-                "helicone-increase-timeout": true,
-                "Connection": "keep-alive"
+                // "helicone-increase-timeout": true,
+                // "Connection": "keep-alive"
               },
             },
           }
@@ -84,10 +84,14 @@ export class OpenAIClient {
 
     let json = "";
     try {
+      console.log(`Model: ${this.chatClient.modelName}`);
+      console.log(`Max tokens: ${this.chatClient.maxTokens}`);
+      console.log(`Temperature: ${this.chatClient.temperature}`);
       console.log("Calling OpenAI API", JSON.stringify(messages));
-      const response = await this.chatClient.call(messages, { timeout: 600000 });
+      const response = await this.chatClient.call(messages, {timeout: 60000});
       console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
+      console.log("JSON: " + json);
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
@@ -153,7 +157,7 @@ export class OpenAIClient {
   }
 
   // 16k model
-  async createCourseContent(course: string, searchText: string): Promise<ILesson[]> {
+  async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
     const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
@@ -165,7 +169,7 @@ export class OpenAIClient {
 
     const responseC = await chatPrompt.formatPromptValue({
       course_request: searchText,
-      course: course,
+      course: JSON.stringify(course, null, 2),
     });
 
     let messages = responseC.toChatMessages();

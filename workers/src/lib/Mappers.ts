@@ -132,7 +132,7 @@ export function mapCourseItemDaoToInternalCourseItem(courseItemData: any): Inter
   return internalCourseItem;
 }
 
-export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): ICourseContentResponse {
+export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): any {
   const lessons: Array<{ title: string, content: string }> = [];
 
   const mapItems = (items: InternalCourseItem[]) => {
@@ -150,14 +150,11 @@ export function mapInternalCourseToLessonContent(internalCourse: InternalCourse)
   mapItems(internalCourse.items);
 
   // Assuming you want to return success: true and no error in this function
-  return { 
-    success: true,
-    data: { lessons: lessons }, // convert the lessons array to a string
-    error: {
-      code: 0,
-      message: 'error message IF error'
-    }
+  const resultObject = { 
+    data: { lessons: lessons }
   };
+
+  return resultObject;
 }
 
 export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[]): InternalCourse {

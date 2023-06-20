@@ -22,7 +22,7 @@ export class TopicManager {
 
     const openAIClient = new OpenAIClient(env);
     console.log("Creating course content");
-    const lessons = await openAIClient.createCourseContent(JSON.stringify(course), message.search_text);
+    const lessons = await openAIClient.createCourseContent(course, message.search_text);
     console.log("Finished creating course content");
 
     let topics : InternalTopic[] = [];

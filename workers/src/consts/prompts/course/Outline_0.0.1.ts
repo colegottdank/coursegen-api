@@ -8,7 +8,7 @@ Course requests will be highly personalized and may not technically be considere
 
 Requirements:
 
-Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity. Add emojis to the front of matching module titles.
+Titles: Descriptive, engaging, ≤50 characters. Avoid generic terms and ensure specificity. Add emojis to the front of matching module titles and top level lesson titles.
 Course Description: Comprehensive, captivating, relevant, ≤200 characters.
 Order: Organize modules and lessons in a logical order, considering a chronological or thematic approach when appropriate.
 Counts: Module & lesson counts should be dynamic and determined by the optimal structure for the given request (within reason).

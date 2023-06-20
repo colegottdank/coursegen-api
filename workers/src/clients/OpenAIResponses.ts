@@ -138,15 +138,12 @@ export interface ILesson {
   content: string;
 }
 
+export interface IData {
+  lessons: ILesson[];
+}
+
 export interface ICourseContentResponse {
-  success: boolean;
-  data: {
-    lessons: ILesson[]; // An array of ILesson objects
-  };
-  error: {
-    code: number;
-    message: string;
-  };
+  data: IData;
 }
 
 export class CourseContentResponse implements IOpenAIResponse {
@@ -168,9 +165,9 @@ export class CourseContentResponse implements IOpenAIResponse {
   }
 
   validate(): void {
-    if (!this.response.success) {
-      throw new OpenAIInvalidResponseError(`${this.response.error?.message}`, ErrorCodes.InvalidCourseRequest);
-    }
+    // if (!this.response.success) {
+    //   throw new OpenAIInvalidResponseError(`${this.response.error?.message}`, ErrorCodes.InvalidCourseRequest);
+    // }
 
     const lessons = this.response.data.lessons;
     if (lessons == null || lessons.length == 0) {
