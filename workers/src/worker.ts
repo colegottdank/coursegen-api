@@ -57,7 +57,7 @@ export default {
         try {
           let body = message.body as string;
           const createMessage: LessonContentCreateMessage = JSON.parse(body);
-          topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
+          await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
           message.ack();
         } catch (error) {
           message.retry();
