@@ -18,16 +18,16 @@ import { Outline_0_0_1_ } from "../consts/prompts/course/Outline_0.0.1";
 import { FullCourse_0_0_1 } from "../consts/prompts/lesson/FullCourse_0.0.1";
 
 export class OpenAIClient {
-  private chatClient: any;
   private langchainSchema: any;
   private langchainPrompts: any;
 
   constructor(private env: Env) {}
 
-  private async loadChatClient() {
-    if (!this.chatClient) {
+  private async loadChatClient(): Promise<any>{
+    let chatClient;
+    if (!chatClient) {
       await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
-        this.chatClient = new ChatOpenAI(
+        chatClient = new ChatOpenAI(
           {
             openAIApiKey: this.env.OPENAI_API_KEY,
           },
@@ -45,7 +45,7 @@ export class OpenAIClient {
       });
     }
 
-    return this.chatClient;
+    return chatClient;
   }
 
   private async loadLangchainSchema() {
@@ -73,22 +73,22 @@ export class OpenAIClient {
     maxTokens?: number,
     temperature?: number
   ): Promise<T> {
-    await this.loadChatClient();
+    let chatClient = await this.loadChatClient();
     let gpt_tokenizer = await import("gpt-tokenizer");
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
-    if (model == defaults.gpt4) this.chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
-    else if (model == defaults.gpt35) this.chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
-    else if (model == defaults.gpt3516k) this.chatClient.maxTokens = defaults.gpt3516kMaxTokens - tokens.length;
-    this.chatClient.temperature = temperature ?? defaults.defaultTemperature;
-    this.chatClient.modelName = model;
+    if (model == defaults.gpt4) chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
+    else if (model == defaults.gpt35) chatClient.maxTokens = defaults.gpt35MaxTokens - tokens.length;
+    else if (model == defaults.gpt3516k) chatClient.maxTokens = defaults.gpt3516kMaxTokens - tokens.length;
+    chatClient.temperature = temperature ?? defaults.defaultTemperature;
+    chatClient.modelName = model;
 
     let json = "";
     try {
-      console.log(`Model: ${this.chatClient.modelName}`);
-      console.log(`Max tokens: ${this.chatClient.maxTokens}`);
-      console.log(`Temperature: ${this.chatClient.temperature}`);
+      console.log(`Model: ${chatClient.modelName}`);
+      console.log(`Max tokens: ${chatClient.maxTokens}`);
+      console.log(`Temperature: ${chatClient.temperature}`);
       console.log("Calling OpenAI API", JSON.stringify(messages));
-      const response = await this.chatClient.call(messages, {timeout: 60000});
+      const response = await chatClient.call(messages);
       console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
       console.log("JSON: " + json);
@@ -101,8 +101,8 @@ export class OpenAIClient {
       } else {
         // If the error is due to parsing the response, try to fix the JSON
         const { HumanChatMessage } = await this.loadLangchainSchema();
-        this.chatClient.modelName = defaults.gpt35;
-        const fixedResponse = await this.chatClient.call([
+        chatClient.modelName = defaults.gpt35;
+        const fixedResponse = await chatClient.call([
           new HumanChatMessage(
             "Please fix and return just the json that may or may not be invalid. Do not return anything that is not JSON." +
               error.message +
