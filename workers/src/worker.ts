@@ -47,7 +47,7 @@ export default {
       return errorResponse(error);
     }
   },
-  async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
+  async queue(batch: MessageBatch, env: Env): Promise<void> {
     console.log(`Received batch of ${JSON.stringify(batch.messages)} messages, and the queue is ${batch.queue}`);
     if (batch.queue.startsWith("lesson-content-create-queue")) {
       const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
@@ -55,7 +55,8 @@ export default {
 
       const tasks = batch.messages.map(async (message) => {
         try {
-          const createMessage: LessonContentCreateMessage = JSON.parse(message.body);
+          let body = message.body as string;
+          const createMessage: LessonContentCreateMessage = JSON.parse(body);
           topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
           message.ack();
         } catch (error) {
