@@ -1,8 +1,22 @@
 import { AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
-import { InternalCourse, InternalCourseItem, InternalCourseItemType, InternalGenerationReferenceType, InternalGenerationStatus, InternalTopic } from "../lib/InternalModels";
-import { buildCourseOutline, mapCourseDaoToInternalCourse, mapCourseForGPT, mapCourseItemDaoToInternalCourseItem, mapInternalCourseToLessonContent, mapInternalTopicsToPublicTopics } from "../lib/Mappers";
+import {
+  InternalCourse,
+  InternalCourseItem,
+  InternalCourseItemType,
+  InternalGenerationReferenceType,
+  InternalGenerationStatus,
+  InternalTopic,
+} from "../lib/InternalModels";
+import {
+  buildCourseOutline,
+  mapCourseDaoToInternalCourse,
+  mapCourseForGPT,
+  mapCourseItemDaoToInternalCourseItem,
+  mapInternalCourseToLessonContent,
+  mapInternalTopicsToPublicTopics,
+} from "../lib/Mappers";
 import { RequestWrapper } from "../router";
 import { LessonContentPost } from "../dtos/TopicDto";
 import { TopicDao } from "../daos/TopicDao";
@@ -17,7 +31,6 @@ import { v4 as uuidv4 } from "uuid";
 
 export class TopicManager {
   async createTopicsForCourse(supabaseClient: SupabaseClient<Database>, message: LessonContentCreateMessage, env: Env) {
-
     const course = mapInternalCourseToLessonContent(message.course);
 
     const openAIClient = new OpenAIClient(env);
@@ -28,27 +41,34 @@ export class TopicManager {
     console.log(JSON.stringify(message));
 
     console.log(JSON.stringify(message.course));
-    let topics : InternalTopic[] = [];
-    message.course.items.forEach((item, index) => {
-      if (item.type === InternalCourseItemType.Lesson) {
-        let topic : InternalTopic = {
-          id: uuidv4(),
-          title: item.title,
-          content: lessons[index].content,
-          order_index: index,
-          lesson_id: item.id!,
-          user_id: message.user_id,
-          course_id: item.course_id!
-        }
-        topics.push(topic);
-      }
-    });
+    let topics: InternalTopic[] = [];
+    const mapItems = (items: InternalCourseItem[], lessonIndex = 0) => {
+      items.forEach((item, index) => {
+        if (item.type === InternalCourseItemType.Lesson) {
+          let topic: InternalTopic = {
+            id: uuidv4(),
+            title: item.title,
+            content: lessons[lessonIndex].content,
+            order_index: index,
+            lesson_id: item.id!,
+            user_id: message.user_id,
+            course_id: item.course_id!,
+          };
 
+          topics.push(topic);
+          lessonIndex++;
+        }
+
+        if (item.items) {
+          mapItems(item.items, lessonIndex);
+        }
+      });
+    };
+
+    mapItems(message.course.items);
     console.log(JSON.stringify(topics));
     const topicDao = new TopicDao(supabaseClient);
     await topicDao.insertTopics(topics);
-
-
   }
 
   async postTopic(request: RequestWrapper) {
@@ -82,8 +102,10 @@ export class TopicManager {
 
     // Ensure no one else is generating the same lesson
     const generationLogDao = new GenerationLogDao(supabaseClient);
-    const generationLog = await generationLogDao.getGenerationLogByReferenceIdAndStatus(currentLesson.id!, [InternalGenerationStatus.InProgress]);
-    if(generationLog) throw new AlreadyGeneratingError(InternalGenerationReferenceType.Lesson, currentLesson.id!);
+    const generationLog = await generationLogDao.getGenerationLogByReferenceIdAndStatus(currentLesson.id!, [
+      InternalGenerationStatus.InProgress,
+    ]);
+    if (generationLog) throw new AlreadyGeneratingError(InternalGenerationReferenceType.Lesson, currentLesson.id!);
 
     // Generate topics w/ rate limiting
     const openAIClient = new OpenAIClient(request.env);
