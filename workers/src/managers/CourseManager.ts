@@ -59,7 +59,7 @@ export class CourseManager {
     };
 
     // await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
-    fetch(`${request.parsedUrl.protocol}${request.parsedUrl.host}/api/v1/content`, {
+    fetch(`${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
