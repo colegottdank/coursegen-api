@@ -28,6 +28,7 @@ export default {
           env.SUPABASE_URL ?? "",
           env.SUPABASE_SERVICE_ROLE_KEY ?? ""
         );
+        requestWrapper.parsedUrl = url;
 
         return apiRouter
           .handle(requestWrapper)

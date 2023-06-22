@@ -1,11 +1,7 @@
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
 import { CourseRequestPost } from "../dtos/CourseDtos";
-import {
-  InternalGenerationReferenceType,
-  InternalCourse,
-  InternalCourseItem,
-} from "../lib/InternalModels";
+import { InternalGenerationReferenceType, InternalCourse, InternalCourseItem } from "../lib/InternalModels";
 import {
   buildCourseOutline,
   mapCourseDaoToInternalCourse,
@@ -55,16 +51,24 @@ export class CourseManager {
     const courseItemDao = new CourseItemDao(supabaseClient);
     await courseItemDao.insertCourseItemsRecursivelyV2(internalCourse.items);
 
-    let lessonContentCreateMsg : LessonContentCreateMessage = {
+    let lessonContentCreateMsg: LessonContentCreateMessage = {
       course_id: courseId,
       course: internalCourse,
       user_id: user!.id,
-      search_text: courseRequest.search_text!
+      search_text: courseRequest.search_text!,
     };
 
-    console.log("Sending message to queue");
-    await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
-    console.log("Message sent to queue");
+    // await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+    fetch(`${request.parsedUrl.protocol}${request.parsedUrl.host}/api/v1/content`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: request.headers.get("Authorization")!,
+      },
+      body: JSON.stringify(lessonContentCreateMsg),
+    }).catch((error) => {
+      console.error("Error:", error);
+    });
 
     return mapInternalToPublicCourse(internalCourse);
   }

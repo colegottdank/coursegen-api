@@ -28,6 +28,7 @@ import { Database } from "../consts/database.types";
 import { Env } from "../worker";
 import { LessonContentCreateMessage } from "../lib/Messages";
 import { v4 as uuidv4 } from "uuid";
+import { ILesson } from "../clients/OpenAIResponses";
 
 export class TopicManager {
   async createTopicsForCourse(supabaseClient: SupabaseClient<Database>, message: LessonContentCreateMessage, env: Env) {
@@ -35,7 +36,19 @@ export class TopicManager {
 
     const openAIClient = new OpenAIClient(env);
     console.log("Creating course content");
-    const lessons = await openAIClient.createCourseContent(course, message.search_text);
+
+    const generationWrapper = new GenerationWrapper(supabaseClient);
+    const lessons = await generationWrapper.wrapGenerationRequest<ILesson[]>(
+      message.user_id,
+      message.user_id,
+      message.search_text!,
+      message.course.items[0].id!,
+      InternalGenerationReferenceType.Lesson,
+      async () => {
+        return await openAIClient.createCourseContent(course, message.search_text);
+      }
+    );
+
     console.log("Finished creating course content");
 
     console.log(JSON.stringify(message));
@@ -60,12 +73,14 @@ export class TopicManager {
         }
 
         if (item.items) {
-          mapItems(item.items, lessonIndex);
+          lessonIndex = mapItems(item.items, lessonIndex);
         }
       });
+      return lessonIndex; // return the updated lessonIndex
     };
 
     mapItems(message.course.items);
+
     console.log(JSON.stringify(topics));
     const topicDao = new TopicDao(supabaseClient);
     await topicDao.insertTopics(topics);
