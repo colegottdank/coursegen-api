@@ -35,6 +35,8 @@ export class TopicManager {
     const course = mapInternalCourseToLessonContent(message.course);
 
     const openAIClient = new OpenAIClient(env);
+    console.log(JSON.stringify(message));
+
     console.log("Creating course content");
 
     const generationWrapper = new GenerationWrapper(supabaseClient);
@@ -49,11 +51,8 @@ export class TopicManager {
       }
     );
 
-    console.log("Finished creating course content");
+    console.log("Finished creating course content: " + JSON.stringify(lessons));
 
-    console.log(JSON.stringify(message));
-
-    console.log(JSON.stringify(message.course));
     let topics: InternalTopic[] = [];
     const mapItems = (items: InternalCourseItem[], lessonIndex = 0) => {
       items.forEach((item, index) => {
