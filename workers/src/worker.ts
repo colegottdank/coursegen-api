@@ -55,6 +55,7 @@ export default {
 
       const tasks = batch.messages.map(async (message) => {
         try {
+          console.log(message);
           let body = message.body as string;
           const createMessage: LessonContentCreateMessage = JSON.parse(body);
           await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
