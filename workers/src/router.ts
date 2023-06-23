@@ -56,6 +56,7 @@ router.get("/api/v1/generationlogs", authenticate, async (request) => {
 });
 
 router.post("/api/v1/content", authenticate, async (request) => {
+  console.log("Received message to create course content");
   let json = await request.json();
   let lessonCreate = json as LessonContentCreateMessage;
   let manager = new TopicManager();
