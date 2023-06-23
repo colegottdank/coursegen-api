@@ -32,6 +32,7 @@ import { ILesson } from "../clients/OpenAIResponses";
 
 export class TopicManager {
   async createTopicsForCourse(supabaseClient: SupabaseClient<Database>, message: LessonContentCreateMessage, env: Env) {
+    console.log("Received message to create course content");
     const course = mapInternalCourseToLessonContent(message.course);
 
     const openAIClient = new OpenAIClient(env);

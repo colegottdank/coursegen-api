@@ -59,6 +59,7 @@ export class CourseManager {
     };
 
     // await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+    console.log("Sending lesson content create fetch, URL: " + `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`);
     fetch(`${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`, {
       method: "POST",
       headers: {
@@ -68,7 +69,10 @@ export class CourseManager {
       body: JSON.stringify(lessonContentCreateMsg),
     }).catch((error) => {
       console.error("Error:", error);
+      throw error;
     });
+
+    console.log("Sent lesson content create fetch");
 
     return mapInternalToPublicCourse(internalCourse);
   }
