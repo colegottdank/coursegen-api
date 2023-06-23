@@ -20,28 +20,27 @@ export interface Env {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
+      console.log("Fetch hit");
       let url = new URL(request.url);
-      if (url.pathname.startsWith("/api/")) {
-        let requestWrapper = request as RequestWrapper;
-        requestWrapper.env = env;
-        requestWrapper.supabaseClient = createClient<Database>(
-          env.SUPABASE_URL ?? "",
-          env.SUPABASE_SERVICE_ROLE_KEY ?? ""
-        );
-        requestWrapper.parsedUrl = url;
+      let requestWrapper = request as RequestWrapper;
+      requestWrapper.env = env;
+      requestWrapper.supabaseClient = createClient<Database>(
+        env.SUPABASE_URL ?? "",
+        env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+      );
+      requestWrapper.parsedUrl = url;
 
-        return apiRouter
-          .handle(requestWrapper)
-          .then(json)
-          .catch((error: any) => {
-            if (error instanceof BaseError) {
-              return baseErrorResponse(error);
-            } else {
-              return errorResponse(error);
-            }
-          })
-          .then(corsify);
-      }
+      return apiRouter
+        .handle(requestWrapper)
+        .then(json)
+        .catch((error: any) => {
+          if (error instanceof BaseError) {
+            return baseErrorResponse(error);
+          } else {
+            return errorResponse(error);
+          }
+        })
+        .then(corsify);
 
       throw new NotFoundError("Path not found");
     } catch (error) {
