@@ -63,5 +63,6 @@ export enum InternalGenerationStatus {
 
 export enum InternalGenerationReferenceType {
   Course = "course",
-  Lesson = "lesson"
+  Lesson = "lesson",
+  Lessons = "lessons"
 }

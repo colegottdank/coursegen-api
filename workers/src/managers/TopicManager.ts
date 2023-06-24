@@ -46,7 +46,7 @@ export class TopicManager {
       message.user_id,
       message.search_text!,
       message.course.items[0].id!,
-      InternalGenerationReferenceType.Lesson,
+      InternalGenerationReferenceType.Lessons,
       async () => {
         return await openAIClient.createCourseContent(course, message.search_text);
       }

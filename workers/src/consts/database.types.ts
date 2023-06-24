@@ -299,7 +299,7 @@ export interface Database {
       course_item_type: "module" | "lesson"
       generating_status: "generating" | "idle"
       generation_status_enum: "in_progress" | "success" | "failure" | "timeout"
-      reference_type_enum: "course" | "lesson"
+      reference_type_enum: "course" | "lesson" | "lessons"
     }
     CompositeTypes: {
       [_ in never]: never
