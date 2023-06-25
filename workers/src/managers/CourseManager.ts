@@ -58,24 +58,73 @@ export class CourseManager {
       search_text: courseRequest.search_text!,
     };
 
-    console.log("Sending lesson content create fetch, URL: " + `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`);
+    console.log(
+      "Sending lesson content create fetch, URL: " +
+        `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`
+    );
 
     await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
-    // fetch(`${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: request.headers.get("Authorization")!,
-    //   },
-    //   body: JSON.stringify(lessonContentCreateMsg),
-    // }).catch((error) => {
-    //   console.error("Error:", error);
-    //   throw error;
-    // });
 
     console.log("Sent lesson content create fetch");
 
     return mapInternalToPublicCourse(internalCourse);
+  }
+
+  async createCourseV2(request: RequestWrapper) {
+    const courseRequest = new CourseRequestPost(await request.json());
+    courseRequest.Validate();
+
+    const courseId = uuidv4();
+    request.ctx.waitUntil(this.createCourseWaitUntil(request, courseRequest, courseId));
+
+    return { course_id: courseId };
+  }
+
+  async createCourseWaitUntil(request: RequestWrapper, courseRequest: CourseRequestPost, courseId: string) {
+    // Initialize Supabase client
+    const { supabaseClient, user } = request;
+
+    // Initialize new OpenAI API client
+    const generationWrapper = new GenerationWrapper(supabaseClient);
+    const openAIClient = new OpenAIClient(request.env);
+    let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
+      user!.id,
+      user!.id,
+      courseRequest.search_text!,
+      courseId,
+      InternalGenerationReferenceType.Course,
+      async () => {
+        return await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+      }
+    );
+
+    internalCourse.user_id = user?.id;
+    internalCourse.id = courseId;
+
+    // Insert course and sections into db
+    const courseDao = new CourseDao(supabaseClient);
+    await courseDao.insertCourse(internalCourse, courseRequest.search_text!, null);
+
+    this.updateCourseItemFields(internalCourse.items, user?.id, internalCourse.id);
+
+    const courseItemDao = new CourseItemDao(supabaseClient);
+    await courseItemDao.insertCourseItemsRecursivelyV2(internalCourse.items);
+
+    let lessonContentCreateMsg: LessonContentCreateMessage = {
+      course_id: courseId,
+      course: internalCourse,
+      user_id: user!.id,
+      search_text: courseRequest.search_text!,
+    };
+
+    console.log(
+      "Sending lesson content create fetch, URL: " +
+        `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`
+    );
+
+    await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+
+    console.log("Sent lesson content create fetch");
   }
 
   async getCourse(request: RequestWrapper) {

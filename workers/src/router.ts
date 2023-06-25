@@ -17,6 +17,7 @@ import { LessonContentCreateMessage } from "./lib/Messages";
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
   env: Env;
+  ctx: ExecutionContext;
   supabaseClient: SupabaseClient<Database>;
   user: User | null;
   parsedUrl: URL;
@@ -28,6 +29,15 @@ router.all("*", preflight, authenticate);
 
 router.post(
   "/api/v1/courses",
+  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
+  async (request) => {
+    let course = new CourseManager();
+    return await course.createCourse(request);
+  }
+);
+
+router.post(
+  "/api/v2/courses",
   async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
   async (request) => {
     let course = new CourseManager();
