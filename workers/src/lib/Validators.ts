@@ -3,6 +3,7 @@ import {
   TooManyConcurrentCourseGenerations,
   TooManyConcurrentGenerations,
   TooManyConcurrentLessonGenerations,
+  TooManyConcurrentLessonsGenerations,
 } from "../consts/Errors";
 import { validate } from "uuid";
 import * as defaults from "../consts/Defaults";
@@ -71,10 +72,14 @@ export function validateGPTModel(gptModel: string | undefined): void {
   }
 }
 
-export function validateGenerationLogs(generationLogs: InternalGenerationLog[],newGenerationReferenceType: InternalGenerationReferenceType) {
+export function validateGenerationLogs(
+  generationLogs: InternalGenerationLog[],
+  newGenerationReferenceType: InternalGenerationReferenceType
+) {
   let inProgress = 0;
   let courseInProgress = 0;
   let lessonInProgress = 0;
+  let lessonsInProgress = 0;
 
   const checkLimits = (referenceType: InternalGenerationReferenceType) => {
     switch (referenceType) {
@@ -88,6 +93,12 @@ export function validateGenerationLogs(generationLogs: InternalGenerationLog[],n
         lessonInProgress++;
         if (lessonInProgress > defaults.max_concurrent_lesson_generations) {
           throw new TooManyConcurrentLessonGenerations(defaults.max_concurrent_lesson_generations);
+        }
+        break;
+      case InternalGenerationReferenceType.Lessons:
+        lessonsInProgress++;
+        if (lessonsInProgress > defaults.max_concurrent_lessons_generations) {
+          throw new TooManyConcurrentLessonsGenerations(defaults.max_concurrent_lessons_generations);
         }
         break;
     }

@@ -78,6 +78,12 @@ export class TooManyConcurrentLessonGenerations extends BaseError {
   }
 }
 
+export class TooManyConcurrentLessonsGenerations extends BaseError {
+  constructor(maxGenerations: number) {
+    super("429", `Too many concurrent lesson generations, max allowed: ${maxGenerations}`, ErrorCodes.TooManyConcurrentLessonGenerations);
+  }
+}
+
 export class AlreadyGeneratingError extends BaseError {
   constructor(reference_type: string, reference_id: string) {
     super("429", `Already generating ${reference_type} with id: ${reference_id}`, ErrorCodes.AlreadyGenerating);
