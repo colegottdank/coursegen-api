@@ -20,8 +20,8 @@ export function notNullAndValidUUID(uuid: string | undefined, paramName: string)
 }
 
 export function validateSearchText(subject: string | undefined): void {
-  if (!subject || subject.length > 4000) {
-    throw new BadRequestError("Search text must be not null and less than 4000 characters");
+  if (!subject || subject.length > 300) {
+    throw new BadRequestError("Search text must be not null and less than 300 characters");
   }
 }
 
