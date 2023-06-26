@@ -15,9 +15,10 @@ import * as validators from "../lib/Validators";
 import { RequestWrapper } from "../router";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
 import { LessonContentCreateMessage } from "../lib/Messages";
+import { PublicCourse } from "../lib/PublicModels";
 
 export class CourseManager {
-  async createCourse(request: RequestWrapper) {
+  async createCourse(request: RequestWrapper) : Promise<PublicCourse> {
     let courseRequest = new CourseRequestPost(await request.json());
     courseRequest.Validate();
 
@@ -70,7 +71,7 @@ export class CourseManager {
     return mapInternalToPublicCourse(internalCourse);
   }
 
-  async createCourseV2(request: RequestWrapper) {
+  async createCourseV2(request: RequestWrapper){
     const courseRequest = new CourseRequestPost(await request.json());
     courseRequest.Validate();
 
@@ -80,7 +81,7 @@ export class CourseManager {
     return { course_id: courseId };
   }
 
-  async createCourseWaitUntil(request: RequestWrapper, courseRequest: CourseRequestPost, courseId: string) {
+  async createCourseWaitUntil(request: RequestWrapper, courseRequest: CourseRequestPost, courseId: string) : Promise<void> {
     // Initialize Supabase client
     const { supabaseClient, user } = request;
 
@@ -127,7 +128,7 @@ export class CourseManager {
     console.log("Sent lesson content create fetch");
   }
 
-  async getCourse(request: RequestWrapper) {
+  async getCourse(request: RequestWrapper) : Promise<PublicCourse> {
     let courseId = request.params.id;
     validators.notNullAndValidUUID(courseId, "course_id");
 
