@@ -2,6 +2,7 @@ import { generationLogLookBackPeriodMinutes } from "../consts/Defaults";
 import { GenerationLogDao } from "../daos/GenerationLogDao";
 import { InternalGenerationStatus } from "../lib/InternalModels";
 import { mapInternalToPublicGenerationLog } from "../lib/PublicMappers";
+import { PublicGenerationLog } from "../lib/PublicModels";
 import { RequestWrapper } from "../router";
 
 export class GenerationLogManager {
@@ -26,10 +27,12 @@ export class GenerationLogManager {
       lookback_period_minutes
     );
 
+    const transformedGenerationLogs: PublicGenerationLog[] = [];
+
     generationLogs.forEach((generationLog) => {
-      return mapInternalToPublicGenerationLog(generationLog);
+      transformedGenerationLogs.push(mapInternalToPublicGenerationLog(generationLog));
     });
 
-    return generationLogs;
+    return transformedGenerationLogs;
   }
 }
