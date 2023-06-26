@@ -1,4 +1,9 @@
-import { ICourseItem, ICourseOutlineResponse, ILessonContentResponse } from "../clients/OpenAIResponses";
+import {
+  ICourseContentResponse,
+  ICourseItem,
+  ICourseOutlineResponse,
+  ILessonContentResponse,
+} from "../clients/OpenAIResponses";
 import { InvalidGenerationReferenceTypeError, InvalidGenerationStatusError } from "../consts/Errors";
 import { Database } from "../consts/database.types";
 import { ILessonContentPost } from "../dtos/TopicDto";
@@ -10,13 +15,7 @@ import {
   InternalCourseItem,
   InternalTopic,
 } from "./InternalModels";
-import {
-  PublicCourse,
-  PublicCourseItem,
-  PublicGenerationReferenceType,
-  PublicGenerationStatus,
-  PublicTopic,
-} from "./PublicModels";
+import { PublicCourse, PublicCourseItem, PublicTopic } from "./PublicModels";
 import { v4 as uuidv4 } from "uuid";
 
 export function mapInternalToPublicCourse(internalCourse: InternalCourse): PublicCourse {
@@ -132,6 +131,34 @@ export function mapCourseItemDaoToInternalCourseItem(courseItemData: any): Inter
   };
 
   return internalCourseItem;
+}
+
+export function mapInternalCourseToLessonContent(internalCourse: InternalCourse): any {
+  const lessons: Array<{ title: string; content: string }> = [];
+
+  const mapItems = (items: InternalCourseItem[]) => {
+    items.forEach((item) => {
+      if (item.type === InternalCourseItemType.Lesson) {
+        lessons.push({
+          title: item.title,
+          content: `Lengthy, detailed content in markdown formatting. Display the content in a clean and formatted way.`,
+        });
+      }
+
+      if (item.items) {
+        mapItems(item.items);
+      }
+    });
+  };
+
+  mapItems(internalCourse.items);
+
+  // Assuming you want to return success: true and no error in this function
+  const resultObject = {
+    data: { lessons: lessons },
+  };
+
+  return resultObject;
 }
 
 export function buildCourseOutline(course: InternalCourse, courseItems: InternalCourseItem[]): InternalCourse {

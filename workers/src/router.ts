@@ -12,12 +12,15 @@ import { InternalGenerationReferenceType, InternalGenerationStatus } from "./lib
 import * as validators from "./lib/Validators";
 import { Environments } from "./consts/Environments";
 import { preflight } from "./consts/CorsConfig";
+import { LessonContentCreateMessage } from "./lib/Messages";
 
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
   env: Env;
+  ctx: ExecutionContext;
   supabaseClient: SupabaseClient<Database>;
   user: User | null;
+  parsedUrl: URL;
 } & IRequest;
 
 const router = Router<RequestWrapper>();
@@ -33,6 +36,15 @@ router.post(
   }
 );
 
+router.post(
+  "/api/v2/courses",
+  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
+  async (request) => {
+    let course = new CourseManager();
+    return await course.createCourse(request);
+  }
+);
+
 router.get("/api/v1/courses/:id", async (request) => {
   let course = new CourseManager();
   let publicCourse = await course.getCourse(request);
@@ -40,7 +52,7 @@ router.get("/api/v1/courses/:id", async (request) => {
 });
 
 router.post(
-  "api/v1/topics",
+  "/api/v1/topics",
   async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Lesson),
   async (request) => {
     let manager = new TopicManager();
@@ -48,9 +60,17 @@ router.post(
   }
 );
 
-router.get("api/v1/generationlogs", authenticate, async (request) => {
+router.get("/api/v1/generationlogs", authenticate, async (request) => {
   let manager = new GenerationLogManager();
   return await manager.getGenerationLogsByUser(request);
+});
+
+router.post("/api/v1/content", authenticate, async (request) => {
+  console.log("Received message to create course content");
+  let json = await request.json();
+  let lessonCreate = json as LessonContentCreateMessage;
+  let manager = new TopicManager();
+  return await manager.createTopicsForCourse(request.supabaseClient, lessonCreate, request.env);
 });
 
 // 404 for everything else
@@ -76,6 +96,7 @@ async function validateGenerationLogs(
   reference_type: InternalGenerationReferenceType
 ): Promise<void> {
   if (request.env.ENVIRONMENT !== Environments.Production) return;
+  console.log("Validating generation logs");
   const { supabaseClient, user } = request;
   const generationLogDao = new GenerationLogDao(supabaseClient);
   let generationLogs = await generationLogDao.getGenerationLogByUserIdAndStatus(user!.id, [

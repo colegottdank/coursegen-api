@@ -4,6 +4,8 @@ import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
 import { corsify } from "./consts/CorsConfig";
+import { TopicManager } from "./managers/TopicManager";
+import { LessonContentCreateMessage } from "./lib/Messages";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -12,36 +14,62 @@ export interface Env {
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
   ENVIRONMENT: string;
+  LESSON_CONTENT_CREATE_QUEUE: Queue<string>;
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
+      console.log("Fetch hit");
       let url = new URL(request.url);
-      if (url.pathname.startsWith("/api/")) {
-        let requestWrapper = request as RequestWrapper;
-        requestWrapper.env = env;
-        requestWrapper.supabaseClient = createClient<Database>(
-          env.SUPABASE_URL ?? "",
-          env.SUPABASE_SERVICE_ROLE_KEY ?? ""
-        );
+      let requestWrapper = request as RequestWrapper;
+      requestWrapper.env = env;
+      requestWrapper.supabaseClient = createClient<Database>(
+        env.SUPABASE_URL ?? "",
+        env.SUPABASE_SERVICE_ROLE_KEY ?? ""
+      );
+      requestWrapper.parsedUrl = url;
+      requestWrapper.ctx = ctx;;
 
-        return apiRouter
-          .handle(requestWrapper)
-          .then(json)
-          .catch((error: any) => {
-            if (error instanceof BaseError) {
-              return baseErrorResponse(error);
-            } else {
-              return errorResponse(error);
-            }
-          })
-          .then(corsify);
-      }
+      return apiRouter
+        .handle(requestWrapper)
+        .then(json)
+        .catch((error: any) => {
+          if (error instanceof BaseError) {
+            return baseErrorResponse(error);
+          } else {
+            return errorResponse(error);
+          }
+        })
+        .then(corsify);
 
       throw new NotFoundError("Path not found");
     } catch (error) {
       return errorResponse(error);
+    }
+  },
+  async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
+    console.log(`Received batch of ${JSON.stringify(batch.messages)} messages, and the queue is ${batch.queue}`);
+    if (batch.queue.startsWith("lesson-content-create-queue")) {
+      const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+      let topicManager = new TopicManager();
+
+      const tasks = batch.messages.map(async (message) => {
+        try {
+          console.log(message);
+          let body = message.body as string;
+          const createMessage: LessonContentCreateMessage = JSON.parse(body);
+          await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
+          message.ack();
+        } catch (error) {
+          console.log(JSON.stringify(error));
+          message.retry();
+        }
+      });
+
+      await Promise.all(tasks);
+    } else if (batch.queue.startsWith("lesson-content-create-queue-dlq")) {
+      console.log("Message received in DLQ");
     }
   },
 };

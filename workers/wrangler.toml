@@ -2,55 +2,58 @@ name = "coursegen-workers"
 main = "src/worker.ts"
 compatibility_date = "2023-06-04"
 
-# # KV Namespace binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-# # Durable Object binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/durable-objects
-# [[durable_objects]]
-# binding = "MY_DURABLE_OBJECT"
-# class_name = "MyDurableObject"
-
-# # Bucket binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv#bucket
-# [[buckets]]
-# binding = "MY_BUCKET"
-# name = "my-bucket"
-# bucket_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-
-# # Service binding - For more information: https://developers.cloudflare.com/workers/platform/services
-# [[routes]]
-# binding = "MY_SERVICE"
-# pattern = "/api/*"
-# script = "api.js"
-
-# # Queue binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/queues
-# [[queues]]
-# binding = "MY_QUEUE"
-# name = "my-queue"
-# zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
-
-[vars]
-ENVIRONMENT = "DEVELOPMENT"
-
+# PRODUCTION
 [env.production]
 name = "coursegen-worker-prod"
 routes = [{ pattern = "api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = false
-# kv_namespaces = [
-# 	{ binding = "RATE_LIMIT_KV", id = "0492dc9511cb4ed5b6f012a85354fa34", preview_id = "d275df550f7a4276ad50a3115f3e84b4" },
-# ]
+vars = { ENVIRONMENT = "production" }
 
-[env.production.vars]
-ENVIRONMENT = "PRODUCTION"
+[[env.production.queues.producers]]
+queue = "lesson-content-create-queue-prod"
+binding = "LESSON_CONTENT_CREATE_QUEUE"
 
+[[env.production.queues.consumers]]
+queue = "lesson-content-create-queue-prod"
+max_batch_size = 1
+max_batch_timeout = 5
+max_retries = 10
+max_concurrency = 1
+dead_letter_queue = "lesson-content-create-queue-dlq-prod"
+
+# STAGING
 [env.staging]
 name = "coursegen-worker-staging"
 routes = [{ pattern = "staging_api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = true
+vars = { ENVIRONMENT = "staging" }
 
-[env.staging.vars]
-ENVIRONMENT = "STAGING"
+[[env.staging.queues.producers]]
+queue = "lesson-content-create-queue-staging"
+binding = "LESSON_CONTENT_CREATE_QUEUE"
+
+[[env.staging.queues.consumers]]
+queue = "lesson-content-create-queue-staging"
+max_batch_size = 1
+max_batch_timeout = 5
+max_retries = 10
+max_concurrency = 1
+dead_letter_queue = "lesson-content-create-queue-dlq-staging"
+
+# LOCAL
+[vars]
+ENVIRONMENT = "local"
+
+[[queues.producers]]
+queue = "lesson-content-create-queue"
+binding = "LESSON_CONTENT_CREATE_QUEUE"
+
+[[queues.consumers]]
+queue = "lesson-content-create-queue"
+max_batch_size = 1
+max_batch_timeout = 5
+max_retries = 10
+max_concurrency = 1
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"

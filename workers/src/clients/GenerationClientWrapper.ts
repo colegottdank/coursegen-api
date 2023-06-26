@@ -26,6 +26,7 @@ export class GenerationWrapper {
             referenceType,
             InternalGenerationStatus.InProgress
         );
+
         await this.generationLogDao.insertGenerationLog(generationLog);
 
         try {
