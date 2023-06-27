@@ -16,6 +16,7 @@ import { RequestWrapper } from "../router";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
 import { LessonContentCreateMessage } from "../lib/Messages";
 import { PublicCourse } from "../lib/PublicModels";
+import { TopicManager } from "./TopicManager";
 
 export class CourseManager {
   async createCourse(request: RequestWrapper) : Promise<PublicCourse> {
@@ -123,7 +124,8 @@ export class CourseManager {
         `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`
     );
 
-    await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+    let manager = new TopicManager();
+    await manager.createTopicsForCourse(request.supabaseClient, lessonContentCreateMsg, request.env);
 
     console.log("Sent lesson content create fetch");
   }
