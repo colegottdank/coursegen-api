@@ -248,7 +248,7 @@ export class OpenAIClient {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
-      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${search_text!}. Make it lengthy and use markdown formatting where it increases readability please! Don't include lesson or module numbers.`),
+      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${search_text!}. Don't include lesson or module numbers.`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
@@ -286,7 +286,7 @@ export class OpenAIClient {
       - You listen to the students requests at all times
       - You must ensure the length of the content is long and expansive, and that it covers the entirety of the subject matter.
       - You ensure all lesson content is in markdown formatting to best support readability.`),
-      HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
+      HumanMessagePromptTemplate.fromTemplate(`${FullCourse_0_0_1}. Please make the content lengthy and comprehensive using markdown formatting.`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
