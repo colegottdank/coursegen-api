@@ -248,7 +248,7 @@ export class OpenAIClient {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
-      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${courseRequest.search_text!}. Make it lengthy please!`),
+      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${courseRequest.search_text!}. Make it lengthy and use markdown formatting please!`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
