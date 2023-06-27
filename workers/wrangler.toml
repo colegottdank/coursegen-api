@@ -10,15 +10,15 @@ workers_dev = false
 vars = { ENVIRONMENT = "production" }
 
 [[env.production.queues.producers]]
-queue = "lesson-content-create-queue-prod"
-binding = "LESSON_CONTENT_CREATE_QUEUE"
+queue = "create-course-outline-queue-prod"
+binding = "CREATE_COURSE_OUTLINE_QUEUE"
 
 [[env.production.queues.consumers]]
-queue = "lesson-content-create-queue-prod"
+queue = "create-course-outline-queue-prod"
 max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 3
-dead_letter_queue = "lesson-content-create-queue-dlq-prod"
+dead_letter_queue = "create-course-outline-queue-dlq-prod"
 
 # STAGING
 [env.staging]
@@ -28,26 +28,26 @@ workers_dev = true
 vars = { ENVIRONMENT = "staging" }
 
 [[env.staging.queues.producers]]
-queue = "lesson-content-create-queue-staging"
-binding = "LESSON_CONTENT_CREATE_QUEUE"
+queue = "create-course-outline-queue-staging"
+binding = "CREATE_COURSE_OUTLINE_QUEUE"
 
 [[env.staging.queues.consumers]]
-queue = "lesson-content-create-queue-staging"
+queue = "create-course-outline-queue-staging"
 max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 3
-dead_letter_queue = "lesson-content-create-queue-dlq-staging"
+dead_letter_queue = "create-course-outline-queue-dlq-staging"
 
 # LOCAL
 [vars]
 ENVIRONMENT = "local"
 
 [[queues.producers]]
-queue = "lesson-content-create-queue"
-binding = "LESSON_CONTENT_CREATE_QUEUE"
+queue = "create-course-outline-queue"
+binding = "CREATE_COURSE_OUTLINE_QUEUE"
 
 [[queues.consumers]]
-queue = "lesson-content-create-queue"
+queue = "create-course-outline-queue"
 max_batch_size = 1
 max_batch_timeout = 5
 max_retries = 3

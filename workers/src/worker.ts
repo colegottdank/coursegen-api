@@ -5,7 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
 import { corsify } from "./consts/CorsConfig";
 import { TopicManager } from "./managers/TopicManager";
-import { LessonContentCreateMessage } from "./lib/Messages";
+import { CreateCourseOutlineMessage, LessonContentCreateMessage } from "./lib/Messages";
+import { CourseManager } from "./managers/CourseManager";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -14,7 +15,7 @@ export interface Env {
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
   ENVIRONMENT: string;
-  LESSON_CONTENT_CREATE_QUEUE: Queue<string>;
+  CREATE_COURSE_OUTLINE_QUEUE: Queue<string>;
 }
 
 export default {
@@ -29,7 +30,7 @@ export default {
         env.SUPABASE_SERVICE_ROLE_KEY ?? ""
       );
       requestWrapper.parsedUrl = url;
-      requestWrapper.ctx = ctx;;
+      requestWrapper.ctx = ctx;
 
       return apiRouter
         .handle(requestWrapper)
@@ -70,6 +71,30 @@ export default {
       await Promise.all(tasks);
     } else if (batch.queue.startsWith("lesson-content-create-queue-dlq")) {
       console.log("Message received in DLQ");
+    } else if (batch.queue.startsWith("create-course-outline-queue")) {
+      const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+      const courseManager = new CourseManager();
+
+      const tasks = batch.messages.map(async (message) => {
+        try {
+          console.log(message);
+          let body = message.body as string;
+          const createMessage: CreateCourseOutlineMessage = JSON.parse(body);
+          await courseManager.createCourseWaitUntil(
+            supabaseClient,
+            createMessage.user_id,
+            createMessage.search_text,
+            createMessage.course_id,
+            env
+          );
+          message.ack();
+        } catch (error) {
+          console.log(JSON.stringify(error));
+          message.retry();
+        }
+      });
+
+      await Promise.all(tasks);
     }
   },
 };

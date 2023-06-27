@@ -6,3 +6,9 @@ export interface LessonContentCreateMessage {
     user_id: string;
     search_text: string;
 };
+
+export interface CreateCourseOutlineMessage {
+    course_id: string;
+    user_id: string;
+    search_text: string;
+};

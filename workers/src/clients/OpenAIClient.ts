@@ -240,7 +240,7 @@ export class OpenAIClient {
   }
 
   // GPT-4
-  async createCourseOutlineTitles(courseRequest: ICourseRequestPost, model: string): Promise<InternalCourse> {
+  async createCourseOutlineTitles(search_text: string, model: string): Promise<InternalCourse> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
     const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
@@ -248,11 +248,11 @@ export class OpenAIClient {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
-      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${courseRequest.search_text!}. Make it lengthy and use markdown formatting where it increases readability please! Don't include lesson or module numbers.`),
+      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${search_text!}. Make it lengthy and use markdown formatting where it increases readability please! Don't include lesson or module numbers.`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
-      course_request: courseRequest.search_text!,
+      course_request: search_text!,
     });
 
     const messages = responseC.toChatMessages();

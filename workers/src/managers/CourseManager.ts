@@ -14,12 +14,15 @@ import { OpenAIClient } from "../clients/OpenAIClient";
 import * as validators from "../lib/Validators";
 import { RequestWrapper } from "../router";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
-import { LessonContentCreateMessage } from "../lib/Messages";
+import { CreateCourseOutlineMessage, LessonContentCreateMessage } from "../lib/Messages";
 import { PublicCourse } from "../lib/PublicModels";
 import { TopicManager } from "./TopicManager";
+import { Env } from "../worker";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "../consts/database.types";
 
 export class CourseManager {
-  async createCourse(request: RequestWrapper) : Promise<PublicCourse> {
+  async createCourse(request: RequestWrapper): Promise<PublicCourse> {
     let courseRequest = new CourseRequestPost(await request.json());
     courseRequest.Validate();
 
@@ -37,7 +40,7 @@ export class CourseManager {
       courseId,
       InternalGenerationReferenceType.Course,
       async () => {
-        return await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+        return await openAIClient.createCourseOutlineTitles(courseRequest.search_text!, defaults.gpt4);
       }
     );
 
@@ -65,49 +68,61 @@ export class CourseManager {
         `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`
     );
 
-    await request.env.LESSON_CONTENT_CREATE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
+    await request.env.CREATE_COURSE_OUTLINE_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
 
     console.log("Sent lesson content create fetch");
 
     return mapInternalToPublicCourse(internalCourse);
   }
 
-  async createCourseV2(request: RequestWrapper){
+  async createCourseV2(request: RequestWrapper) {
     const courseRequest = new CourseRequestPost(await request.json());
     courseRequest.Validate();
 
     const courseId = uuidv4();
-    request.ctx.waitUntil(this.createCourseWaitUntil(request, courseRequest, courseId));
+
+    const { user } = request;
+
+    let createCourseOutlineMessage: CreateCourseOutlineMessage = {
+      course_id: courseId,
+      user_id: user?.id!,
+      search_text: courseRequest.search_text!,
+    };
+
+    await request.env.CREATE_COURSE_OUTLINE_QUEUE.send(JSON.stringify(createCourseOutlineMessage));
 
     return { course_id: courseId };
   }
 
-  async createCourseWaitUntil(request: RequestWrapper, courseRequest: CourseRequestPost, courseId: string) : Promise<void> {
-    // Initialize Supabase client
-    const { supabaseClient, user } = request;
-
+  async createCourseWaitUntil(
+    supabaseClient: SupabaseClient<Database>,
+    userId: string,
+    searchText: string,
+    courseId: string,
+    env: Env
+  ): Promise<void> {
     // Initialize new OpenAI API client
     const generationWrapper = new GenerationWrapper(supabaseClient);
-    const openAIClient = new OpenAIClient(request.env);
+    const openAIClient = new OpenAIClient(env);
     let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
-      user!.id,
-      user!.id,
-      courseRequest.search_text!,
+      userId,
+      userId,
+      searchText,
       courseId,
       InternalGenerationReferenceType.Course,
       async () => {
-        return await openAIClient.createCourseOutlineTitles(courseRequest, defaults.gpt4);
+        return await openAIClient.createCourseOutlineTitles(searchText, defaults.gpt4);
       }
     );
 
-    internalCourse.user_id = user?.id;
+    internalCourse.user_id = userId;
     internalCourse.id = courseId;
 
     // Insert course and sections into db
     const courseDao = new CourseDao(supabaseClient);
-    await courseDao.insertCourse(internalCourse, courseRequest.search_text!, null);
+    await courseDao.insertCourse(internalCourse, searchText, null);
 
-    this.updateCourseItemFields(internalCourse.items, user?.id, internalCourse.id);
+    this.updateCourseItemFields(internalCourse.items, userId, internalCourse.id);
 
     const courseItemDao = new CourseItemDao(supabaseClient);
     await courseItemDao.insertCourseItemsRecursivelyV2(internalCourse.items);
@@ -115,22 +130,19 @@ export class CourseManager {
     let lessonContentCreateMsg: LessonContentCreateMessage = {
       course_id: courseId,
       course: internalCourse,
-      user_id: user!.id,
-      search_text: courseRequest.search_text!,
+      user_id: userId,
+      search_text: searchText,
     };
 
-    console.log(
-      "Sending lesson content create fetch, URL: " +
-        `${request.parsedUrl.protocol}//${request.parsedUrl.host}/api/v1/content`
-    );
+    console.log("Creating lesson content");
 
     let manager = new TopicManager();
-    await manager.createTopicsForCourse(request.supabaseClient, lessonContentCreateMsg, request.env);
+    await manager.createTopicsForCourse(supabaseClient, lessonContentCreateMsg, env);
 
     console.log("Sent lesson content create fetch");
   }
 
-  async getCourse(request: RequestWrapper) : Promise<PublicCourse> {
+  async getCourse(request: RequestWrapper): Promise<PublicCourse> {
     let courseId = request.params.id;
     validators.notNullAndValidUUID(courseId, "course_id");
 
