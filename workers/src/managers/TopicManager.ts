@@ -1,4 +1,4 @@
-import { AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
+import { AlreadyExistsError, AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
 import {
@@ -34,7 +34,7 @@ export class TopicManager {
   async createTopicsForCourse(supabaseClient: SupabaseClient<Database>, message: LessonContentCreateMessage, env: Env) {
     const topicDao = new TopicDao(supabaseClient);
     const existingTopics = await topicDao.getTopicsByCourseId(message.course_id);
-    if(existingTopics) throw new Error("Topics already exist for this course");
+    if(existingTopics) throw new AlreadyExistsError("Topics");
 
     console.log("Received message to create course content");
     const course = mapInternalCourseToLessonContent(message.course);

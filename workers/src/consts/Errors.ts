@@ -84,6 +84,12 @@ export class TooManyConcurrentLessonsGenerations extends BaseError {
   }
 }
 
+export class AlreadyExistsError extends BaseError {
+  constructor(type: string) {
+    super("409", `${type} already exists`);
+  }
+}
+
 export class AlreadyGeneratingError extends BaseError {
   constructor(reference_type: string, reference_id: string) {
     super("429", `Already generating ${reference_type} with id: ${reference_id}`, ErrorCodes.AlreadyGenerating);

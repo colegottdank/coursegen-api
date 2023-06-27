@@ -1,5 +1,5 @@
 import { json } from "itty-router/json";
-import { BaseError, NotFoundError } from "./consts/Errors";
+import { AlreadyExistsError, BaseError, NotFoundError } from "./consts/Errors";
 import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
@@ -64,6 +64,7 @@ export default {
           await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
           message.ack();
         } catch (error) {
+          if (error instanceof AlreadyExistsError) message.ack();
           console.log(JSON.stringify(error));
           message.retry();
         }
@@ -90,6 +91,7 @@ export default {
           );
           message.ack();
         } catch (error) {
+          if (error instanceof AlreadyExistsError) message.ack();
           console.log(JSON.stringify(error));
           message.retry();
         }

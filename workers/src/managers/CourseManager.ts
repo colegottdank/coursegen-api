@@ -16,10 +16,10 @@ import { RequestWrapper } from "../router";
 import { GenerationWrapper } from "../clients/GenerationClientWrapper";
 import { CreateCourseOutlineMessage, LessonContentCreateMessage } from "../lib/Messages";
 import { PublicCourse } from "../lib/PublicModels";
-import { TopicManager } from "./TopicManager";
 import { Env } from "../worker";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../consts/database.types";
+import { AlreadyExistsError } from "../consts/Errors";
 
 export class CourseManager {
   async createCourse(request: RequestWrapper): Promise<PublicCourse> {
@@ -106,9 +106,7 @@ export class CourseManager {
     const courseDao = new CourseDao(supabaseClient);
 
     const course = await courseDao.getCourseById(courseId);
-    if (course) {
-      throw new Error("Course already exists");
-    }
+    if (course) throw new AlreadyExistsError("Course");
 
     const openAIClient = new OpenAIClient(env);
     let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
