@@ -136,8 +136,7 @@ export class CourseManager {
 
     console.log("Creating lesson content");
 
-    let manager = new TopicManager();
-    await manager.createTopicsForCourse(supabaseClient, lessonContentCreateMsg, env);
+    await env.CREATE_LESSON_CONTENT_QUEUE.send(JSON.stringify(lessonContentCreateMsg));
 
     console.log("Sent lesson content create fetch");
   }

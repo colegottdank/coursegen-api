@@ -16,6 +16,7 @@ export interface Env {
   HELICONE_API_KEY: string;
   ENVIRONMENT: string;
   CREATE_COURSE_OUTLINE_QUEUE: Queue<string>;
+  CREATE_LESSON_CONTENT_QUEUE: Queue<string>;
 }
 
 export default {
