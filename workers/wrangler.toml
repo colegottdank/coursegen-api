@@ -16,7 +16,7 @@ binding = "CREATE_COURSE_OUTLINE_QUEUE"
 [[env.production.queues.consumers]]
 queue = "create-course-outline-queue-prod"
 max_batch_size = 1
-max_batch_timeout = 5
+max_batch_timeout = 0
 max_retries = 3
 dead_letter_queue = "create-course-outline-queue-dlq-prod"
 
@@ -34,7 +34,7 @@ binding = "CREATE_COURSE_OUTLINE_QUEUE"
 [[env.staging.queues.consumers]]
 queue = "create-course-outline-queue-staging"
 max_batch_size = 1
-max_batch_timeout = 5
+max_batch_timeout = 0
 max_retries = 3
 dead_letter_queue = "create-course-outline-queue-dlq-staging"
 
@@ -49,7 +49,7 @@ binding = "CREATE_COURSE_OUTLINE_QUEUE"
 [[queues.consumers]]
 queue = "create-course-outline-queue"
 max_batch_size = 1
-max_batch_timeout = 5
+max_batch_timeout = 0
 max_retries = 3
 
 # [env.staging]
