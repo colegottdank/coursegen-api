@@ -19,7 +19,7 @@ import { PublicCourse } from "../lib/PublicModels";
 import { Env } from "../worker";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../consts/database.types";
-import { AlreadyExistsError } from "../consts/Errors";
+import { AlreadyExistsError, NotFoundError } from "../consts/Errors";
 
 export class CourseManager {
   async createCourse(request: RequestWrapper): Promise<PublicCourse> {
@@ -160,6 +160,8 @@ export class CourseManager {
     const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(courseId);
 
     const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
+
+    if(!courseResponse) throw new NotFoundError(`Course with id ${courseId} not found.`);
 
     const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
     const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);

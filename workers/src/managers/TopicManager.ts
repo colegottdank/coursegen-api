@@ -109,6 +109,8 @@ export class TopicManager {
 
     const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
 
+    if(!courseResponse) throw new NotFoundError(`Course with id ${contentRequest.course_id} not found.`);
+
     const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
     const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);
 
