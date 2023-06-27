@@ -7,7 +7,7 @@ import { Database } from "../consts/database.types";
 export class CourseDao {
   constructor(private supabase: SupabaseClient<Database>) {}
 
-  async getCourseById(courseId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+  async getCourseById(courseId: string): Promise<Database["public"]["Tables"]["course"]["Row"] | null> {
     const {data, error} = await this.supabase
       .from("course")
       .select("*")
@@ -17,6 +17,10 @@ export class CourseDao {
 
       if(error) {
         throw new SupabaseError("422", `Failed to get course by id ${courseId}`, error.code);
+      }
+
+      if (!data) {
+        return null;
       }
 
     return data;
