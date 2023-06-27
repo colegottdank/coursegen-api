@@ -44,7 +44,7 @@ export class TopicDao {
 
   async getTopicsByCourseId(
     courseId: string
-  ): Promise<Database["public"]["Tables"]["topic"]["Row"][]> {
+  ): Promise<Database["public"]["Tables"]["topic"]["Row"][] | null> {
     const { data, error } = await this.supabase
       .from("topic")
       .select("*")
@@ -54,6 +54,10 @@ export class TopicDao {
 
     if (error) {
       throw new SupabaseError("422", `Failed to get topics by course id ${courseId}, ${error.message}`, error.code);
+    }
+
+    if(!data || data.length === 0) {
+      return null;
     }
 
     return data;

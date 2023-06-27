@@ -106,6 +106,7 @@ export class CourseManager {
     const courseDao = new CourseDao(supabaseClient);
 
     const course = await courseDao.getCourseById(courseId);
+    console.log("Course: ", course);
     if (course) throw new AlreadyExistsError("Course");
 
     const openAIClient = new OpenAIClient(env);

@@ -52,7 +52,7 @@ export default {
   },
   async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
     console.log(`Received batch of ${JSON.stringify(batch.messages)} messages, and the queue is ${batch.queue}`);
-    if (batch.queue.startsWith("lesson-content-create-queue")) {
+    if (batch.queue.startsWith("create-lesson-content-queue")) {
       const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
       let topicManager = new TopicManager();
 

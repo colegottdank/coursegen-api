@@ -12,18 +12,18 @@ export class CourseDao {
       .from("course")
       .select("*")
       .eq("id", courseId)
-      .returns<Database["public"]["Tables"]["course"]["Row"]>()
+      .returns<Database["public"]["Tables"]["course"]["Row"][]>()
       .limit(1);
 
       if(error) {
         throw new SupabaseError("422", `Failed to get course by id ${courseId}`, error.code);
       }
 
-      if (!data) {
+      if (!data || data.length === 0) {
         return null;
       }
 
-    return data;
+    return data[0];
   }
 
   async getCourseByIdAndUserId(courseId: string, userId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
