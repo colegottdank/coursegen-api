@@ -17,8 +17,7 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 queue = "lesson-content-create-queue-prod"
 max_batch_size = 1
 max_batch_timeout = 5
-max_retries = 10
-max_concurrency = 1
+max_retries = 3
 dead_letter_queue = "lesson-content-create-queue-dlq-prod"
 
 # STAGING
@@ -36,8 +35,7 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 queue = "lesson-content-create-queue-staging"
 max_batch_size = 1
 max_batch_timeout = 5
-max_retries = 10
-max_concurrency = 1
+max_retries = 3
 dead_letter_queue = "lesson-content-create-queue-dlq-staging"
 
 # LOCAL
@@ -52,8 +50,7 @@ binding = "LESSON_CONTENT_CREATE_QUEUE"
 queue = "lesson-content-create-queue"
 max_batch_size = 1
 max_batch_timeout = 5
-max_retries = 10
-max_concurrency = 1
+max_retries = 3
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"
