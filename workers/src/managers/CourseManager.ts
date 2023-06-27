@@ -103,6 +103,13 @@ export class CourseManager {
   ): Promise<void> {
     // Initialize new OpenAI API client
     const generationWrapper = new GenerationWrapper(supabaseClient);
+    const courseDao = new CourseDao(supabaseClient);
+
+    const course = await courseDao.getCourseById(courseId);
+    if (course) {
+      throw new Error("Course already exists");
+    }
+
     const openAIClient = new OpenAIClient(env);
     let internalCourse = await generationWrapper.wrapGenerationRequest<InternalCourse>(
       userId,
@@ -119,7 +126,7 @@ export class CourseManager {
     internalCourse.id = courseId;
 
     // Insert course and sections into db
-    const courseDao = new CourseDao(supabaseClient);
+
     await courseDao.insertCourse(internalCourse, searchText, null);
 
     this.updateCourseItemFields(internalCourse.items, userId, internalCourse.id);
