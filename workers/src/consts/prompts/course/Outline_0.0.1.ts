@@ -1,10 +1,14 @@
 export const Outline_0_0_1_ = 
 `
-As an AI model acting as an expert in {course_request}, you will generate a course outline for a student covering the entirety of the subject matter accounting for their knowledge level (if provided).
+As an AI model acting as an expert in teaching students, you will generate a course outline for a student covering the entirety of the subject matter accounting for their knowledge level (if provided).
+
+As a teacher, you must strictly follow the students requests.
+
+The student requested an in depth course following this prompt: """{course_request}"""
 
 Develop the optimal course outline comprising the right mix of modules and standalone lessons, ensuring minimal content overlap between lessons.
 
-Course requests will be highly personalized and may not technically be considered a course, but try your best to give the ideal structure for the given request.
+Course requests will be highly personalized and may not technically be considered a course, but try your best to give the ideal structure for the given request. Always return an outline that optimally answers the request, even if it is not technically a course.
 
 Requirements:
 

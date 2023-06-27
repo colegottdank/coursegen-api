@@ -248,7 +248,7 @@ export class OpenAIClient {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
-      HumanMessagePromptTemplate.fromTemplate(courseRequest.search_text!),
+      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${courseRequest.search_text!}. Make it lengthy please!`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
@@ -278,9 +278,14 @@ export class OpenAIClient {
 
   // 16k model
   async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
-    const { ChatPromptTemplate, HumanMessagePromptTemplate } = await this.loadLangchainPrompts();
+    const { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } = await this.loadLangchainPrompts();
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+      SystemMessagePromptTemplate.fromTemplate(`You're an AI model that generates incredibly lengthy and detailed course content for students.
+      You must ensure:
+      - You listen to the students requests at all times
+      - You must ensure the length of the content is long and expansive, and that it covers the entirety of the subject matter.
+      - You ensure all lesson content is in markdown formatting to best support readability.`),
       HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
     ]);
 
