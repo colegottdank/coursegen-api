@@ -11,5 +11,5 @@ export const gpt3516kMaxTokens = 16384;
 export const max_concurrent_course_generations = 1;
 export const max_concurrent_lessons_generations = 1;
 export const max_concurrent_lesson_generations = 5;
-export const max_concurrent_generations = max_concurrent_course_generations + max_concurrent_lesson_generations;
-export const generationLogLookBackPeriodMinutes = 10;
+export const max_concurrent_generations = max_concurrent_course_generations + max_concurrent_lessons_generations;
+export const generationLogLookBackPeriodMinutes = 5;

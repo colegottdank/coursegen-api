@@ -41,7 +41,7 @@ router.post(
   async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Course),
   async (request) => {
     let course = new CourseManager();
-    return await course.createCourse(request);
+    return await course.createCourseV2(request);
   }
 );
 

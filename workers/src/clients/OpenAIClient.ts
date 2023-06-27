@@ -240,7 +240,7 @@ export class OpenAIClient {
   }
 
   // GPT-4
-  async createCourseOutlineTitles(courseRequest: ICourseRequestPost, model: string): Promise<InternalCourse> {
+  async createCourseOutlineTitles(search_text: string, model: string): Promise<InternalCourse> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
     const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
@@ -248,11 +248,11 @@ export class OpenAIClient {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(Outline_0_0_1_),
-      HumanMessagePromptTemplate.fromTemplate(courseRequest.search_text!),
+      HumanMessagePromptTemplate.fromTemplate(`The student created this course request: ${search_text!}. Make it lengthy and use markdown formatting where it increases readability please! Don't include lesson or module numbers.`),
     ]);
 
     const responseC = await chatPrompt.formatPromptValue({
-      course_request: courseRequest.search_text!,
+      course_request: search_text!,
     });
 
     const messages = responseC.toChatMessages();
@@ -278,9 +278,14 @@ export class OpenAIClient {
 
   // 16k model
   async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
-    const { ChatPromptTemplate, HumanMessagePromptTemplate } = await this.loadLangchainPrompts();
+    const { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } = await this.loadLangchainPrompts();
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+      SystemMessagePromptTemplate.fromTemplate(`You're an AI model that generates incredibly lengthy and detailed course content for students.
+      You must ensure:
+      - You listen to the students requests at all times
+      - You must ensure the length of the content is long and expansive, and that it covers the entirety of the subject matter.
+      - You ensure all lesson content is in markdown formatting to best support readability.`),
       HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
     ]);
 

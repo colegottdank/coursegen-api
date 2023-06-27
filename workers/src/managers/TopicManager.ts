@@ -1,4 +1,4 @@
-import { AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
+import { AlreadyExistsError, AlreadyGeneratingError, BadRequestError, NotFoundError } from "../consts/Errors";
 import { CourseDao } from "../daos/CourseDao";
 import { CourseItemDao } from "../daos/CourseItemDao";
 import {
@@ -32,6 +32,10 @@ import { ILesson } from "../clients/OpenAIResponses";
 
 export class TopicManager {
   async createTopicsForCourse(supabaseClient: SupabaseClient<Database>, message: LessonContentCreateMessage, env: Env) {
+    const topicDao = new TopicDao(supabaseClient);
+    const existingTopics = await topicDao.getTopicsByCourseId(message.course_id);
+    if(existingTopics) throw new AlreadyExistsError("Topics");
+
     console.log("Received message to create course content");
     const course = mapInternalCourseToLessonContent(message.course);
 
@@ -82,7 +86,6 @@ export class TopicManager {
     mapItems(message.course.items);
 
     console.log(JSON.stringify(topics));
-    const topicDao = new TopicDao(supabaseClient);
     await topicDao.insertTopics(topics);
   }
 
@@ -105,6 +108,8 @@ export class TopicManager {
     const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(contentRequest.course_id!);
 
     const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
+
+    if(!courseResponse) throw new NotFoundError(`Course with id ${contentRequest.course_id} not found.`);
 
     const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
     const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);

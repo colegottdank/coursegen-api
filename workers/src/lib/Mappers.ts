@@ -141,7 +141,7 @@ export function mapInternalCourseToLessonContent(internalCourse: InternalCourse)
       if (item.type === InternalCourseItemType.Lesson) {
         lessons.push({
           title: item.title,
-          content: `Lengthy, detailed content in markdown formatting. Display the content in a clean and formatted way.`,
+          content: `Write content here that teaches the student the entire lesson in depth. Use markdown formatting.`,
         });
       }
 

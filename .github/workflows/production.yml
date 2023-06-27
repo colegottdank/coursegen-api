@@ -12,13 +12,13 @@ jobs:
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-      PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+      PROJECT_ID: ${{ secrets.PROD_PROJECT_ID }}
       OPENAI_APIKEY: ${{ secrets.OPENAI_APIKEY }}
       OPENAI_ORG: ${{ secrets.OPENAI_ORG }}
       UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-      ENV_NAME: staging
+      ENV_NAME: production
 
     steps:
       - uses: actions/checkout@v3
@@ -28,13 +28,9 @@ jobs:
           version: 1.27.10
 
       - run: |
-          supabase link --project-ref ${{ secrets.STAGING_PROJECT_ID }}
+          supabase link --project-ref ${{ secrets.PROD_PROJECT_ID }}
           supabase db push
-          supabase functions deploy new_course_v4 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          supabase functions deploy lesson_content_v2 --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          supabase functions deploy get_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          supabase functions deploy save_course --project-ref ${{ secrets.STAGING_PROJECT_ID }} --import-map "./supabase/functions/import_map.json"
-          
+
   deploy-workers:
     runs-on: ubuntu-latest
     name: Deploy

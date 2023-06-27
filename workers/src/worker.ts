@@ -1,11 +1,12 @@
 import { json } from "itty-router/json";
-import { BaseError, NotFoundError } from "./consts/Errors";
+import { AlreadyExistsError, BaseError, NotFoundError } from "./consts/Errors";
 import apiRouter, { RequestWrapper } from "./router";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./consts/database.types";
 import { corsify } from "./consts/CorsConfig";
 import { TopicManager } from "./managers/TopicManager";
-import { LessonContentCreateMessage } from "./lib/Messages";
+import { CreateCourseOutlineMessage, LessonContentCreateMessage } from "./lib/Messages";
+import { CourseManager } from "./managers/CourseManager";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -14,7 +15,8 @@ export interface Env {
   OPENAI_ORG: string;
   HELICONE_API_KEY: string;
   ENVIRONMENT: string;
-  LESSON_CONTENT_CREATE_QUEUE: Queue<string>;
+  CREATE_COURSE_OUTLINE_QUEUE: Queue<string>;
+  CREATE_LESSON_CONTENT_QUEUE: Queue<string>;
 }
 
 export default {
@@ -29,7 +31,7 @@ export default {
         env.SUPABASE_SERVICE_ROLE_KEY ?? ""
       );
       requestWrapper.parsedUrl = url;
-      requestWrapper.ctx = ctx;;
+      requestWrapper.ctx = ctx;
 
       return apiRouter
         .handle(requestWrapper)
@@ -50,7 +52,7 @@ export default {
   },
   async queue(batch: MessageBatch<string>, env: Env): Promise<void> {
     console.log(`Received batch of ${JSON.stringify(batch.messages)} messages, and the queue is ${batch.queue}`);
-    if (batch.queue.startsWith("lesson-content-create-queue")) {
+    if (batch.queue.startsWith("create-lesson-content-queue")) {
       const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
       let topicManager = new TopicManager();
 
@@ -62,6 +64,7 @@ export default {
           await topicManager.createTopicsForCourse(supabaseClient, createMessage, env);
           message.ack();
         } catch (error) {
+          if (error instanceof AlreadyExistsError) message.ack();
           console.log(JSON.stringify(error));
           message.retry();
         }
@@ -70,6 +73,31 @@ export default {
       await Promise.all(tasks);
     } else if (batch.queue.startsWith("lesson-content-create-queue-dlq")) {
       console.log("Message received in DLQ");
+    } else if (batch.queue.startsWith("create-course-outline-queue")) {
+      const supabaseClient = createClient<Database>(env.SUPABASE_URL ?? "", env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+      const courseManager = new CourseManager();
+
+      const tasks = batch.messages.map(async (message) => {
+        try {
+          console.log(message);
+          let body = message.body as string;
+          const createMessage: CreateCourseOutlineMessage = JSON.parse(body);
+          await courseManager.createCourseWaitUntil(
+            supabaseClient,
+            createMessage.user_id,
+            createMessage.search_text,
+            createMessage.course_id,
+            env
+          );
+          message.ack();
+        } catch (error) {
+          if (error instanceof AlreadyExistsError) message.ack();
+          console.log(JSON.stringify(error));
+          message.retry();
+        }
+      });
+
+      await Promise.all(tasks);
     }
   },
 };

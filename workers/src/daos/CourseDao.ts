@@ -7,23 +7,23 @@ import { Database } from "../consts/database.types";
 export class CourseDao {
   constructor(private supabase: SupabaseClient<Database>) {}
 
-  async getCourseById(courseId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
+  async getCourseById(courseId: string): Promise<Database["public"]["Tables"]["course"]["Row"] | null> {
     const {data, error} = await this.supabase
       .from("course")
       .select("*")
       .eq("id", courseId)
-      .returns<Database["public"]["Tables"]["course"]["Row"]>()
-      .single();
+      .returns<Database["public"]["Tables"]["course"]["Row"][]>()
+      .limit(1);
 
       if(error) {
         throw new SupabaseError("422", `Failed to get course by id ${courseId}`, error.code);
       }
-  
-      if(!data) {
-        throw new SupabaseError("404", `Course not found by id ${courseId}`);
+
+      if (!data || data.length === 0) {
+        return null;
       }
 
-    return data;
+    return data[0];
   }
 
   async getCourseByIdAndUserId(courseId: string, userId: string): Promise<Database["public"]["Tables"]["course"]["Row"]> {
