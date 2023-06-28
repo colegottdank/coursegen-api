@@ -1,6 +1,6 @@
 import * as defaults from "../consts/Defaults";
 import { OpenAIError, OpenAIInvalidResponseError } from "../consts/Errors";
-import { InternalCourse, InternalTopic } from "../lib/InternalModels";
+import { InternalCourse, InternalGenerationReferenceType, InternalTopic } from "../lib/InternalModels";
 import * as Mappers from "../lib/Mappers";
 import { ILessonContentPost as ILessonContentRequestPost } from "../dtos/TopicDto";
 import { ICourseRequestPost } from "../dtos/CourseDtos";
@@ -23,7 +23,7 @@ export class OpenAIClient {
 
   constructor(private env: Env) {}
 
-  private async loadChatClient(): Promise<any> {
+  private async loadChatClient(userId: string, type: InternalGenerationReferenceType): Promise<any> {
     let chatClient;
     if (!chatClient) {
       await import("langchain/chat_models/openai").then(({ ChatOpenAI }) => {
@@ -37,6 +37,8 @@ export class OpenAIClient {
               headers: {
                 "Helicone-Auth": `Bearer ${this.env.HELICONE_API_KEY}`,
                 "helicone-increase-timeout": true,
+                "Helicone-User-Id": userId,
+                "Helicone-Property-Type": type,
                 Connection: "keep-alive",
               },
             },
@@ -70,10 +72,12 @@ export class OpenAIClient {
     model: string,
     messages: any[],
     responseType: new (responseText: string) => T,
+    userId: string,
+    type: InternalGenerationReferenceType,
     maxTokens?: number,
     temperature?: number
   ): Promise<T> {
-    let chatClient = await this.loadChatClient();
+    let chatClient = await this.loadChatClient(userId, type);
     let gpt_tokenizer = await import("gpt-tokenizer");
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
@@ -123,10 +127,12 @@ export class OpenAIClient {
     model: string,
     messages: any[],
     responseType: new (responseText: string) => T,
+    userId: string,
+    type: InternalGenerationReferenceType,
     maxTokens?: number,
     temperature?: number
   ): Promise<T> {
-    let chatClient = await this.loadChatClient();
+    let chatClient = await this.loadChatClient(userId, type);
     let gpt_tokenizer = await import("gpt-tokenizer");
     const tokens = gpt_tokenizer.encode(JSON.stringify(messages));
     if (model == defaults.gpt4) chatClient.maxTokens = defaults.gpt4MaxTokens - tokens.length;
@@ -240,7 +246,7 @@ export class OpenAIClient {
   }
 
   // GPT-4
-  async createCourseOutlineTitles(search_text: string, model: string): Promise<InternalCourse> {
+  async createCourseOutlineTitles(search_text: string, model: string, userId: string): Promise<InternalCourse> {
     const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
     const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } =
@@ -271,13 +277,13 @@ export class OpenAIClient {
     //   ];
     // }
 
-    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, undefined, undefined);
+    const response = await this.createChatCompletion(model, messages, CourseOutlineResponse, userId, InternalGenerationReferenceType.Course, undefined, undefined);
 
     return Mappers.mapExternalCourseOutlineResponseToInternal(response.response);
   }
 
   // 16k model
-  async createCourseContent(course: any, searchText: string): Promise<ILesson[]> {
+  async createCourseContent(course: any, searchText: string, userId: string): Promise<ILesson[]> {
     const { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } = await this.loadLangchainPrompts();
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
@@ -300,6 +306,8 @@ export class OpenAIClient {
       defaults.gpt3516k,
       messages,
       CourseContentResponse,
+      userId,
+      InternalGenerationReferenceType.Lessons,
       undefined,
       undefined
     );
@@ -308,88 +316,88 @@ export class OpenAIClient {
   }
 
   // GPT-3.5 Chained
-  async createCourseOutline(courseRequest: ICourseRequestPost): Promise<InternalCourse> {
-    const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
+  // async createCourseOutline(courseRequest: ICourseRequestPost): Promise<InternalCourse> {
+  //   const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
-    let courseOutlineMsgs1 = [
-      new HumanChatMessage(`${NewCoursePrompts.course_outline_1}. Course Request Text: ${courseRequest.search_text}`),
-    ];
+  //   let courseOutlineMsgs1 = [
+  //     new HumanChatMessage(`${NewCoursePrompts.course_outline_1}. Course Request Text: ${courseRequest.search_text}`),
+  //   ];
 
-    const initialCourseOutline = await this.createChatCompletion(
-      defaults.gpt35,
-      courseOutlineMsgs1,
-      CourseOutlineResponse,
-      undefined,
-      undefined
-    );
+  //   const initialCourseOutline = await this.createChatCompletion(
+  //     defaults.gpt35,
+  //     courseOutlineMsgs1,
+  //     CourseOutlineResponse,
+  //     undefined,
+  //     undefined
+  //   );
 
-    let courseOutlineMsgs2 = [
-      new HumanChatMessage(
-        `${NewCoursePrompts.course_outline_improve}. Initial course outline: ${JSON.stringify(
-          initialCourseOutline.response.data
-        )}. Course Request Text: ${courseRequest.search_text}.`
-      ),
-    ];
+  //   let courseOutlineMsgs2 = [
+  //     new HumanChatMessage(
+  //       `${NewCoursePrompts.course_outline_improve}. Initial course outline: ${JSON.stringify(
+  //         initialCourseOutline.response.data
+  //       )}. Course Request Text: ${courseRequest.search_text}.`
+  //     ),
+  //   ];
 
-    const improvedCourseOutline = await this.createChatCompletion(
-      defaults.gpt35,
-      courseOutlineMsgs2,
-      CourseOutlineResponse,
-      undefined,
-      undefined
-    );
+  //   const improvedCourseOutline = await this.createChatCompletion(
+  //     defaults.gpt35,
+  //     courseOutlineMsgs2,
+  //     CourseOutlineResponse,
+  //     undefined,
+  //     undefined
+  //   );
 
-    return Mappers.mapExternalCourseOutlineResponseToInternal(improvedCourseOutline.response);
-  }
+  //   return Mappers.mapExternalCourseOutlineResponseToInternal(improvedCourseOutline.response);
+  // }
 
-  // GPT-3.5 Chained
-  async createLessonContent(
-    lessonRequest: ILessonContentRequestPost,
-    lessonTitle: string,
-    courseOutline: string,
-    searchText: string,
-    userId: string
-  ): Promise<InternalTopic[]> {
-    const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
+  // // GPT-3.5 Chained
+  // async createLessonContent(
+  //   lessonRequest: ILessonContentRequestPost,
+  //   lessonTitle: string,
+  //   courseOutline: string,
+  //   searchText: string,
+  //   userId: string
+  // ): Promise<InternalTopic[]> {
+  //   const { HumanChatMessage, SystemChatMessage } = await this.loadLangchainSchema();
 
-    const lessonContentMsgs = [
-      new HumanChatMessage(
-        `${LessonPrompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson to generate content for: ${lessonTitle}.`
-      ),
-    ];
+  //   const lessonContentMsgs = [
+  //     new HumanChatMessage(
+  //       `${LessonPrompts.lesson_content_request}. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson to generate content for: ${lessonTitle}.`
+  //     ),
+  //   ];
 
-    let initialLessonContent = await this.createChatCompletion(
-      defaults.gpt35,
-      lessonContentMsgs,
-      LessonContentResponse,
-      undefined,
-      undefined
-    );
+  //   let initialLessonContent = await this.createChatCompletion(
+  //     defaults.gpt35,
+  //     lessonContentMsgs,
+  //     LessonContentResponse,
+  //     undefined,
+  //     undefined
+  //   );
 
-    const improveLessonContentMsgs = [
-      new HumanChatMessage(
-        `${
-          LessonPrompts.improve_lesson_content_request
-        }. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson title that content was previously generated for: ${lessonTitle}. Generated lesson content from previous request: ${JSON.stringify(
-          initialLessonContent.response.data
-        )}.`
-      ),
-    ];
+  //   const improveLessonContentMsgs = [
+  //     new HumanChatMessage(
+  //       `${
+  //         LessonPrompts.improve_lesson_content_request
+  //       }. Existing course outline: ${courseOutline}. Initial course request text: ${searchText}. Lesson title that content was previously generated for: ${lessonTitle}. Generated lesson content from previous request: ${JSON.stringify(
+  //         initialLessonContent.response.data
+  //       )}.`
+  //     ),
+  //   ];
 
-    let improvedLessonContent = await this.createChatCompletion(
-      defaults.gpt35,
-      improveLessonContentMsgs,
-      LessonContentResponse,
-      undefined,
-      undefined
-    );
+  //   let improvedLessonContent = await this.createChatCompletion(
+  //     defaults.gpt35,
+  //     improveLessonContentMsgs,
+  //     LessonContentResponse,
+  //     undefined,
+  //     undefined
+  //   );
 
-    let internalTopics = Mappers.mapExternalTopicsToInternalTopics(
-      improvedLessonContent.response,
-      lessonRequest,
-      userId
-    );
+  //   let internalTopics = Mappers.mapExternalTopicsToInternalTopics(
+  //     improvedLessonContent.response,
+  //     lessonRequest,
+  //     userId
+  //   );
 
-    return internalTopics;
-  }
+  //   return internalTopics;
+  // }
 }

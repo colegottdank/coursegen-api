@@ -40,7 +40,7 @@ export class CourseManager {
       courseId,
       InternalGenerationReferenceType.Course,
       async () => {
-        return await openAIClient.createCourseOutlineTitles(courseRequest.search_text!, defaults.gpt4);
+        return await openAIClient.createCourseOutlineTitles(courseRequest.search_text!, defaults.gpt4, user!.id);
       }
     );
 
@@ -117,7 +117,7 @@ export class CourseManager {
       courseId,
       InternalGenerationReferenceType.Course,
       async () => {
-        return await openAIClient.createCourseOutlineTitles(searchText, defaults.gpt4);
+        return await openAIClient.createCourseOutlineTitles(searchText, defaults.gpt4, userId);
       }
     );
 

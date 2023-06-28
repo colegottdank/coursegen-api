@@ -52,7 +52,7 @@ export class TopicManager {
       message.course.items[0].id!,
       InternalGenerationReferenceType.Lessons,
       async () => {
-        return await openAIClient.createCourseContent(course, message.search_text);
+        return await openAIClient.createCourseContent(course, message.search_text, message.user_id);
       }
     );
 
@@ -89,66 +89,66 @@ export class TopicManager {
     await topicDao.insertTopics(topics);
   }
 
-  async postTopic(request: RequestWrapper) {
-    const contentRequest = new LessonContentPost(await request.json());
+  // async postTopic(request: RequestWrapper) {
+  //   const contentRequest = new LessonContentPost(await request.json());
 
-    // Initialize Supabase client
-    const { supabaseClient, user } = request;
+  //   // Initialize Supabase client
+  //   const { supabaseClient, user } = request;
 
-    const topicDao = new TopicDao(supabaseClient);
-    let existingTopics = await topicDao.getTopicsByLessonId(contentRequest.lesson_id!);
-    if (existingTopics.length > 0) {
-      throw new BadRequestError(`Lesson ${contentRequest.lesson_id} already has topics.`);
-    }
+  //   const topicDao = new TopicDao(supabaseClient);
+  //   let existingTopics = await topicDao.getTopicsByLessonId(contentRequest.lesson_id!);
+  //   if (existingTopics.length > 0) {
+  //     throw new BadRequestError(`Lesson ${contentRequest.lesson_id} already has topics.`);
+  //   }
 
-    const courseDao = new CourseDao(supabaseClient);
-    const coursePromise = courseDao.getCourseById(contentRequest.course_id!);
+  //   const courseDao = new CourseDao(supabaseClient);
+  //   const coursePromise = courseDao.getCourseById(contentRequest.course_id!);
 
-    const courseItemDao = new CourseItemDao(supabaseClient);
-    const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(contentRequest.course_id!);
+  //   const courseItemDao = new CourseItemDao(supabaseClient);
+  //   const courseItemsPromise = courseItemDao.getCourseItemsByCourseId(contentRequest.course_id!);
 
-    const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
+  //   const [courseResponse, courseItemsResponse] = await Promise.all([coursePromise, courseItemsPromise]);
 
-    if(!courseResponse) throw new NotFoundError(`Course with id ${contentRequest.course_id} not found.`);
+  //   if(!courseResponse) throw new NotFoundError(`Course with id ${contentRequest.course_id} not found.`);
 
-    const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
-    const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);
+  //   const course: InternalCourse = mapCourseDaoToInternalCourse(courseResponse);
+  //   const courseItems: InternalCourseItem[] = courseItemsResponse.map(mapCourseItemDaoToInternalCourseItem);
 
-    const courseOutline = buildCourseOutline(course, courseItems);
-    let gptCourseOutline = mapCourseForGPT(courseOutline);
+  //   const courseOutline = buildCourseOutline(course, courseItems);
+  //   let gptCourseOutline = mapCourseForGPT(courseOutline);
 
-    const currentLesson = courseItems.find((item) => item.id === contentRequest.lesson_id);
-    if (!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
+  //   const currentLesson = courseItems.find((item) => item.id === contentRequest.lesson_id);
+  //   if (!currentLesson) throw new NotFoundError(`Lesson with id ${contentRequest.lesson_id} not found.`);
 
-    // Ensure no one else is generating the same lesson
-    const generationLogDao = new GenerationLogDao(supabaseClient);
-    const generationLog = await generationLogDao.getGenerationLogByReferenceIdAndStatus(currentLesson.id!, [
-      InternalGenerationStatus.InProgress,
-    ]);
-    if (generationLog) throw new AlreadyGeneratingError(InternalGenerationReferenceType.Lesson, currentLesson.id!);
+  //   // Ensure no one else is generating the same lesson
+  //   const generationLogDao = new GenerationLogDao(supabaseClient);
+  //   const generationLog = await generationLogDao.getGenerationLogByReferenceIdAndStatus(currentLesson.id!, [
+  //     InternalGenerationStatus.InProgress,
+  //   ]);
+  //   if (generationLog) throw new AlreadyGeneratingError(InternalGenerationReferenceType.Lesson, currentLesson.id!);
 
-    // Generate topics w/ rate limiting
-    const openAIClient = new OpenAIClient(request.env);
-    const generationWrapper = new GenerationWrapper(supabaseClient);
-    let internalTopics = await generationWrapper.wrapGenerationRequest<InternalTopic[]>(
-      user!.id,
-      currentLesson.user_id!,
-      currentLesson.title,
-      currentLesson.id!,
-      InternalGenerationReferenceType.Lesson,
-      async () => {
-        return await openAIClient.createLessonContent(
-          contentRequest,
-          currentLesson.title,
-          JSON.stringify(gptCourseOutline),
-          course.search_text!,
-          course.user_id!
-        );
-      }
-    );
+  //   // Generate topics w/ rate limiting
+  //   const openAIClient = new OpenAIClient(request.env);
+  //   const generationWrapper = new GenerationWrapper(supabaseClient);
+  //   let internalTopics = await generationWrapper.wrapGenerationRequest<InternalTopic[]>(
+  //     user!.id,
+  //     currentLesson.user_id!,
+  //     currentLesson.title,
+  //     currentLesson.id!,
+  //     InternalGenerationReferenceType.Lesson,
+  //     async () => {
+  //       return await openAIClient.createLessonContent(
+  //         contentRequest,
+  //         currentLesson.title,
+  //         JSON.stringify(gptCourseOutline),
+  //         course.search_text!,
+  //         course.user_id!
+  //       );
+  //     }
+  //   );
 
-    await topicDao.insertTopics(internalTopics);
+  //   await topicDao.insertTopics(internalTopics);
 
-    return mapInternalTopicsToPublicTopics(internalTopics);
-  }
+  //   return mapInternalTopicsToPublicTopics(internalTopics);
+  // }
 }

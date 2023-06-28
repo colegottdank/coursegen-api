@@ -51,14 +51,14 @@ router.get("/api/v1/courses/:id", async (request) => {
   return publicCourse;
 });
 
-router.post(
-  "/api/v1/topics",
-  async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Lesson),
-  async (request) => {
-    let manager = new TopicManager();
-    return await manager.postTopic(request);
-  }
-);
+// router.post(
+//   "/api/v1/topics",
+//   async (request) => await validateGenerationLogs(request, InternalGenerationReferenceType.Lesson),
+//   async (request) => {
+//     let manager = new TopicManager();
+//     return await manager.postTopic(request);
+//   }
+// );
 
 router.get("/api/v1/generationlogs", authenticate, async (request) => {
   let manager = new GenerationLogManager();
