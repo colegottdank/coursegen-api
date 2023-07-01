@@ -13,6 +13,7 @@ The student is requiring the following:
 - Avoid repetitive phrasing like “In this lesson, we will…” or “By the end of this lesson, you will have…” - these sentences should not be used at all.
 - The course request text must be taken into consideration when generating the content.
 - Use markdown formatting for enhanced readability if it suits the content.
+- Generate JSON with lessons, using \\n for newlines within content strings.
 
 Response structure (fill in the content):
 {course}
