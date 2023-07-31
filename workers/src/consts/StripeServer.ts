@@ -12,6 +12,7 @@ class StripeServer {
         apiVersion: "2022-11-15",
       });
     }
+
     return StripeServer.instance;
   }
 }

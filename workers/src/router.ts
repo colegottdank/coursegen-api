@@ -30,28 +30,54 @@ const router = Router<RequestWrapper>();
 router.all("*", preflight, authenticate);
 
 router.post("/api/v1/stripe/create-checkout-session", async (request) => {
-  console.log("Here");
-  const stripe = StripeServer.getInstance(request.env);
-  console.log();
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "subscription",
-    line_items: [
-      {
-        price: "price_1NZi9DJrX9407URvtWqhqw8W",
-        quantity: 1,
-      },
-    ],
-    customer: (await getStripeCustomer(request)).id,
-    success_url: "https://coursegen.ai/success?session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: "https://coursegen.ai/canceled",
-  });
+  try {
+    const stripe = StripeServer.getInstance(request.env);
 
-  if (!session.url) throw new Error("Failed to create session");
+    // Fetch the list of products
+    const products = await stripe.products.list();
 
-  console.log("Here");
+    // Find product with name "Pro"
+    const proProduct = products.data.find((product) => product.name === "Pro");
 
-  Response.redirect(session.url, 303);
+    // Make sure the product "Pro" is found
+    if (!proProduct) {
+      throw new Error("Product 'Pro' not found");
+    }
+
+    // Fetch the prices of the "Pro" product
+    const prices = await stripe.prices.list({ product: proProduct.id });
+    console.log(`Product: ${proProduct.id}, Prices: ${JSON.stringify(prices.data[0])}`);
+
+    // Make sure there is at least one price for the "Pro" product
+    if (prices.data.length === 0) {
+      throw new Error("No prices found for the 'Pro' product");
+    }
+
+    // Use the first price for the checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+      line_items: [
+        {
+          price: prices.data[0].id,
+          quantity: 1,
+        },
+      ],
+      customer: (await getStripeCustomer(request)).id,
+      success_url: `${request.env.FE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.env.FE_URL}/canceled`,
+    });
+
+    if (!session.url) throw new Error("Failed to create session");
+
+    let response = {
+      url: session.url,
+    };
+
+    return new Response(JSON.stringify(response), { status: 200 });
+  } catch (error) {
+    console.error("Error:", error);
+  }
 });
 
 async function getStripeCustomer(request: RequestWrapper): Promise<Stripe.Customer> {

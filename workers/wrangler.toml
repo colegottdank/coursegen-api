@@ -8,6 +8,7 @@ name = "coursegen-worker-prod"
 routes = [{ pattern = "api.crsegen.com", custom_domain = true, zone_name = "crsegen.com" }]
 workers_dev = false
 vars = { ENVIRONMENT = "production" }
+FE_URL = "https://coursegen.ai"
 
 [[env.production.queues.producers]]
 queue = "create-course-outline-queue-prod"
@@ -63,6 +64,7 @@ dead_letter_queue = "create-lesson-content-queue-dlq-staging"
 # LOCAL
 [vars]
 ENVIRONMENT = "local"
+FE_URL = "http://localhost:3000"
 
 [[queues.producers]]
 queue = "create-course-outline-queue"

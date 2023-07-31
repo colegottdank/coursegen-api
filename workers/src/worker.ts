@@ -20,6 +20,7 @@ export interface Env {
   CREATE_LESSON_CONTENT_QUEUE: Queue<string>;
   STRIPE_API_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
+  FE_URL: string;
 }
 
 export default {

@@ -7,7 +7,8 @@ const stripeRouter = Router<RequestWrapper>();
 
 stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
   const stripe = StripeServer.getInstance(request.env);
-  const body: { [key: string]: any } = await request.json();
+  const bodyText = await request.text();
+  let body: { [key: string]: any } = JSON.parse(bodyText);
 
   let data;
   let eventType;
@@ -19,7 +20,7 @@ stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
     if (!signature) throw new NotFoundError("No signature provided");
 
     try {
-      event = await stripe.webhooks.constructEventAsync(JSON.stringify(body), signature, webhookSecret);
+      event = await stripe.webhooks.constructEventAsync(bodyText, signature, webhookSecret);
     } catch (err: any) {
       console.log(`Webhook signature verification failed. ${err.message}`);
       throw new UnauthorizedError("Invalid signature");
@@ -30,6 +31,9 @@ stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
     data = body;
     eventType = body["type"];
   }
+
+
+  console.log(`Received event with type: ${eventType}`);
 
   const customer_id = data.object.customer;
 
