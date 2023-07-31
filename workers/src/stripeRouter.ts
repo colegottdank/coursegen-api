@@ -41,6 +41,7 @@ stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
     case "customer.subscription.deleted":
     case "customer.subscription.updated":
     case "customer.subscription.created":
+    case "customer.subscription.paused":
       const status = data.object.status;
       if (status === "active") {
         // If subscription is active, update user's subscription to 'pro' tier
