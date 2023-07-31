@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -68,6 +68,14 @@ export interface Database {
           updated_at?: string
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "course_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       course_item: {
         Row: {
@@ -109,6 +117,26 @@ export interface Database {
           updated_at?: string
           user_id?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "course_item_course_id_fkey"
+            columns: ["course_id"]
+            referencedRelation: "course"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_item_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_parent_id"
+            columns: ["parent_id"]
+            referencedRelation: "course_item"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       generation_log: {
         Row: {
@@ -144,6 +172,20 @@ export interface Database {
           reference_type?: Database["public"]["Enums"]["reference_type_enum"]
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "generation_log_generator_user_id_fkey"
+            columns: ["generator_user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_log_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       lesson_origin_topic: {
         Row: {
@@ -158,6 +200,20 @@ export interface Database {
           lesson_id?: string
           topic_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_origin_topic_lesson_id_fkey"
+            columns: ["lesson_id"]
+            referencedRelation: "course_item"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_origin_topic_topic_id_fkey"
+            columns: ["topic_id"]
+            referencedRelation: "topic"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       module_origin_lesson: {
         Row: {
@@ -172,6 +228,20 @@ export interface Database {
           lesson_id?: string
           module_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "module_origin_lesson_lesson_id_fkey"
+            columns: ["lesson_id"]
+            referencedRelation: "course_item"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_origin_lesson_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "course_item"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       profile: {
         Row: {
@@ -181,6 +251,10 @@ export interface Database {
             | null
           id: string
           last_name: string | null
+          stripe_id: string | null
+          subscription_end_date: string | null
+          subscription_id: string | null
+          subscription_tier: string
           updated_at: string
           username: string | null
         }
@@ -191,6 +265,10 @@ export interface Database {
             | null
           id: string
           last_name?: string | null
+          stripe_id?: string | null
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          subscription_tier?: string
           updated_at?: string
           username?: string | null
         }
@@ -201,9 +279,21 @@ export interface Database {
             | null
           id?: string
           last_name?: string | null
+          stripe_id?: string | null
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          subscription_tier?: string
           updated_at?: string
           username?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "profile_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       section: {
         Row: {
@@ -245,6 +335,26 @@ export interface Database {
           updated_at?: string
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "section_course_id_fkey"
+            columns: ["course_id"]
+            referencedRelation: "course"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "section_parent_id_fkey"
+            columns: ["parent_id"]
+            referencedRelation: "section"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "section_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       topic: {
         Row: {
@@ -280,6 +390,26 @@ export interface Database {
           updated_at?: string
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "topic_course_id_fkey"
+            columns: ["course_id"]
+            referencedRelation: "course"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_lesson_id_fkey"
+            columns: ["lesson_id"]
+            referencedRelation: "course_item"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
@@ -341,6 +471,14 @@ export interface Database {
           public?: boolean | null
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "buckets_owner_fkey"
+            columns: ["owner"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       migrations: {
         Row: {
@@ -361,6 +499,7 @@ export interface Database {
           id?: number
           name?: string
         }
+        Relationships: []
       }
       objects: {
         Row: {
@@ -373,6 +512,7 @@ export interface Database {
           owner: string | null
           path_tokens: string[] | null
           updated_at: string | null
+          version: string | null
         }
         Insert: {
           bucket_id?: string | null
@@ -384,6 +524,7 @@ export interface Database {
           owner?: string | null
           path_tokens?: string[] | null
           updated_at?: string | null
+          version?: string | null
         }
         Update: {
           bucket_id?: string | null
@@ -395,13 +536,31 @@ export interface Database {
           owner?: string | null
           path_tokens?: string[] | null
           updated_at?: string | null
+          version?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "objects_bucketId_fkey"
+            columns: ["bucket_id"]
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_insert_object: {
+        Args: {
+          bucketid: string
+          name: string
+          owner: string
+          metadata: Json
+        }
+        Returns: undefined
+      }
       extension: {
         Args: {
           name: string
@@ -418,7 +577,7 @@ export interface Database {
         Args: {
           name: string
         }
-        Returns: string[]
+        Returns: unknown
       }
       get_size_by_bucket: {
         Args: Record<PropertyKey, never>

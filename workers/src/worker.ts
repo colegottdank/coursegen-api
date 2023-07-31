@@ -7,6 +7,7 @@ import { corsify } from "./consts/CorsConfig";
 import { TopicManager } from "./managers/TopicManager";
 import { CreateCourseOutlineMessage, LessonContentCreateMessage } from "./lib/Messages";
 import { CourseManager } from "./managers/CourseManager";
+import { stripeRouter } from "./stripeRouter";
 
 export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -17,12 +18,13 @@ export interface Env {
   ENVIRONMENT: string;
   CREATE_COURSE_OUTLINE_QUEUE: Queue<string>;
   CREATE_LESSON_CONTENT_QUEUE: Queue<string>;
+  STRIPE_API_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      console.log("Fetch hit");
       let url = new URL(request.url);
       let requestWrapper = request as RequestWrapper;
       requestWrapper.env = env;
@@ -33,7 +35,11 @@ export default {
       requestWrapper.parsedUrl = url;
       requestWrapper.ctx = ctx;
 
-      return apiRouter
+      let router;
+      if(request.url.endsWith("/api/v1/stripe/webhooks")) router = stripeRouter;
+      else router = apiRouter;
+
+      return router
         .handle(requestWrapper)
         .then(json)
         .catch((error: any) => {

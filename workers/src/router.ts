@@ -13,6 +13,8 @@ import * as validators from "./lib/Validators";
 import { Environments } from "./consts/Environments";
 import { preflight } from "./consts/CorsConfig";
 import { LessonContentCreateMessage } from "./lib/Messages";
+import Stripe from "stripe";
+import StripeServer from "./consts/StripeServer";
 
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
@@ -26,6 +28,56 @@ export type RequestWrapper = {
 const router = Router<RequestWrapper>();
 
 router.all("*", preflight, authenticate);
+
+router.post("/api/v1/stripe/create-checkout-session", async (request) => {
+  console.log("Here");
+  const stripe = StripeServer.getInstance(request.env);
+  console.log();
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "subscription",
+    line_items: [
+      {
+        price: "price_1NZi9DJrX9407URvtWqhqw8W",
+        quantity: 1,
+      },
+    ],
+    customer: (await getStripeCustomer(request)).id,
+    success_url: "https://coursegen.ai/success?session_id={CHECKOUT_SESSION_ID}",
+    cancel_url: "https://coursegen.ai/canceled",
+  });
+
+  if (!session.url) throw new Error("Failed to create session");
+
+  console.log("Here");
+
+  Response.redirect(session.url, 303);
+});
+
+async function getStripeCustomer(request: RequestWrapper): Promise<Stripe.Customer> {
+  const stripe = StripeServer.getInstance(request.env);
+  try {
+    const customers = await stripe.customers.list({
+      email: request.user?.email,
+      expand: ["data.subscriptions"],
+    });
+    let customer;
+    if (customers.data.length === 0) {
+      customer = await stripe.customers.create({
+        email: request.user?.email,
+        name: request.user?.email,
+        expand: ["subscriptions"],
+      });
+
+      await request.supabaseClient.from("profile").update({ stripe_id: customer.id }).eq("id", request.user?.id);
+    } else {
+      customer = customers.data[0];
+    }
+    return customer;
+  } catch (err) {
+    throw new UnauthorizedError("Failed to get customer");
+  }
+}
 
 router.post(
   "/api/v1/courses",

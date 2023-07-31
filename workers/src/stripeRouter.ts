@@ -1,0 +1,77 @@
+import { Router } from "itty-router";
+import { NotFoundError, UnauthorizedError } from "./consts/Errors";
+import StripeServer from "./consts/StripeServer";
+import { RequestWrapper } from "./router";
+
+const stripeRouter = Router<RequestWrapper>();
+
+stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
+  const stripe = StripeServer.getInstance(request.env);
+  const body: { [key: string]: any } = await request.json();
+
+  let data;
+  let eventType;
+  const webhookSecret = request.env.STRIPE_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    let event;
+    let signature = request.headers.get("stripe-signature");
+
+    if (!signature) throw new NotFoundError("No signature provided");
+
+    try {
+      event = await stripe.webhooks.constructEventAsync(JSON.stringify(body), signature, webhookSecret);
+    } catch (err: any) {
+      console.log(`Webhook signature verification failed. ${err.message}`);
+      throw new UnauthorizedError("Invalid signature");
+    }
+    data = event.data;
+    eventType = event.type;
+  } else {
+    data = body;
+    eventType = body["type"];
+  }
+
+  const customer_id = data.object.customer;
+
+  switch (eventType) {
+    case "customer.subscription.updated":
+      const status = data.object.status;
+      if (status === "active") {
+        // If subscription is active, update user's subscription to 'pro' tier
+        const subscription_id = data.object.id;
+        const subscription_end_date = data.object.current_period_end;
+        const stripe_id = data.object.customer;
+        const sub = await request.supabaseClient
+          .from("profile")
+          .update({
+            subscription_tier: "pro",
+            subscription_id: subscription_id,
+            subscription_end_date: new Date(subscription_end_date * 1000).toISOString(),
+            stripe_id: stripe_id,
+          })
+          .eq("stripe_id", customer_id)
+          .select("*")
+          .single();
+
+        if (sub.error) throw new Error(`Failed to update subscription: ${sub.error.message}`);
+      } else {
+        // For all other statuses, update user's subscription to 'free' tier
+        const sub = await request.supabaseClient
+          .from("profile")
+          .update({
+            subscription_tier: "free",
+            subscription_id: null,
+            subscription_end_date: null
+          })
+          .eq("stripe_id", customer_id)
+          .select("*")
+          .single();
+
+        if (sub.error) throw new Error(`Failed to update subscription: ${sub.error.message}`);
+      }
+    default:
+    // Unhandled event type
+  }
+});
+
+export { stripeRouter };

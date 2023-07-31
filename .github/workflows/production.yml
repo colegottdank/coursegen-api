@@ -63,9 +63,14 @@ jobs:
             OPENAI_API_KEY
             OPENAI_ORG
             HELICONE_API_KEY
+            STRIPE_API_KEY
+            STRIPE_WEBHOOK_SECRET
         env:
           SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PROD_SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: ${{ secrets.PROD_OPENAI_API_KEY }}
           OPENAI_ORG: ${{ secrets.OPENAI_ORG }}
           HELICONE_API_KEY: ${{ secrets.PROD_HELICONE_API_KEY }}
+          STRIPE_API_KEY: ${{ secrets.PROD_STRIPE_API_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.PROD_STRIPE_WEBHOOK_SECRET }}
+          
