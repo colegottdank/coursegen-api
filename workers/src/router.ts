@@ -108,7 +108,7 @@ router.post("/api/v1/stripe/create-checkout-session", async (request) => {
       ],
       customer: customerId,
       success_url: `${request.env.FE_URL}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.env.FE_URL}/canceled`,
+      cancel_url: `${request.env.FE_URL}`,
     });
 
     if (!session.url) throw new Error("Failed to create session");

@@ -51,8 +51,6 @@ export default {
           }
         })
         .then(corsify);
-
-      throw new NotFoundError("Path not found");
     } catch (error) {
       return errorResponse(error);
     }
