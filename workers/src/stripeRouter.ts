@@ -38,6 +38,7 @@ stripeRouter.post("/api/v1/stripe/webhooks", async (request) => {
   const customer_id = data.object.customer;
 
   switch (eventType) {
+    case "customer.subscription.deleted":
     case "customer.subscription.updated":
       const status = data.object.status;
       if (status === "active") {
