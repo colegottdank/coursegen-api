@@ -53,7 +53,7 @@ router.post("/api/v1/stripe/create-portal-session", async (request) => {
     });
   }
 });
-
+https://api.crsegen.com/api/v1/stripe/create-checkout-session
 router.post("/api/v1/stripe/create-checkout-session", async (request) => {
   try {
     const stripe = StripeServer.getInstance(request.env);
@@ -62,7 +62,7 @@ router.post("/api/v1/stripe/create-checkout-session", async (request) => {
     const products = await stripe.products.list();
 
     // Find product with name "Pro"
-    const proProduct = products.data.find((product) => product.name === "Pro");
+    const proProduct = products.data.find((product) => product.name === "CourseGen Pro");
 
     // Make sure the product "Pro" is found
     if (!proProduct) {
