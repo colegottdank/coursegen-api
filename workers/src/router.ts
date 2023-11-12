@@ -13,6 +13,8 @@ import * as validators from "./lib/Validators";
 import { Environments } from "./consts/Environments";
 import { preflight } from "./consts/CorsConfig";
 import { LessonContentCreateMessage } from "./lib/Messages";
+import Stripe from "stripe";
+import StripeServer from "./consts/StripeServer";
 
 // now let's create a router (note the lack of "new")
 export type RequestWrapper = {
@@ -26,6 +28,125 @@ export type RequestWrapper = {
 const router = Router<RequestWrapper>();
 
 router.all("*", preflight, authenticate);
+
+router.post("/api/v1/stripe/create-portal-session", async (request) => {
+  try {
+    const profile = await request.supabaseClient.from("profile").select("*").eq("id", request.user?.id).single();
+
+    if (profile.error || !profile.data) {
+      throw new Error(profile.error.message);
+    }
+
+    const stripe = StripeServer.getInstance(request.env);
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: profile.data.stripe_id ?? (await getStripeCustomer(request)).id,
+      return_url: request.env.FE_URL,
+    });
+
+    return new Response(JSON.stringify({ url: portalSession.url }), { status: 200 });
+  } catch (error: any) {
+    console.log("Error creating portal session:", error);
+    // You may want to replace this with a more appropriate error response depending on your use case
+    return new Response(JSON.stringify({ message: "Error creating portal session", error: error.toString() }), {
+      status: 500,
+    });
+  }
+});
+https://api.crsegen.com/api/v1/stripe/create-checkout-session
+router.post("/api/v1/stripe/create-checkout-session", async (request) => {
+  try {
+    const stripe = StripeServer.getInstance(request.env);
+
+    // Fetch the list of products
+    const products = await stripe.products.list();
+
+    // Find product with name "Pro"
+    const proProduct = products.data.find((product) => product.name === "CourseGen Pro");
+
+    // Make sure the product "Pro" is found
+    if (!proProduct) {
+      throw new Error("Product 'Pro' not found");
+    }
+
+    // Fetch the prices of the "Pro" product
+    const prices = await stripe.prices.list({ product: proProduct.id });
+
+    // Make sure there is at least one price for the "Pro" product
+    if (prices.data.length === 0) {
+      throw new Error("No prices found for the 'Pro' product");
+    }
+
+    const customerId = (await getStripeCustomer(request)).id;
+
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+    });
+
+    // Check if any of the active subscriptions belong to the "Pro" product
+    const hasProSubscription = existingSubscriptions.data.some((subscription) =>
+      subscription.items.data.some((item) => item.price.product === proProduct.id)
+    );
+
+    if (hasProSubscription) {
+      // The customer already has an active subscription to this plan
+      return new Response(JSON.stringify({ message: "You already have an active subscription to this plan" }), {
+        status: 400,
+      });
+    }
+
+    // Use the first price for the checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+      line_items: [
+        {
+          price: prices.data[0].id,
+          quantity: 1,
+        },
+      ],
+      customer: customerId,
+      success_url: `${request.env.FE_URL}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.env.FE_URL}`,
+    });
+
+    if (!session.url) throw new Error("Failed to create session");
+
+    let response = {
+      url: session.url,
+    };
+
+    return new Response(JSON.stringify(response), { status: 200 });
+  } catch (error) {
+    console.error("Error:", error);
+  }
+});
+
+async function getStripeCustomer(request: RequestWrapper): Promise<Stripe.Customer> {
+  const stripe = StripeServer.getInstance(request.env);
+  try {
+    const customers = await stripe.customers.list({
+      email: request.user?.email,
+      expand: ["data.subscriptions"],
+    });
+    let customer;
+    if (customers.data.length === 0) {
+      customer = await stripe.customers.create({
+        email: request.user?.email,
+        name: request.user?.email,
+        expand: ["subscriptions"],
+      });
+
+      await request.supabaseClient.from("profile").update({ stripe_id: customer.id }).eq("id", request.user?.id);
+    } else {
+      customer = customers.data[0];
+    }
+    return customer;
+  } catch (err) {
+    throw new UnauthorizedError("Failed to get customer");
+  }
+}
 
 router.post(
   "/api/v1/courses",
