@@ -31,6 +31,16 @@ max_batch_timeout = 0
 max_retries = 3
 dead_letter_queue = "create-lesson-content-queue-dlq-prod"
 
+[[env.production.queues.consumers]]
+queue = "create-course-outline-queue-dlq-prod"
+max_batch_size = 1
+max_batch_timeout = 0
+
+[[env.production.queues.consumers]]
+queue = "create-lesson-content-queue-dlq-prod"
+max_batch_size = 1
+max_batch_timeout = 0
+
 # STAGING
 [env.staging]
 name = "coursegen-worker-staging"
@@ -60,6 +70,16 @@ max_batch_timeout = 0
 max_retries = 3
 dead_letter_queue = "create-lesson-content-queue-dlq-staging"
 
+[[env.staging.queues.consumers]]
+queue = "create-course-outline-queue-dlq-staging"
+max_batch_size = 1
+max_batch_timeout = 0
+
+[[env.staging.queues.consumers]]
+queue = "create-lesson-content-queue-dlq-staging"
+max_batch_size = 1
+max_batch_timeout = 0
+
 # LOCAL
 [vars]
 ENVIRONMENT = "local"
@@ -84,8 +104,18 @@ binding = "CREATE_LESSON_CONTENT_QUEUE"
 queue = "create-lesson-content-queue"
 max_batch_size = 1
 max_batch_timeout = 0
-max_retries = 3
+max_retries = 0
 dead_letter_queue = "create-lesson-content-queue-dlq"
+
+[[queues.consumers]]
+queue = "create-course-outline-queue-dlq"
+max_batch_size = 1
+max_batch_timeout = 0
+
+[[queues.consumers]]
+queue = "create-lesson-content-queue-dlq"
+max_batch_size = 1
+max_batch_timeout = 0
 
 # [env.staging]
 # MY_VARIABLE = "staging_value"
