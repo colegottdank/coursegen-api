@@ -15,7 +15,7 @@ import {
 } from "./OpenAIResponses";
 import { Env } from "../worker";
 import { Outline_0_0_1_ } from "../consts/prompts/course/Outline_0.0.1";
-import { FullCourse_0_0_1 } from "../consts/prompts/lesson/FullCourse_0.0.1";
+import { FullCourse_0_0_1, FullCourse_0_0_2 } from "../consts/prompts/lesson/FullCourse_0.0.1";
 
 export class OpenAIClient {
   private langchainSchema: any;
@@ -96,7 +96,7 @@ export class OpenAIClient {
       const response = await chatClient.call(messages);
       console.log("OpenAI API response received");
       json = response.text.substring(response.text.indexOf("{"), response.text.lastIndexOf("}") + 1);
-      console.log("JSON: " + json);
+      console.log("JSON: " + JSON.stringify(json));
       const parsedResponse = new responseType(json);
       parsedResponse.validate();
       return parsedResponse;
@@ -157,7 +157,7 @@ export class OpenAIClient {
       const response = await chatClient.call(messages, undefined, [
         {
           handleLLMNewToken(token: string) {
-            console.log(token);
+            // console.log(token);
             fullResponse += token; // Append each token to the fullResponse string
           },
         },
@@ -308,7 +308,24 @@ export class OpenAIClient {
       HumanMessagePromptTemplate.fromTemplate(FullCourse_0_0_1),
     ]);
 
-    const responseC = await chatPrompt.formatPromptValue({
+    const chatPromptGpt4 = ChatPromptTemplate.fromPromptMessages([
+      SystemMessagePromptTemplate.fromTemplate(FullCourse_0_0_2),
+      HumanMessagePromptTemplate.fromTemplate(`The student requested an in depth course following this prompt: 
+      """{course_request}""". 
+      Response structure (fill in the content):
+      {course}.
+      
+      Follow these steps and rules to generate the content:
+      1. Break each lesson into parts.
+      2. Explain each part of the lesson or the entire lesson in incredible depth. Reply with 10 large paragraphs each part.
+      3. Use markdown formatting for enhanced readability if it suits the content.
+      4. Jump directly into the subject matter without any introductory sentences.
+      5. All lessons are part of the same course and should have a continuous flow; the end of one lesson should naturally lead into the beginning of the next.
+      6. The course request text must be taken into consideration when generating the content.
+      7. Generate JSON with lessons, using \\n for newlines within content strings.`),
+    ]);
+
+    const responseC = await chatPromptGpt4.formatPromptValue({
       course_request: searchText,
       course: JSON.stringify(course, null, 2),
     });
